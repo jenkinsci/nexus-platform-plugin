@@ -1,0 +1,152 @@
+<!--
+
+    Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+    Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+    "Sonatype" is a trademark of Sonatype, Inc.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>2.6</version>
+  </parent>
+
+  <groupId>com.sonatype.nexus.ci</groupId>
+  <artifactId>nexus-jenkins-plugin</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+
+  <name>Nexus Jenkins Plugin</name>
+
+  <properties>
+    <jenkins.version>2.7</jenkins.version>
+    <jenkins-test-harness.version>2.7</jenkins-test-harness.version>
+    <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
+    <concurrency>1</concurrency>
+    <java.level>7</java.level>
+
+    <httpcomponents.version>4.5.2</httpcomponents.version>
+    <powermock.version>1.6.5</powermock.version>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4jVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1.22</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>plain-credentials</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>token-macro</artifactId>
+      <version>1.11</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>2.4.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.spockframework</groupId>
+      <artifactId>spock-core</artifactId>
+      <version>1.0-groovy-2.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.11</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <strictCheck>true</strictCheck>
+            <useDefaultExcludes>false</useDefaultExcludes>
+            <header>${project.basedir}/header.txt</header>
+            <aggregate>true</aggregate>
+            <includes>
+              <include>**/pom.xml</include>
+              <include>**/*.java</include>
+              <include>**/*.groovy</include>
+              <include>**/*.jelly</include>
+            </includes>
+            <excludes>
+              <exclude>**/target/**</exclude>
+              <exclude>**/work/**</exclude>
+              <exclude>**/.*/**</exclude>
+            </excludes>
+            <mapping>
+              <groovy>SLASHSTAR_STYLE</groovy>
+              <java>SLASHSTAR_STYLE</java>
+              <jelly>XML_STYLE</jelly>
+            </mapping>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${findbugs-maven-plugin.version}</version>
+        <configuration>
+          <effort>Max</effort>
+          <threshold>High</threshold>
+          <xmlOutput>true</xmlOutput>
+          <failOnError>true</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
+        <version>3.1</version>
+        <configuration>
+          <compilerId>groovy-eclipse-compiler</compilerId>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>2.9.2-01</version>
+          </dependency>
+          <!-- for 2.8.0-01 and later you must have an explicit dependency on groovy-eclipse-batch -->
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>2.4.3-01</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,13 @@
+<!--
+
+    Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+    Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+    "Sonatype" is a trademark of Sonatype, Inc.
+
+-->
+<?jelly escape-by-default='true'?>
+<div>
+  This plugin integrates
+  <a href="http://sonatype.com/">Sonatype Nexus</a>
+  to Jenkins.
+</div>
