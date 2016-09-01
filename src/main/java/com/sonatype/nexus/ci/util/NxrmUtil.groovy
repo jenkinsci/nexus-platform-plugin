@@ -1,0 +1,48 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+package com.sonatype.nexus.ci.util
+
+import com.sonatype.nexus.api.ApiStub.NexusClientFactory
+import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
+import com.sonatype.nexus.ci.config.Nxrm2Configuration
+import com.sonatype.nexus.ci.config.NxrmConfiguration
+
+import hudson.util.FormValidation
+import hudson.util.ListBoxModel
+import org.apache.commons.lang.StringUtils
+
+class NxrmUtil
+{
+  static FormValidation doCheckNexusInstanceId(final String value) {
+    return FormUtil.validateNotEmpty(value, "Nexus Instance is required")
+  }
+
+  static ListBoxModel doFillNexusInstanceIdItems() {
+    def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
+    return FormUtil.
+        buildListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.internalId },
+            globalConfiguration.nxrmConfigs)
+  }
+
+  static FormValidation doCheckNexusRepositoryId(final String value) {
+    return FormUtil.validateNotEmpty(value, "Nexus Repository is required")
+  }
+
+  static ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId) {
+    if (StringUtils.isEmpty(nexusInstanceId)) {
+      return FormUtil.buildListBoxModelWithEmptyOption()
+    }
+    def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
+    def configuration = globalConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
+      config.internalId.equals(nexusInstanceId)
+    }
+
+    // TODO Populate NXRM Repositories
+    def client = NexusClientFactory.buildRmClient(configuration.serverUrl, configuration.credentialsId)
+    def repositories = client.getNxrmRepositories()
+    return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
+  }
+}
