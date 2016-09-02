@@ -55,29 +55,28 @@ class NxrmPublisherBuildStep
   {
     @Override
     public String getDisplayName() {
-      return 'Nexus Repository Manager Publisher'
+      'Nexus Repository Manager Publisher'
     }
 
     @Override
     boolean isApplicable(final Class<? extends AbstractProject> jobType) {
-      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
-      return globalConfiguration.nxrmConfigs.size() > 0
+      true
     }
 
     public FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
-      return NxrmUtil.doCheckNexusInstanceId(value)
+      NxrmUtil.doCheckNexusInstanceId(value)
     }
 
     public ListBoxModel doFillNexusInstanceIdItems() {
-      return NxrmUtil.doFillNexusInstanceIdItems()
+      NxrmUtil.doFillNexusInstanceIdItems()
     }
 
     public FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
-      return NxrmUtil.doCheckNexusRepositoryId(value)
+      NxrmUtil.doCheckNexusRepositoryId(value)
     }
 
     public ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
-      return NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
+      NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
     }
   }
 }

@@ -16,6 +16,10 @@ import org.apache.commons.lang.StringUtils
 
 class NxrmUtil
 {
+  static boolean hasNexusRepositoryManagerConfiguration() {
+    GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class).nxrmConfigs.size() > 0;
+  }
+
   static FormValidation doCheckNexusInstanceId(final String value) {
     return FormUtil.validateNotEmpty(value, "Nexus Instance is required")
   }
