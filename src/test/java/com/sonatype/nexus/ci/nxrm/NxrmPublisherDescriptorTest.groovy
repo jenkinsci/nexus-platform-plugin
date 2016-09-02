@@ -5,72 +5,85 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
+import com.sonatype.nexus.api.ApiStub.NexusClientFactory
+import com.sonatype.nexus.api.ApiStub.NxrmClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.Nxrm2Configuration
 import com.sonatype.nexus.ci.config.NxrmConfiguration
 import com.sonatype.nexus.ci.util.FormUtil
 
+import groovy.mock.interceptor.MockFor
 import hudson.model.Describable
 import org.junit.Rule
-import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
-
-import static com.sonatype.nexus.api.ApiStubMockUtil.mockGetNxrmRepositoriesVerify
-import static org.hamcrest.Matchers.equalTo
-import static org.hamcrest.Matchers.hasSize
-import static org.junit.Assert.assertThat
+import spock.lang.Specification
 
 abstract class NxrmPublisherDescriptorTest
+    extends Specification
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  private final Class<? extends Describable> describable
+  abstract Class<? extends Describable> getDescribable()
 
-  NxrmPublisherDescriptorTest(Class<? extends Describable> describable) {
-    this.describable = describable
+  def 'it populates Nexus instances'() {
+    setup:
+      def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
+
+    when: 'nexus instance items are filled'
+      def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
+      def listBoxModel = configuration.doFillNexusInstanceIdItems()
+
+    then: 'ListBox has the correct size'
+      listBoxModel.size() == 2
+
+    and: 'ListBox has empty item'
+      listBoxModel.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      listBoxModel.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+
+    and: 'ListBox is populated'
+      listBoxModel.get(1).name == nxrm2Configuration.displayName
+      listBoxModel.get(1).value == nxrm2Configuration.internalId
   }
 
-  @Test
-  public void 'it populates Nexus instances'() {
-    def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
+  def 'it populates Nexus repositories'() {
+    setup:
+      GroovyMock(NexusClientFactory.class, global: true)
+      def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
 
-    def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
-    def listBoxModel = configuration.doFillNexusInstanceIdItems()
+      def client = new MockFor(NxrmClient)
+      def repositories = [
+          [
+              id  : 'maven-releases',
+              name: 'Maven Releases'
+          ],
+          [
+              id  : 'nuget-releases',
+              name: 'NuGet Releases'
+          ]
+      ]
+      client.demand.getNxrmRepositories { repositories }
+      NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> new NxrmClient()
 
-    assertThat(listBoxModel, hasSize(2))
-    assertThat(listBoxModel.get(0).name, equalTo(FormUtil.EMPTY_LIST_BOX_NAME))
-    assertThat(listBoxModel.get(0).value, equalTo(FormUtil.EMPTY_LIST_BOX_VALUE))
-    assertThat(listBoxModel.get(1).name, equalTo(nxrm2Configuration.displayName))
-    assertThat(listBoxModel.get(1).value, equalTo(nxrm2Configuration.internalId))
-  }
+    when: 'nexus repository items are filled'
+      def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
+      def listBoxModel
+      client.use {
+        listBoxModel = configuration.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
+      }
 
-  @Test
-  public void 'it populates Nexus repositories'() {
-    def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
-    def repositories = [
-        [
-            id  : 'maven-releases',
-            name: 'Maven Releases'
-        ],
-        [
-            id  : 'nuget-releases',
-            name: 'NuGet Releases'
-        ]
-    ]
-    def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
+    then: 'ListBox has the correct size'
+      listBoxModel.size() == 3
 
-    mockGetNxrmRepositoriesVerify(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId, repositories, {
-      def listBoxModel = configuration.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
+    and: 'ListBox has empty item'
+      listBoxModel.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      listBoxModel.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
 
-      assertThat(listBoxModel, hasSize(3))
-      assertThat(listBoxModel.get(0).name, equalTo(FormUtil.EMPTY_LIST_BOX_NAME))
-      assertThat(listBoxModel.get(0).value, equalTo(FormUtil.EMPTY_LIST_BOX_VALUE))
-      assertThat(listBoxModel.get(1).name, equalTo(repositories.get(0).name))
-      assertThat(listBoxModel.get(1).value, equalTo(repositories.get(0).id))
-      assertThat(listBoxModel.get(2).name, equalTo(repositories.get(1).name))
-      assertThat(listBoxModel.get(2).value, equalTo(repositories.get(1).id))
-    })
+    and: 'ListBox is populated'
+      listBoxModel.get(1).name == repositories.get(0).name
+      listBoxModel.get(1).value == repositories.get(0).id
+      listBoxModel.get(2).name == repositories.get(1).name
+      listBoxModel.get(2).value == repositories.get(1).id
   }
 
   protected Nxrm2Configuration saveGlobalConfigurationWithNxrm2Configuration() {
