@@ -41,6 +41,13 @@ class FormUtil
     return FormValidation.ok()
   }
 
+  static FormValidation validateNoWhitespace(String value, String error) {
+    if (value ==~ /.*\s+?.*/) {
+      return FormValidation.error(error)
+    }
+    return FormValidation.ok()
+  }
+
   static ListBoxModel buildCredentialsItems(final String serverUrl) {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
       return new ListBoxModel()

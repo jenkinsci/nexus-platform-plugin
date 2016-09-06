@@ -21,7 +21,123 @@ class Nxrm2ConfigurationTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  def 'it validates the server url'() {
+  def 'it validates that display name is unique'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
+      globalConfiguration.nxrmConfigs = []
+      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
+      globalConfiguration.save()
+
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $displayName"
+      def validation = configuration.doCheckDisplayName(displayName, 'otherId')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      displayName           | kind       | message
+      'displayName'         | Kind.ERROR | 'Display Name must be unique'
+      'Other Display Name'  | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that display name is required'() {
+    setup:
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $displayName"
+      def validation = configuration.doCheckDisplayName(displayName, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      displayName              | kind       | message
+      ''                       | Kind.ERROR | 'Display Name is required'
+      null                     | Kind.ERROR | 'Display Name is required'
+      'Other Display Name'     | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that id is unique'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
+      globalConfiguration.nxrmConfigs = []
+      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
+      globalConfiguration.save()
+
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $id"
+      def validation = configuration.doCheckId(id, 'otherId')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id          | kind       | message
+      'id'        | Kind.ERROR | 'Server ID must be unique'
+      'other_id'  | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that id is required'() {
+    setup:
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $id"
+      def validation = configuration.doCheckId(id, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id           | kind       | message
+      ''           | Kind.ERROR | 'Server ID is required'
+      null         | Kind.ERROR | 'Server ID is required'
+      'other_id'   | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that id is contains no whitespace'() {
+    setup:
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $id"
+      def validation = configuration.doCheckId(id, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id            | kind       | message
+      ' id'         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'i d'         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'id '         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'other_id'    | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates the server url is a valid url'() {
     setup:
       def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(Nxrm2Configuration.class)
@@ -31,13 +147,35 @@ class Nxrm2ConfigurationTest
       def validation = configuration.doCheckServerUrl(url)
 
     then:
-      "it returns $result"
-      validation.kind == result
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
 
     where:
-      url              | result
-      'foo'            | Kind.ERROR
-      'http://foo.com' | Kind.OK
+      url              | kind         | message
+      'foo'            | Kind.ERROR   | 'Malformed url (no protocol: foo)'
+      'http://foo.com' | Kind.OK      | '<div/>'
+  }
+
+  def 'it validates the server url is required'() {
+    setup:
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
+
+    when:
+      "validating $url"
+      def validation = configuration.doCheckServerUrl(url)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      url                | kind         | message
+      ''                 | Kind.ERROR   | 'Server Url is required'
+      null               | Kind.ERROR   | 'Server Url is required'
+      'http://foo.com'   | Kind.OK      | '<div/>'
   }
 
   def 'it tests valid server credentials'() {

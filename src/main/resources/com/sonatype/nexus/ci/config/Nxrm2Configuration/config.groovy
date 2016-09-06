@@ -19,6 +19,10 @@ f.section(title: descriptor.displayName) {
     f.textbox(clazz: 'required')
   }
 
+  f.entry(title: _('Server ID'), field:'id') {
+    f.textbox(clazz: 'required')
+  }
+
   f.entry(title: _('Server URL'), field: 'serverUrl') {
     f.textbox(clazz: 'required')
   }

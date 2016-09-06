@@ -88,7 +88,7 @@ abstract class NxrmPublisherDescriptorTest
 
   protected Nxrm2Configuration saveGlobalConfigurationWithNxrm2Configuration() {
     def configurationList = new ArrayList<NxrmConfiguration>()
-    def nxrm2Configuration = new Nxrm2Configuration('internalId', 'displayName', 'http://foo.com', 'credentialsId')
+    def nxrm2Configuration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credentialsId')
     configurationList.push(nxrm2Configuration)
 
     def globalConfiguration = jenkins.getInstance().getDescriptorByType(GlobalNexusConfiguration.class)

@@ -12,6 +12,11 @@ import jenkins.model.Jenkins
 abstract class NxrmConfiguration
     implements Describable<NxrmConfiguration>
 {
+  String id
+
+  /**
+   * Used as a unique identifier per instance to ensure unique Display Name and Id
+   */
   String internalId
 
   String displayName

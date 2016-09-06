@@ -10,6 +10,7 @@ import com.sonatype.nexus.ci.util.FormUtil
 
 import hudson.Extension
 import hudson.util.FormValidation
+import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
@@ -18,9 +19,10 @@ class Nxrm2Configuration
     extends NxrmConfiguration
 {
   @DataBoundConstructor
-  Nxrm2Configuration(final String internalId, final String displayName, final String serverUrl,
+  Nxrm2Configuration(final String id, final String internalId, final String displayName, final String serverUrl,
                      final String credentialsId)
   {
+    this.id = id
     this.internalId = internalId
     this.displayName = displayName
     this.serverUrl = serverUrl
@@ -45,15 +47,34 @@ class Nxrm2Configuration
       def globalConfigurations = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
         if (!config.internalId.equals(internalId) && config.displayName.equals(value)) {
-          return FormValidation.error('Display names must be unique')
+          return FormValidation.error('Display Name must be unique')
         }
       }
-      return FormValidation.ok()
+      return FormUtil.validateNotEmpty(value, 'Display Name is required')
+    }
+
+    @SuppressWarnings('unused')
+    public FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
+      def globalConfigurations = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
+        if (!config.internalId.equals(internalId) && config.id.equals(value)) {
+          return FormValidation.error('Server ID must be unique')
+        }
+      }
+      def validation = FormUtil.validateNoWhitespace(value, 'Server ID must not contain whitespace')
+      if (validation.kind == Kind.OK) {
+        validation = FormUtil.validateNotEmpty(value, 'Server ID is required')
+      }
+      return validation
     }
 
     @SuppressWarnings('unused')
     public FormValidation doCheckServerUrl(@QueryParameter String value) {
-      return FormUtil.validateUrl(value)
+      def validation = FormUtil.validateUrl(value)
+      if (validation.kind == Kind.OK) {
+        validation = FormUtil.validateNotEmpty(value, 'Server Url is required')
+      }
+      return validation
     }
 
     @SuppressWarnings('unused')
