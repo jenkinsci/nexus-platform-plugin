@@ -45,7 +45,7 @@ class NxrmPublisherBuildStep
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    //TODO implement me
+    PackageUploaderUtil.uploadPackage(this, run, listener, workspace)
   }
 
   @Extension

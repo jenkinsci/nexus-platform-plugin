@@ -13,6 +13,7 @@ import com.sonatype.nexus.ci.config.NxrmConfiguration
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.validator.routines.UrlValidator
 
 class NxrmUtil
 {
@@ -48,5 +49,11 @@ class NxrmUtil
     def client = NexusClientFactory.buildRmClient(configuration.serverUrl, configuration.credentialsId)
     def repositories = client.getNxrmRepositories()
     return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
+  }
+
+  static boolean validUrl(final String input) {
+    String[] schemes = ['http', 'https']
+    UrlValidator validator = new UrlValidator(schemes)
+    validator.isValid(input)
   }
 }
