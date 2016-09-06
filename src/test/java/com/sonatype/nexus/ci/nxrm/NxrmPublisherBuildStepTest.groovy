@@ -8,7 +8,6 @@ package com.sonatype.nexus.ci.nxrm
 import com.sonatype.nexus.api.ApiStub.NexusClientFactory
 import com.sonatype.nexus.api.ApiStub.NxrmClient
 
-import hudson.model.Describable
 import hudson.model.Result
 import hudson.model.Run
 import org.junit.Rule
@@ -18,8 +17,8 @@ class NxrmPublisherBuildStepTest
     extends NxrmPublisherDescriptorTest
 {
   @Override
-  Class<? extends Describable> getDescribable() {
-    return NxrmPublisherBuildStep.class
+  NxrmPublisherDescriptor getDescriptor() {
+    return (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(NxrmPublisherBuildStep.class)
   }
 
   @Rule

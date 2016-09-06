@@ -13,7 +13,6 @@ import com.sonatype.nexus.ci.config.NxrmConfiguration
 import com.sonatype.nexus.ci.util.FormUtil
 
 import groovy.mock.interceptor.MockFor
-import hudson.model.Describable
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
@@ -24,15 +23,15 @@ abstract class NxrmPublisherDescriptorTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  abstract Class<? extends Describable> getDescribable()
+  abstract NxrmPublisherDescriptor getDescriptor()
 
   def 'it populates Nexus instances'() {
     setup:
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
 
     when: 'nexus instance items are filled'
-      def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
-      def listBoxModel = configuration.doFillNexusInstanceIdItems()
+      def descriptor = getDescriptor()
+      def listBoxModel = descriptor.doFillNexusInstanceIdItems()
 
     then: 'ListBox has the correct size'
       listBoxModel.size() == 2
@@ -66,10 +65,10 @@ abstract class NxrmPublisherDescriptorTest
       NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> new NxrmClient()
 
     when: 'nexus repository items are filled'
-      def configuration = (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(describable)
+      def descriptor = getDescriptor()
       def listBoxModel
       client.use {
-        listBoxModel = configuration.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
+        listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
       }
 
     then: 'ListBox has the correct size'
