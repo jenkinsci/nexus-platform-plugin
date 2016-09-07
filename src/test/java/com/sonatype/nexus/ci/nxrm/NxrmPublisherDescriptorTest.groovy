@@ -5,14 +5,13 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.ApiStub.NexusClientFactory
-import com.sonatype.nexus.api.ApiStub.NxrmClient
+import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.Nxrm2Configuration
 import com.sonatype.nexus.ci.config.NxrmConfiguration
 import com.sonatype.nexus.ci.util.FormUtil
+import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
-import groovy.mock.interceptor.MockFor
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
@@ -47,10 +46,10 @@ abstract class NxrmPublisherDescriptorTest
 
   def 'it populates Nexus repositories'() {
     setup:
-      GroovyMock(NexusClientFactory.class, global: true)
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
 
-      def client = new MockFor(NxrmClient)
+      def client = Mock(RepositoryManagerClient.class)
       def repositories = [
           [
               id  : 'maven-releases',
@@ -61,15 +60,12 @@ abstract class NxrmPublisherDescriptorTest
               name: 'NuGet Releases'
           ]
       ]
-      client.demand.getNxrmRepositories { repositories }
-      NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> new NxrmClient()
+      client.getRepositoryList() >> repositories
+      RepositoryManagerClientUtil.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
 
     when: 'nexus repository items are filled'
       def descriptor = getDescriptor()
-      def listBoxModel
-      client.use {
-        listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
-      }
+      def listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
 
     then: 'ListBox has the correct size'
       listBoxModel.size() == 3

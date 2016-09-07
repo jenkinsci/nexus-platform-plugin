@@ -7,7 +7,6 @@ package com.sonatype.nexus.ci.nxrm
 
 import javax.annotation.Nonnull
 
-import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.util.NxrmUtil
 
 import hudson.Extension

@@ -5,7 +5,6 @@
  */
 package com.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.ApiStub.NexusClientFactory
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.Nxrm2Configuration
 import com.sonatype.nexus.ci.config.NxrmConfiguration
@@ -45,9 +44,8 @@ class NxrmUtil
       config.internalId.equals(nexusInstanceId)
     }
 
-    // TODO Populate NXRM Repositories
-    def client = NexusClientFactory.buildRmClient(configuration.serverUrl, configuration.credentialsId)
-    def repositories = client.getNxrmRepositories()
+    def client = RepositoryManagerClientUtil.buildRmClient(configuration.serverUrl, configuration.credentialsId)
+    def repositories = client.getRepositoryList()
     return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
   }
 

@@ -5,10 +5,10 @@
  */
 package com.sonatype.nexus.ci.config
 
-import com.sonatype.nexus.api.ApiStub.NexusClientFactory
-import com.sonatype.nexus.api.ApiStub.NxrmClient
+import com.sonatype.nexus.api.exception.RepositoryManagerException
+import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
-import groovy.mock.interceptor.MockFor
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import org.junit.Rule
@@ -180,18 +180,15 @@ class Nxrm2ConfigurationTest
 
   def 'it tests valid server credentials'() {
     when:
-      GroovyMock(NexusClientFactory.class, global: true)
-      def client = new MockFor(NxrmClient)
-      client.demand.getNxrmRepositories { repositories }
-      NexusClientFactory.buildRmClient(serverUrl, credentialsId) >> new NxrmClient()
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      def client = Mock(RepositoryManagerClient.class)
+      client.getRepositoryList() >> repositories
+      RepositoryManagerClientUtil.buildRmClient(serverUrl, credentialsId) >> client
       def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = null
-      client.use {
-        validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
-      }
+      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       validation.kind == Kind.OK
@@ -214,20 +211,15 @@ class Nxrm2ConfigurationTest
 
   def 'it tests invalid server credentials'() {
     when:
-      GroovyMock(NexusClientFactory.class, global: true)
-      def client = new MockFor(NxrmClient.class)
-      client.demand.getNxrmRepositories {
-        throw new IOException()
-      }
-      NexusClientFactory.buildRmClient(serverUrl, credentialsId) >> new NxrmClient()
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      def client = Mock(RepositoryManagerClient.class)
+      client.getRepositoryList() >> { throw new RepositoryManagerException("something went wrong") }
+      RepositoryManagerClientUtil.buildRmClient(serverUrl, credentialsId) >> client
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = null
-      client.use {
-        validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
-      }
+      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
+
 
     then:
       validation.kind == Kind.ERROR

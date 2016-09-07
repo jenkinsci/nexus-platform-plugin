@@ -5,11 +5,12 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.ApiStub
-import com.sonatype.nexus.api.ApiStub.NexusClientFactory
-import com.sonatype.nexus.api.ApiStub.NxrmClient
+import com.sonatype.nexus.api.exception.RepositoryManagerException
+import com.sonatype.nexus.api.repository.GAV
+import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.util.NxrmUtil
+import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.EnvVars
 import hudson.FilePath
@@ -48,7 +49,19 @@ class PackageUploaderUtil {
       throw new IllegalArgumentException(message)
     }
 
-    def nxrmClient = NexusClientFactory.buildRmClient(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
+    def nxrmClient
+
+    try {
+      nxrmClient = RepositoryManagerClientUtil.buildRmClient(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
+    }
+    catch (Exception e) {
+      def message = "Error creating RepositoryManagerClient"
+      logger.println(message)
+      logger.println('Failing build due to error creating RepositoryManagerClient')
+      run.setResult(Result.FAILURE)
+      throw e
+    }
+
     def uploadCallableClosures = new ArrayList<Closure>()
 
     def mavenPackages = getPackagesOfType(nxrmPublisher.packages, MavenPackage.class)
@@ -114,7 +127,7 @@ class PackageUploaderUtil {
   static class MavenAssetUploaderCallable
       extends MasterToSlaveFileCallable<Void>
   {
-    private final transient NxrmClient client
+    private final transient RepositoryManagerClient client
 
     private final String repositoryId
 
@@ -122,7 +135,7 @@ class PackageUploaderUtil {
 
     private final transient MavenAsset mavenAsset
 
-    public MavenAssetUploaderCallable(final NxrmClient client, final String repositoryId,
+    public MavenAssetUploaderCallable(final RepositoryManagerClient client, final String repositoryId,
                                       final MavenCoordinate coordinate, final MavenAsset mavenAsset)
     {
       this.client = client
@@ -133,20 +146,15 @@ class PackageUploaderUtil {
 
     @Override
     Void invoke(final File file, final VirtualChannel channel) throws IOException, InterruptedException {
-      def mavenCoordinate = new ApiStub.MavenCoordinate(
-          groupId: coordinate.groupId,
-          artifactId: coordinate.artifactId,
-          version: coordinate.version,
-          packaging: coordinate.packaging
-      )
+      def mavenCoordinate = new GAV(coordinate.groupId, coordinate.artifactId, coordinate.version, coordinate.packaging)
+      def mavenFile = new com.sonatype.nexus.api.repository.MavenAsset(file, mavenAsset.extension, mavenAsset.classifier)
 
-      def mavenFile = new ApiStub.MavenFile(
-          artifact: file,
-          extension: mavenAsset.extension,
-          classifier: mavenAsset.classifier
-      )
-
-      return client.uploadComponent(repositoryId, mavenCoordinate, mavenFile)
+      try {
+        client.uploadComponent(repositoryId, mavenCoordinate, [mavenFile])
+      }
+      catch (RepositoryManagerException ex) {
+        throw new IOException(ex)
+      }
     }
   }
 }

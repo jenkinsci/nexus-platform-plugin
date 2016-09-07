@@ -5,8 +5,9 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.ApiStub.NexusClientFactory
-import com.sonatype.nexus.api.ApiStub.NxrmClient
+import com.sonatype.nexus.api.exception.RepositoryManagerException
+import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.model.Result
 import hudson.model.Run
@@ -24,7 +25,7 @@ class NxrmPublisherBuildStepTest
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  NxrmClient nxrmClient = Mock()
+  RepositoryManagerClient nxrmClient = Mock()
 
   def 'it fails build when Maven asset is not available for upload'() {
     setup:
@@ -35,8 +36,8 @@ class NxrmPublisherBuildStepTest
       def project = jenkins.createFreeStyleProject()
       project.getBuildersList().add(nexusPublisher)
 
-      GroovyMock(NexusClientFactory.class, global: true)
-      NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
 
     when:
       Run build = project.scheduleBuild2(0).get()
@@ -64,10 +65,10 @@ class NxrmPublisherBuildStepTest
       project.setCustomWorkspace(workspace.getAbsolutePath())
       project.getBuildersList().add(nexusPublisher)
 
-      GroovyMock(NexusClientFactory.class, global: true)
-      NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
 
-      nxrmClient.uploadComponent(_, _, _) >> { throw new IOException() }
+      nxrmClient.uploadComponent(_, _, _) >> { throw new RepositoryManagerException("something went wrong") }
 
     when:
       Run build = project.scheduleBuild2(0).get()
@@ -95,8 +96,8 @@ class NxrmPublisherBuildStepTest
       project.setCustomWorkspace(workspace.getAbsolutePath())
       project.getBuildersList().add(nexusPublisher)
 
-      GroovyMock(NexusClientFactory.class, global: true)
-      NexusClientFactory.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.buildRmClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> nxrmClient
 
     when:
       Run build = project.scheduleBuild2(0).get()

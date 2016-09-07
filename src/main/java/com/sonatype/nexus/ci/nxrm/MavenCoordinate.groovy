@@ -5,11 +5,7 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.repository.MavenPackageType
-import com.sonatype.nexus.ci.util.FormUtil
-
 import hudson.Extension
-import hudson.util.ListBoxModel
 import org.jenkinsci.Symbol
 import org.kohsuke.stapler.DataBoundConstructor
 
