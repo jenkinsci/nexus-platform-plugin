@@ -20,7 +20,7 @@ import hudson.security.ACL
 class RepositoryManagerClientUtil
 {
   static RepositoryManagerClient buildRmClient(String url, String credentialsId) throws URISyntaxException {
-    def uri = new URI(url + "/service/local/artifact/maven/content");
+    def uri = new URI(url)
 
     def credentials = CredentialsMatchers.firstOrNull(CredentialsProvider
         .lookupCredentials(StandardUsernamePasswordCredentials.class, jenkins.model.Jenkins.getInstance(), ACL.SYSTEM,

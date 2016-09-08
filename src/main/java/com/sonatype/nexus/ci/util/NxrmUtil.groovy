@@ -51,7 +51,7 @@ class NxrmUtil
 
   static boolean validUrl(final String input) {
     String[] schemes = ['http', 'https']
-    UrlValidator validator = new UrlValidator(schemes)
+    UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS)
     validator.isValid(input)
   }
 }
