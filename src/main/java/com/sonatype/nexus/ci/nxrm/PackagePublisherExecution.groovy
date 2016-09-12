@@ -7,7 +7,11 @@ package com.sonatype.nexus.ci.nxrm
 
 import javax.inject.Inject
 
+import hudson.FilePath
+import hudson.model.Run
+import hudson.model.TaskListener
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution
+import org.jenkinsci.plugins.workflow.steps.StepContextParameter
 
 class PackagePublisherExecution
     extends AbstractSynchronousNonBlockingStepExecution<Void>
@@ -15,10 +19,29 @@ class PackagePublisherExecution
   @Inject
   private transient NxrmPublisherWorkflowStep nxrmPublisher
 
+  @StepContextParameter
+  private transient TaskListener taskListener;
+
+  @StepContextParameter
+  private transient Run run;
+
+  @StepContextParameter
+  private transient FilePath filePath;
+
   @Override
   protected Void run() throws Exception {
-    // TODO Implement package publisher
+    PrintStream logger = taskListener.getLogger();
+    logger.println("Attempting to upload ${filePath} to Nexus.")
 
+    try {
+      PackageUploaderUtil.uploadPackage(nxrmPublisher, run, taskListener, filePath)
+    }
+    catch (IOException | InterruptedException ex) {
+      logger.println("Upload of ${filePath} failed.")
+      throw ex
+    }
+
+    logger.println("Upload of ${filePath} succeeded.")
     return null
   }
 }

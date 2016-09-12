@@ -30,7 +30,7 @@ class PackageUploaderUtil {
 
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     def nexusConfiguration = globalConfiguration.nxrmConfigs.find {
-      return it.internalId == nxrmPublisher.nexusInstanceId
+      return it.id == nxrmPublisher.nexusInstanceId
     }
 
     if (!nexusConfiguration) {

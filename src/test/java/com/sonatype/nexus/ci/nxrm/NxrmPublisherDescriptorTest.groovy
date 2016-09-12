@@ -41,7 +41,7 @@ abstract class NxrmPublisherDescriptorTest
 
     and: 'ListBox is populated'
       listBoxModel.get(1).name == nxrm2Configuration.displayName
-      listBoxModel.get(1).value == nxrm2Configuration.internalId
+      listBoxModel.get(1).value == nxrm2Configuration.id
   }
 
   def 'it populates Nexus repositories'() {
@@ -65,7 +65,7 @@ abstract class NxrmPublisherDescriptorTest
 
     when: 'nexus repository items are filled'
       def descriptor = getDescriptor()
-      def listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.internalId)
+      def listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.id)
 
     then: 'ListBox has the correct size'
       listBoxModel.size() == 3

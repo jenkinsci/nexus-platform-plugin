@@ -27,7 +27,7 @@ class NxrmUtil
   static ListBoxModel doFillNexusInstanceIdItems() {
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     return FormUtil.
-        buildListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.internalId },
+        buildListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
             globalConfiguration.nxrmConfigs)
   }
 
@@ -41,7 +41,7 @@ class NxrmUtil
     }
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     def configuration = globalConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
-      config.internalId.equals(nexusInstanceId)
+      config.id.equals(nexusInstanceId)
     }
 
     def client = RepositoryManagerClientUtil.buildRmClient(configuration.serverUrl, configuration.credentialsId)

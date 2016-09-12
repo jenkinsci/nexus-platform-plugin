@@ -31,7 +31,7 @@ class NxrmPublisherBuildStepTest
     setup:
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.internalId, 'maven-releases', packageList)
+      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, 'maven-releases', packageList)
 
       def project = jenkins.createFreeStyleProject()
       project.getBuildersList().add(nexusPublisher)
@@ -56,7 +56,7 @@ class NxrmPublisherBuildStepTest
       def repositoryId = 'maven-releases'
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.internalId, repositoryId, packageList)
+      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
 
       def project = jenkins.createFreeStyleProject()
       def workspace = temp.newFolder()
@@ -87,7 +87,7 @@ class NxrmPublisherBuildStepTest
       def repositoryId = 'maven-releases'
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.internalId, repositoryId, packageList)
+      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
 
       def project = jenkins.createFreeStyleProject()
       def workspace = temp.newFolder()
