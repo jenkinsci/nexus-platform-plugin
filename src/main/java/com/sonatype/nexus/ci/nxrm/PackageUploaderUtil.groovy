@@ -9,7 +9,7 @@ import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.GAV
 import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import com.sonatype.nexus.ci.util.NxrmUtil
+import com.sonatype.nexus.ci.util.FormUtil
 import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.EnvVars
@@ -41,7 +41,7 @@ class PackageUploaderUtil {
       throw new IllegalArgumentException(message)
     }
 
-    if (!NxrmUtil.validUrl(nexusConfiguration.serverUrl)) {
+    if (!FormUtil.validateUrl(nexusConfiguration.serverUrl)) {
       def message = "Nexus Server URL ${nexusConfiguration.serverUrl} is invalid."
       logger.println(message)
       logger.println('Failing build due to invalid Nexus Server URL')

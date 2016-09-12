@@ -11,8 +11,6 @@ import com.sonatype.nexus.ci.config.NxrmConfiguration
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
-import org.apache.commons.lang.StringUtils
-import org.apache.commons.validator.routines.UrlValidator
 
 class NxrmUtil
 {
@@ -36,7 +34,7 @@ class NxrmUtil
   }
 
   static ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId) {
-    if (StringUtils.isEmpty(nexusInstanceId)) {
+    if (!nexusInstanceId) {
       return FormUtil.buildListBoxModelWithEmptyOption()
     }
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
@@ -47,11 +45,5 @@ class NxrmUtil
     def client = RepositoryManagerClientUtil.buildRmClient(configuration.serverUrl, configuration.credentialsId)
     def repositories = client.getRepositoryList()
     return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
-  }
-
-  static boolean validUrl(final String input) {
-    String[] schemes = ['http', 'https']
-    UrlValidator validator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS)
-    validator.isValid(input)
   }
 }

@@ -29,22 +29,46 @@
     <concurrency>1</concurrency>
     <java.level>7</java.level>
 
-    <httpcomponents.version>4.5.2</httpcomponents.version>
-    <powermock.version>1.6.5</powermock.version>
+    <!--
+    Deployment configuration.
+    -->
+    <private.serverId>sonatype-private</private.serverId>
+    <private.nexusUrl>https://repository.sonatype.org</private.nexusUrl>
+
+    <private-release.serverId>${private.serverId}</private-release.serverId>
+    <private-release.url>
+      https://repository.sonatype.org/service/local/staging/deploy/maven2
+    </private-release.url>
+
+    <private-snapshot.serverId>${private.serverId}</private-snapshot.serverId>
+    <private-snapshot.url>
+      https://repository.sonatype.org/content/repositories/sonatype-internal-snapshots
+    </private-snapshot.url>
+
+    <!--
+    Staging configuration.
+    -->
+    <staging.serverId>${private.serverId}</staging.serverId>
+    <staging.nexusUrl>${private.nexusUrl}</staging.nexusUrl>
   </properties>
 
-  <dependencies>
+  <distributionManagement>
+    <repository>
+      <id>${private-release.serverId}</id>
+      <url>${private-release.url}</url>
+    </repository>
 
+    <snapshotRepository>
+      <id>${private-snapshot.serverId}</id>
+      <url>${private-snapshot.url}</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <dependencies>
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
       <artifactId>nexus-java-api</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -72,6 +96,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>symbol-annotation</artifactId>
+      <version>1.5</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-step-api</artifactId>
       <version>1.15</version>
@@ -81,31 +111,6 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>2.4.7</version>
-    </dependency>
-
-    <!-- Used only in API Stub -->
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpmime</artifactId>
-      <version>${httpcomponents.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-validator</groupId>
-      <artifactId>commons-validator</artifactId>
-      <version>1.5.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
     </dependency>
 
     <dependency>
@@ -199,4 +204,14 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jenkins-1.580.1</id>
+      <properties>
+        <jenkins.version>1.580.1</jenkins.version>
+        <jenkins-test-harness.version>1.580.1</jenkins-test-harness.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
