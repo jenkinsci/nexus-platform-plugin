@@ -10,9 +10,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>2.6</version>
+    <groupId>com.sonatype.buildsupport</groupId>
+    <artifactId>private-parent</artifactId>
+    <version>9</version>
+    <relativePath />
   </parent>
 
   <groupId>com.sonatype.nexus.ci</groupId>
@@ -28,108 +29,183 @@
     <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
     <concurrency>1</concurrency>
     <java.level>7</java.level>
-
-    <!--
-    Release configuration
-    -->
-    <localCheckout>true</localCheckout>
-    <pushChanges>false</pushChanges>
-
-    <!--
-    Deployment configuration.
-    -->
-    <private.serverId>sonatype-private</private.serverId>
-    <private.nexusUrl>https://repository.sonatype.org</private.nexusUrl>
-
-    <private-release.serverId>${private.serverId}</private-release.serverId>
-    <private-release.url>
-      https://repository.sonatype.org/service/local/staging/deploy/maven2
-    </private-release.url>
-
-    <private-snapshot.serverId>${private.serverId}</private-snapshot.serverId>
-    <private-snapshot.url>
-      https://repository.sonatype.org/content/repositories/sonatype-internal-snapshots
-    </private-snapshot.url>
-
-    <!--
-    Staging configuration.
-    -->
-    <staging.serverId>${private.serverId}</staging.serverId>
-    <staging.nexusUrl>${private.nexusUrl}</staging.nexusUrl>
+    <slf4j.version>1.7.7</slf4j.version>
   </properties>
 
-  <distributionManagement>
-    <repository>
-      <id>${private-release.serverId}</id>
-      <url>${private-release.url}</url>
-    </repository>
 
-    <snapshotRepository>
-      <id>${private-snapshot.serverId}</id>
-      <url>${private-snapshot.url}</url>
-    </snapshotRepository>
-  </distributionManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.sonatype.nexus</groupId>
+        <artifactId>nexus-java-api</artifactId>
+        <version>1.0.0-02</version>
+      </dependency>
 
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-core</artifactId>
+        <version>${jenkins.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>credentials</artifactId>
+        <version>1.22</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plain-credentials</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>token-macro</artifactId>
+        <version>1.11</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>symbol-annotation</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-step-api</artifactId>
+        <version>1.15</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>2.4.7</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.spockframework</groupId>
+        <artifactId>spock-core</artifactId>
+        <version>1.0-groovy-2.4</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-war</artifactId>
+        <version>${jenkins.version}</version>
+        <type>war</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-war</artifactId>
+        <version>${jenkins.version}</version>
+        <classifier>war-for-test</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-test-harness</artifactId>
+        <version>${jenkins-test-harness.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib-nodep</artifactId>
+        <version>3.2.4</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
       <artifactId>nexus-java-api</artifactId>
-      <version>1.0.0-02</version>
     </dependency>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <version>${slf4jVersion}</version>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1.22</version>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>plain-credentials</artifactId>
-      <version>1.1</version>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>token-macro</artifactId>
-      <version>1.11</version>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
-      <version>1.5</version>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-step-api</artifactId>
-      <version>1.15</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>2.4.7</version>
     </dependency>
 
     <dependency>
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
-      <version>1.0-groovy-2.4</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <type>war</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <classifier>war-for-test</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit-dep</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib-nodep</artifactId>
-      <version>3.2.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -140,34 +216,23 @@
         <plugin>
           <groupId>com.mycila</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>2.11</version>
           <configuration>
-            <encoding>UTF-8</encoding>
-            <strictCheck>true</strictCheck>
-            <useDefaultExcludes>false</useDefaultExcludes>
-            <header>${project.basedir}/header.txt</header>
-            <aggregate>true</aggregate>
-            <includes>
-              <include>**/pom.xml</include>
-              <include>**/*.java</include>
-              <include>**/*.groovy</include>
-              <include>**/*.jelly</include>
-            </includes>
             <excludes>
               <exclude>**/target/**</exclude>
               <exclude>**/work/**</exclude>
               <exclude>**/.*/**</exclude>
             </excludes>
-            <mapping>
-              <groovy>SLASHSTAR_STYLE</groovy>
-              <java>SLASHSTAR_STYLE</java>
-              <jelly>XML_STYLE</jelly>
-            </mapping>
           </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <version>1.119</version>
+        <extensions>true</extensions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
@@ -208,24 +273,6 @@
           </dependency>
         </dependencies>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.2</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <goals>deploy</goals>
-          <!-- pushChanges and localCheckout for dvcs and require a 'git push origin \-\-tags :' after release:perform -->
-          <localCheckout>${localCheckout}</localCheckout>
-          <pushChanges>${pushChanges}</pushChanges>
-          <!--  forked path prevents hang see MGPG-9 -->
-          <mavenExecutorId>forked-path</mavenExecutorId>
-          <releaseProfiles>release</releaseProfiles>
-          <useReleaseProfile>false</useReleaseProfile>
-        </configuration>
-      </plugin>
-
     </plugins>
   </build>
 
@@ -236,103 +283,6 @@
         <jenkins.version>1.580.1</jenkins.version>
         <jenkins-test-harness.version>1.580.1</jenkins-test-harness.version>
       </properties>
-    </profile>
-
-    <!--
-    Release configuration.
-    -->
-    <profile>
-      <id>release</id>
-      <build>
-        <!--
-        Configure deployment plugins in DM so buildsupport-staging profile can disable advanced deployment to nexus.
-        -->
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-deploy-plugin</artifactId>
-              <configuration>
-                <updateReleaseInfo>true</updateReleaseInfo>
-              </configuration>
-            </plugin>
-
-            <plugin>
-              <groupId>org.sonatype.plugins</groupId>
-              <artifactId>nexus-staging-maven-plugin</artifactId>
-              <configuration>
-                <updateReleaseInfo>true</updateReleaseInfo>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>enforce-release</id>
-                <goals>
-                  <goal>enforce</goal>
-                </goals>
-                <configuration>
-                  <rules>
-                    <!--
-                    Disallow SNAPSHOT dependencies.
-                    -->
-                    <requireReleaseDeps>
-                      <searchTransitive>true</searchTransitive>
-                      <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
-                    </requireReleaseDeps>
-
-                    <!--
-                    Disallow SNAPSHOT, RELEASE, LATEST or pinned-SNAPSHOT plugins.
-                    -->
-                    <requirePluginVersions>
-                      <banSnapshots>true</banSnapshots>
-                      <banRelease>true</banRelease>
-                      <banLatest>true</banLatest>
-                      <banTimestamps>true</banTimestamps>
-                    </requirePluginVersions>
-                  </rules>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <configuration>
-              <!--suppress MavenModelInspection -->
-              <passphrase>${gpg.passphrase}</passphrase>
-              <useAgent>true</useAgent>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>
