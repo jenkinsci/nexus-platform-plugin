@@ -14,12 +14,12 @@ import hudson.model.Run
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
-class NxrmPublisherBuildStepTest
-    extends NxrmPublisherDescriptorTest
+class NexusPublisherBuildStepTest
+    extends NexusPublisherDescriptorTest
 {
   @Override
-  NxrmPublisherDescriptor getDescriptor() {
-    return (NxrmPublisherDescriptor) jenkins.getInstance().getDescriptor(NxrmPublisherBuildStep.class)
+  NexusPublisherDescriptor getDescriptor() {
+    return (NexusPublisherDescriptor) jenkins.getInstance().getDescriptor(NexusPublisherBuildStep.class)
   }
 
   @Rule
@@ -31,7 +31,7 @@ class NxrmPublisherBuildStepTest
     setup:
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, 'maven-releases', packageList)
+      def nexusPublisher = new NexusPublisherBuildStep(nxrm2Configuration.id, 'maven-releases', packageList)
 
       def project = jenkins.createFreeStyleProject()
       project.getBuildersList().add(nexusPublisher)
@@ -56,7 +56,7 @@ class NxrmPublisherBuildStepTest
       def repositoryId = 'maven-releases'
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
+      def nexusPublisher = new NexusPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
 
       def project = jenkins.createFreeStyleProject()
       def workspace = temp.newFolder()
@@ -87,7 +87,7 @@ class NxrmPublisherBuildStepTest
       def repositoryId = 'maven-releases'
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
       def packageList = buildPackageList()
-      def nexusPublisher = new NxrmPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
+      def nexusPublisher = new NexusPublisherBuildStep(nxrm2Configuration.id, repositoryId, packageList)
 
       def project = jenkins.createFreeStyleProject()
       def workspace = temp.newFolder()

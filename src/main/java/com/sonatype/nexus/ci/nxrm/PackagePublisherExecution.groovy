@@ -17,7 +17,7 @@ class PackagePublisherExecution
     extends AbstractSynchronousNonBlockingStepExecution<Void>
 {
   @Inject
-  private transient NxrmPublisherWorkflowStep nxrmPublisher
+  private transient NexusPublisherWorkflowStep nxrmPublisher
 
   @StepContextParameter
   private transient TaskListener taskListener;

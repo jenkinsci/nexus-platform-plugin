@@ -23,9 +23,9 @@ import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-class NxrmPublisherBuildStep
+class NexusPublisherBuildStep
     extends Builder
-    implements NxrmPublisher, SimpleBuildStep
+    implements NexusPublisher, SimpleBuildStep
 {
   String nexusInstanceId
 
@@ -34,7 +34,7 @@ class NxrmPublisherBuildStep
   List<Package> packages
 
   @DataBoundConstructor
-  NxrmPublisherBuildStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
+  NexusPublisherBuildStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
     this.nexusInstanceId = nexusInstanceId
     this.nexusRepositoryId = nexusRepositoryId
     this.packages = packages ?: []
@@ -50,7 +50,7 @@ class NxrmPublisherBuildStep
   @Extension
   public static final class DescriptorImpl
       extends BuildStepDescriptor<Builder>
-      implements NxrmPublisherDescriptor
+      implements NexusPublisherDescriptor
   {
     @Override
     public String getDisplayName() {

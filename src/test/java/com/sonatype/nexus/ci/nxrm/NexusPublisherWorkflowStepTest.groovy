@@ -5,11 +5,11 @@
  */
 package com.sonatype.nexus.ci.nxrm
 
-interface NxrmPublisher
+class NexusPublisherWorkflowStepTest
+    extends NexusPublisherDescriptorTest
 {
-  String getNexusInstanceId()
-
-  String getNexusRepositoryId()
-
-  List<Package> getPackages()
+  @Override
+  NexusPublisherDescriptor getDescriptor() {
+    return jenkins.getInstance().getDescriptorByType(NexusPublisherWorkflowStep.DescriptorImpl.class)
+  }
 }

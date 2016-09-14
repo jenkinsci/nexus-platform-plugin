@@ -16,13 +16,13 @@ import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
-abstract class NxrmPublisherDescriptorTest
+abstract class NexusPublisherDescriptorTest
     extends Specification
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  abstract NxrmPublisherDescriptor getDescriptor()
+  abstract NexusPublisherDescriptor getDescriptor()
 
   def 'it populates Nexus instances'() {
     setup:

@@ -21,7 +21,7 @@ import hudson.remoting.VirtualChannel
 import jenkins.MasterToSlaveFileCallable
 
 class PackageUploaderUtil {
-  public static void uploadPackage(final NxrmPublisher nxrmPublisher, final Run run,
+  public static void uploadPackage(final NexusPublisher nxrmPublisher, final Run run,
                                    final TaskListener taskListener, final FilePath filePath)
       throws IOException, InterruptedException
   {

@@ -15,9 +15,9 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-class NxrmPublisherWorkflowStep
+class NexusPublisherWorkflowStep
     extends AbstractStepImpl
-    implements NxrmPublisher
+    implements NexusPublisher
 {
   String nexusInstanceId
 
@@ -26,7 +26,7 @@ class NxrmPublisherWorkflowStep
   List<Package> packages
 
   @DataBoundConstructor
-  NxrmPublisherWorkflowStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
+  NexusPublisherWorkflowStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
     this.nexusInstanceId = nexusInstanceId
     this.nexusRepositoryId = nexusRepositoryId
     this.packages = packages ?: new ArrayList<>()
@@ -35,7 +35,7 @@ class NxrmPublisherWorkflowStep
   @Extension
   public static class DescriptorImpl
       extends AbstractStepDescriptorImpl
-      implements NxrmPublisherDescriptor
+      implements NexusPublisherDescriptor
   {
     public DescriptorImpl() {
       super(PackagePublisherExecution.class)
@@ -43,7 +43,7 @@ class NxrmPublisherWorkflowStep
 
     @Override
     String getFunctionName() {
-      return 'nxrmPublisher'
+      return 'nexusPublisher'
     }
 
     @Override

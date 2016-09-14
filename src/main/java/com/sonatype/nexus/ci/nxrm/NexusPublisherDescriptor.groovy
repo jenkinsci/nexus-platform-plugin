@@ -8,7 +8,7 @@ package com.sonatype.nexus.ci.nxrm
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
-interface NxrmPublisherDescriptor
+interface NexusPublisherDescriptor
 {
   @SuppressWarnings('unused')
   public FormValidation doCheckNexusInstanceId(final String value)
