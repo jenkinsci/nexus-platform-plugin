@@ -18,7 +18,7 @@
 
   <groupId>com.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-01</version>
   <packaging>hpi</packaging>
 
   <name>Nexus Jenkins Plugin</name>
