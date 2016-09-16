@@ -94,7 +94,7 @@ class Nxrm2Configuration
         def repositories = client.getRepositoryList()
 
         return FormValidation.
-            ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} repositories)")
+            ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} Maven repositories)")
       }
       catch (RepositoryManagerException e) {
         return FormValidation.error(e, 'Nexus Repository Manager 2.x connection failed');

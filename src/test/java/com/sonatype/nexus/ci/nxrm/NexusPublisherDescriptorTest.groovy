@@ -53,11 +53,18 @@ abstract class NexusPublisherDescriptorTest
       def repositories = [
           [
               id  : 'maven-releases',
-              name: 'Maven Releases'
+              name: 'Maven Releases',
+              format: 'maven2'
+          ],
+          [
+              id  : 'maven-snapshots',
+              name: 'Maven Snapshots',
+              format: 'maven1'
           ],
           [
               id  : 'nuget-releases',
-              name: 'NuGet Releases'
+              name: 'NuGet Releases',
+              format: 'nuget'
           ]
       ]
       client.getRepositoryList() >> repositories
@@ -77,8 +84,6 @@ abstract class NexusPublisherDescriptorTest
     and: 'ListBox is populated'
       listBoxModel.get(1).name == repositories.get(0).name
       listBoxModel.get(1).value == repositories.get(0).id
-      listBoxModel.get(2).name == repositories.get(1).name
-      listBoxModel.get(2).value == repositories.get(1).id
   }
 
   protected Nxrm2Configuration saveGlobalConfigurationWithNxrm2Configuration() {

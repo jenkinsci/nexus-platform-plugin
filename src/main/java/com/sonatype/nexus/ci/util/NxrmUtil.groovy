@@ -5,6 +5,7 @@
  */
 package com.sonatype.nexus.ci.util
 
+import com.sonatype.nexus.api.repository.RepositoryInfo
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.Nxrm2Configuration
 import com.sonatype.nexus.ci.config.NxrmConfiguration
@@ -37,13 +38,17 @@ class NxrmUtil
     if (!nexusInstanceId) {
       return FormUtil.buildListBoxModelWithEmptyOption()
     }
+    def repositories = getRepositories(nexusInstanceId)
+    return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
+  }
+
+  static List<RepositoryInfo> getRepositories(final String nexusInstanceId) {
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     def configuration = globalConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
-      config.id.equals(nexusInstanceId)
+      config.id == nexusInstanceId
     }
 
     def client = RepositoryManagerClientUtil.buildRmClient(configuration.serverUrl, configuration.credentialsId)
-    def repositories = client.getRepositoryList()
-    return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
+    return client.getRepositoryList().findAll { it.format =~ /maven/ }
   }
 }
