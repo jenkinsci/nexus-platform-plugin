@@ -38,7 +38,7 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-java-api</artifactId>
-        <version>1.0.0-02</version>
+        <version>1.0.1-01</version>
       </dependency>
 
       <dependency>
