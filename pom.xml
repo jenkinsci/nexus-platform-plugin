@@ -237,6 +237,9 @@
         <artifactId>maven-hpi-plugin</artifactId>
         <version>1.119</version>
         <extensions>true</extensions>
+        <configuration>
+          <compatibleSinceVersion>1.580.1</compatibleSinceVersion>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

@@ -192,20 +192,42 @@ class Nxrm2ConfigurationTest
 
     then:
       validation.kind == Kind.OK
-      validation.message == "Nexus Repository Manager 2.x connection succeeded (2 Maven repositories)"
+      validation.message == "Nexus Repository Manager 2.x connection succeeded (1 hosted release Maven 2 repositories)"
 
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
       repositories << [
-          [
-              [
-                  id: 'maven-releases'
-              ],
-              [
-                  id: 'nuget-releases'
-              ]
-          ]
+        [
+            [
+                id: 'maven-releases',
+                name: 'Maven Releases',
+                format: 'maven2',
+                repositoryType: 'hosted',
+                repositoryPolicy: 'Release'
+            ],
+            [
+                id: 'maven1-releases',
+                name: 'Maven 1 Releases',
+                format: 'maven1',
+                repositoryType: 'hosted',
+                repositoryPolicy: 'Release'
+            ],
+            [
+                id: 'maven-snapshots',
+                name: 'Maven Snapshots',
+                format: 'maven2',
+                repositoryType: 'hosted',
+                repositoryPolicy: 'Snapshot'
+            ],
+            [
+                id: 'maven-proxy',
+                name: 'Maven Proxy',
+                format: 'maven2',
+                repositoryType: 'proxy',
+                repositoryPolicy: 'Release'
+            ]
+        ]
       ]
   }
 

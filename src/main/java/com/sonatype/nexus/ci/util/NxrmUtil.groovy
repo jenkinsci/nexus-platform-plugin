@@ -38,17 +38,30 @@ class NxrmUtil
     if (!nexusInstanceId) {
       return FormUtil.buildListBoxModelWithEmptyOption()
     }
-    def repositories = getRepositories(nexusInstanceId)
+    def repositories = getApplicableRepositories(nexusInstanceId)
     return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
   }
 
-  static List<RepositoryInfo> getRepositories(final String nexusInstanceId) {
+  /**
+   * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
+   */
+  static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
     def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     def configuration = globalConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
       config.id == nexusInstanceId
     }
+    return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId);
+  }
 
-    def client = RepositoryManagerClientUtil.buildRmClient(configuration.serverUrl, configuration.credentialsId)
-    return client.getRepositoryList().findAll { it.format =~ /maven/ }
+  /**
+   * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
+   */
+  static List<RepositoryInfo> getApplicableRepositories(final String serverUrl, final String credentialsId) {
+    def client = RepositoryManagerClientUtil.buildRmClient(serverUrl, credentialsId)
+    return client.getRepositoryList().findAll {
+      'maven2'.equalsIgnoreCase(it.format) &&
+          'hosted'.equalsIgnoreCase(it.repositoryType) &&
+          'release'.equalsIgnoreCase(it.repositoryPolicy)
+    }
   }
 }

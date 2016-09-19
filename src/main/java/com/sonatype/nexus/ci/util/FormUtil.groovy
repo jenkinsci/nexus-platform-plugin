@@ -61,10 +61,6 @@ class FormUtil
     )
   }
 
-  static ListBoxModel buildListBoxModel(Closure<String> nameValueSelector, List items) {
-    return buildListBoxModel({ nameValueSelector(it) }, { nameValueSelector(it) }, items)
-  }
-
   static ListBoxModel buildListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items) {
     def listBoxModel = buildListBoxModelWithEmptyOption()
     items.each { item ->

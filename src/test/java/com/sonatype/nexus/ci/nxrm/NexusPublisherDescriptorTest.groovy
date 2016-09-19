@@ -52,19 +52,32 @@ abstract class NexusPublisherDescriptorTest
       def client = Mock(RepositoryManagerClient.class)
       def repositories = [
           [
-              id  : 'maven-releases',
+              id: 'maven-releases',
               name: 'Maven Releases',
-              format: 'maven2'
+              format: 'maven2',
+              repositoryType: 'hosted',
+              repositoryPolicy: 'Release'
           ],
           [
-              id  : 'maven-snapshots',
+              id: 'maven1-releases',
+              name: 'Maven 1 Releases',
+              format: 'maven1',
+              repositoryType: 'hosted',
+              repositoryPolicy: 'Release'
+          ],
+          [
+              id: 'maven-snapshots',
               name: 'Maven Snapshots',
-              format: 'maven1'
+              format: 'maven2',
+              repositoryType: 'hosted',
+              repositoryPolicy: 'Snapshot'
           ],
           [
-              id  : 'nuget-releases',
-              name: 'NuGet Releases',
-              format: 'nuget'
+              id: 'maven-proxy',
+              name: 'Maven Proxy',
+              format: 'maven2',
+              repositoryType: 'proxy',
+              repositoryPolicy: 'Release'
           ]
       ]
       client.getRepositoryList() >> repositories
@@ -75,7 +88,7 @@ abstract class NexusPublisherDescriptorTest
       def listBoxModel = descriptor.doFillNexusRepositoryIdItems(nxrm2Configuration.id)
 
     then: 'ListBox has the correct size'
-      listBoxModel.size() == 3
+      listBoxModel.size() == 2
 
     and: 'ListBox has empty item'
       listBoxModel.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME

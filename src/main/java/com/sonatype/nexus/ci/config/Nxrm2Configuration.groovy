@@ -7,7 +7,7 @@ package com.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.ci.util.FormUtil
-import com.sonatype.nexus.ci.util.RepositoryManagerClientUtil
+import com.sonatype.nexus.ci.util.NxrmUtil
 
 import hudson.Extension
 import hudson.util.FormValidation
@@ -89,12 +89,10 @@ class Nxrm2Configuration
         @QueryParameter String credentialsId) throws IOException
     {
       try {
-        // TODO: Validate NXRM credentials
-        def client = RepositoryManagerClientUtil.buildRmClient(serverUrl, credentialsId)
-        def repositories = client.getRepositoryList()
+        def repositories = NxrmUtil.getApplicableRepositories(serverUrl, credentialsId)
 
         return FormValidation.
-            ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} Maven repositories)")
+            ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} hosted release Maven 2 repositories)")
       }
       catch (RepositoryManagerException e) {
         return FormValidation.error(e, 'Nexus Repository Manager 2.x connection failed');
