@@ -14,4 +14,12 @@ f.section(title: descriptor.displayName) {
         addCaption: _('Add Nexus Repository Manager Server')
     )
   }
+
+  f.entry(title: _('Nexus IQ Server')) {
+    f.repeatableHeteroProperty(
+        field: 'iqConfigs',
+        addCaption: _('Add Nexus IQ Server'),
+        oneEach: 'true'
+    )
+  }
 }

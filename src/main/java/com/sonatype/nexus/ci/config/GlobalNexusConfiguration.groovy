@@ -18,27 +18,28 @@ class GlobalNexusConfiguration
 {
   List<NxrmConfiguration> nxrmConfigs
 
+  List<NxiqConfiguration> iqConfigs
+
   GlobalNexusConfiguration() {
     load()
   }
 
   @DataBoundConstructor
-  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs) {
-    this.nxrmConfigs = nxrmConfigs ?: new ArrayList<>()
+  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs, final List<NxiqConfiguration> iqConfigs) {
+    this.nxrmConfigs = nxrmConfigs ?: []
+    this.iqConfigs = iqConfigs ?: []
   }
 
   @Override
-  public boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException {
-    // HACK to fix empty JSON response. Bind JSON iterates through available properties in the JSON and sets them.
-    // If list is empty, doesn't show up in JSON and is not iterated through
-    def globalConfiguration = req.bindJSON(GlobalNexusConfiguration.class, json)
-    this.nxrmConfigs = globalConfiguration.nxrmConfigs
+  boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException {
+    this.nxrmConfigs = json.get(nxrmConfigs) as List ?: []
+    this.iqConfigs = json.get(iqConfigs) as List ?: []
     save()
     return true
   }
 
   @Override
-  public String getDisplayName() {
+  String getDisplayName() {
     return 'Sonatype Nexus'
   }
 }
