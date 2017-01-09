@@ -32,8 +32,9 @@ class GlobalNexusConfiguration
 
   @Override
   boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException {
-    this.nxrmConfigs = json.get(nxrmConfigs) as List ?: []
-    this.iqConfigs = json.get(iqConfigs) as List ?: []
+    def globalConfiguration = req.bindJSON(GlobalNexusConfiguration.class, json)
+    this.nxrmConfigs = globalConfiguration.nxrmConfigs
+    this.iqConfigs = globalConfiguration.iqConfigs
     save()
     return true
   }
