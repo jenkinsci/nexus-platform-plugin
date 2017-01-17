@@ -3,7 +3,10 @@
  * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
+
 package com.sonatype.nexus.ci.config
+
+import javax.annotation.Nullable
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.ci.util.FormUtil
@@ -15,6 +18,7 @@ import hudson.model.Descriptor
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
+import jenkins.model.GlobalConfiguration
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -36,6 +40,18 @@ class NxiqConfiguration
   @Override
   Descriptor<NxiqConfiguration> getDescriptor() {
     return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass());
+  }
+
+  static @Nullable String getServerUrl() {
+    getIqConfig()?.@serverUrl
+  }
+
+  static @Nullable String getCredentialsId() {
+    getIqConfig()?.@credentialsId
+  }
+
+  static @Nullable NxiqConfiguration getIqConfig() {
+    return GlobalConfiguration.all().get(GlobalNexusConfiguration.class).iqConfigs?.find { true }
   }
 
   @Extension

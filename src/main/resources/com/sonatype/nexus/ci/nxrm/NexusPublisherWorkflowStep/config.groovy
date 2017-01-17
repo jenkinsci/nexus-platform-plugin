@@ -8,6 +8,9 @@ package com.sonatype.nexus.ci.nxrm.NxrmPublisherBuildStep
 import com.sonatype.nexus.ci.util.NxrmUtil
 
 def f = namespace(lib.FormTagLib)
+def st = namespace("jelly:stapler")
+
+st.include(class: 'com.sonatype.nexus.ci.config.GlobalNexusConfiguration', page: 'css.jelly')
 
 f.section(title: descriptor.displayName) {
   if (!NxrmUtil.hasNexusRepositoryManagerConfiguration()) {
@@ -18,18 +21,7 @@ f.section(title: descriptor.displayName) {
       td {
 
       }
-      td(style: '''background: #faf3d1;
-          border: 1px solid #eac9a9;
-          -moz-border-radius: 3px;
-          -webkit-border-radius: 3px;
-          border-radius: px;
-          padding: 0;
-          -moz-box-shadow: 0 0 5px #ccc8b3;
-          -webkit-box-shadow: 0 0 5px #ccc8b3;
-          box-shadow: 0 0 5px #ccc8b3;
-          margin: 15px;
-          letter-spacing: normal;
-          text-align: center''') {
+      td(class: 'nexus-jenkins-error') {
         h3('No Nexus Repository Manager configured.')
         div {
           yield "Add Nexus Repository Managers via: "

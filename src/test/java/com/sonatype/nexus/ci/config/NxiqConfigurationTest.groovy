@@ -7,7 +7,7 @@ package com.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.IqClient
-import com.sonatype.nexus.ci.util.IqServerClientUtil
+import com.sonatype.nexus.ci.iq.IqClientFactory
 
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
@@ -36,9 +36,9 @@ class NxiqConfigurationTest
       validation.renderHtml().startsWith(message)
 
     where:
-      url              | kind         | message
-      'foo'            | Kind.ERROR   | 'Malformed url (no protocol: foo)'
-      'http://foo.com' | Kind.OK      | '<div/>'
+      url              | kind       | message
+      'foo'            | Kind.ERROR | 'Malformed url (no protocol: foo)'
+      'http://foo.com' | Kind.OK    | '<div/>'
   }
 
   def 'it validates the server url is required'() {
@@ -56,18 +56,18 @@ class NxiqConfigurationTest
       validation.renderHtml().startsWith(message)
 
     where:
-      url                | kind         | message
-      ''                 | Kind.ERROR   | 'Server Url is required'
-      null               | Kind.ERROR   | 'Server Url is required'
-      'http://foo.com'   | Kind.OK      | '<div/>'
+      url              | kind       | message
+      ''               | Kind.ERROR | 'Server Url is required'
+      null             | Kind.ERROR | 'Server Url is required'
+      'http://foo.com' | Kind.OK    | '<div/>'
   }
 
   def 'it tests valid server credentials'() {
     when:
-      GroovyMock(IqServerClientUtil.class, global: true)
+      GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(IqClient.class)
       client.getApplicationsForApplicationEvaluation() >> applications
-      IqServerClientUtil.buildIqClient(serverUrl, credentialsId) >> client
+      IqClientFactory.buildIqClient(URI.create(serverUrl), credentialsId) >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 
@@ -99,11 +99,12 @@ class NxiqConfigurationTest
 
   def 'it tests invalid server credentials'() {
     when:
-      GroovyMock(IqServerClientUtil.class, global: true)
+      GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(IqClient.class)
       client.getApplicationsForApplicationEvaluation() >> { throw new IqClientException("something went wrong") }
-      IqServerClientUtil.buildIqClient(serverUrl, credentialsId) >> client
-      def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().getDescriptor(NxiqConfiguration.class)
+      IqClientFactory.buildIqClient(new URI(serverUrl), credentialsId) >> client
+      def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(NxiqConfiguration.class)
 
     and:
       FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)

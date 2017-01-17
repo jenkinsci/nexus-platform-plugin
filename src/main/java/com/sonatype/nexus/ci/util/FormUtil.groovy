@@ -49,7 +49,7 @@ class FormUtil
   }
 
   static ListBoxModel buildCredentialsItems(final String serverUrl) {
-    if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+    if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
       return new ListBoxModel()
     }
     return new StandardListBoxModel()
