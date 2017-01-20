@@ -27,8 +27,9 @@ trait IqPolicyEvaluator
 
   void evaluatePolicy(final Run run, final FilePath workspace, final Launcher launcher, final TaskListener listener) {
     def client = IqClientFactory.getIqClient()
+    def envVars = run.getEnvironment(listener)
     def iqPolicyEvaluator = IqApplicationEvaluatorFactory.getPolicyEvaluator(client)
-    def targets = iqScanPatterns.collect { it.scanPattern } - null - ""
+    def targets = iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ""
     if (targets.isEmpty()) {
       targets = DEFAULT_SCAN_PATTERN
     }

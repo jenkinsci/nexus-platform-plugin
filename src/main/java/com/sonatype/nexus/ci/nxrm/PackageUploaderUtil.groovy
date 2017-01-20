@@ -87,7 +87,7 @@ class PackageUploaderUtil {
                 "artifactId: ${mavenPackage.coordinate.artifactId} version: ${mavenPackage.coordinate.version} " +
                 "To repository: ${nxrmPublisher.nexusRepositoryId}")
             def uploaderCallable = new MavenAssetUploaderCallable(nxrmClient, nxrmPublisher.nexusRepositoryId,
-                mavenPackage.coordinate, mavenFilePath)
+                mavenPackage.coordinate, mavenFilePath, envVars)
             artifactPath.act(uploaderCallable)
           }
           catch (IOException ex) {
@@ -135,19 +135,24 @@ class PackageUploaderUtil {
 
     private final transient MavenAsset mavenAsset
 
-    public MavenAssetUploaderCallable(final RepositoryManagerClient client, final String repositoryId,
-                                      final MavenCoordinate coordinate, final MavenAsset mavenAsset)
+    private final transient EnvVars envVars
+
+    MavenAssetUploaderCallable(final RepositoryManagerClient client, final String repositoryId,
+                                      final MavenCoordinate coordinate, final MavenAsset mavenAsset, final EnvVars envVars)
     {
       this.client = client
       this.repositoryId = repositoryId
       this.coordinate = coordinate
       this.mavenAsset = mavenAsset
+      this.envVars = envVars
     }
 
     @Override
     Void invoke(final File file, final VirtualChannel channel) throws IOException, InterruptedException {
-      def mavenCoordinate = new GAV(coordinate.groupId, coordinate.artifactId, coordinate.version, coordinate.packaging)
-      def mavenFile = new com.sonatype.nexus.api.repository.MavenAsset(file, mavenAsset.extension, mavenAsset.classifier)
+      def mavenCoordinate = new GAV(envVars.expand(coordinate.groupId), envVars.expand(coordinate.artifactId),
+          envVars.expand(coordinate.version), envVars.expand(coordinate.packaging))
+      def mavenFile = new com.sonatype.nexus.api.repository.MavenAsset(file, envVars.expand(mavenAsset.extension),
+          envVars.expand(mavenAsset.classifier))
 
       try {
         client.uploadComponent(repositoryId, mavenCoordinate, [mavenFile])

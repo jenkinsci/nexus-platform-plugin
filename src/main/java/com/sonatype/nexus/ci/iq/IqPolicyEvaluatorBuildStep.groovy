@@ -45,7 +45,6 @@ class IqPolicyEvaluatorBuildStep
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-
     evaluatePolicy(run, workspace, launcher, listener)
   }
 

@@ -12,7 +12,7 @@ import com.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep.PolicyEvaluatorDescri
 import com.sonatype.nexus.ci.util.FormUtil
 import com.sonatype.nexus.ci.util.IqUtil
 
-import com.google.common.base.Optional
+import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Run
@@ -32,16 +32,69 @@ class IqPolicyEvaluatorBuildStepTest
       def mockClient = Mock(IqClient)
       def iqPolicyEvaluator = Mock(IqApplicationEvaluator)
       def workspace = new FilePath(new File("/tmp/path"))
+      def envVars = new EnvVars([:])
+      def run = Mock(Run)
+      def listener = Mock(TaskListener)
       IqClientFactory.getIqClient() >> mockClient
       IqApplicationEvaluatorFactory.getPolicyEvaluator(mockClient) >> iqPolicyEvaluator
+      run.getEnvironment(listener) >> envVars
+
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern("*.jar")], false, "131-cred")
       def result = new PolicyEvaluationResult(0, 0, 0, 0, emptyList(), false)
 
     when:
-      buildStep.perform(Mock(Run), workspace, Mock(Launcher), Mock(TaskListener))
+      buildStep.perform(run, workspace, Mock(Launcher), listener)
 
     then:
       1 * iqPolicyEvaluator.performScan("appId", "stage", ["*.jar"], workspace) >> result
+  }
+
+  def 'it expands environment variables for scan pattern'() {
+    setup:
+      GroovyMock(IqClientFactory, global: true)
+      GroovyMock(IqApplicationEvaluatorFactory, global: true)
+      def mockClient = Mock(IqClient)
+      def iqPolicyEvaluator = Mock(IqApplicationEvaluator)
+      def workspace = new FilePath(new File("/tmp/path"))
+      def envVars = new EnvVars(['SCAN_PATTERN': 'some-scan-pattern'])
+      def run = Mock(Run)
+      def listener = Mock(TaskListener)
+      IqClientFactory.getIqClient() >> mockClient
+      IqApplicationEvaluatorFactory.getPolicyEvaluator(mockClient) >> iqPolicyEvaluator
+      run.getEnvironment(listener) >> envVars
+
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern('$SCAN_PATTERN')], false, "131-cred")
+      def result = new PolicyEvaluationResult(0, 0, 0, 0, emptyList(), false)
+
+    when:
+      buildStep.perform(run, workspace, Mock(Launcher), listener)
+
+    then:
+      1 * iqPolicyEvaluator.performScan("appId", "stage", ["some-scan-pattern"], workspace) >> result
+  }
+
+  def 'it ignores when no environment variables set for scan pattern'() {
+    setup:
+      GroovyMock(IqClientFactory, global: true)
+      GroovyMock(IqApplicationEvaluatorFactory, global: true)
+      def mockClient = Mock(IqClient)
+      def iqPolicyEvaluator = Mock(IqApplicationEvaluator)
+      def workspace = new FilePath(new File("/tmp/path"))
+      def envVars = new EnvVars([:])
+      def run = Mock(Run)
+      def listener = Mock(TaskListener)
+      IqClientFactory.getIqClient() >> mockClient
+      IqApplicationEvaluatorFactory.getPolicyEvaluator(mockClient) >> iqPolicyEvaluator
+      run.getEnvironment(listener) >> envVars
+
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern('$SCAN_PATTERN')], false, "131-cred")
+      def result = new PolicyEvaluationResult(0, 0, 0, 0, emptyList(), false)
+
+    when:
+      buildStep.perform(run, workspace, Mock(Launcher), listener)
+
+    then:
+      1 * iqPolicyEvaluator.performScan("appId", "stage", ['$SCAN_PATTERN'], workspace) >> result
   }
 
   def 'it falls back to default scan targets when none are provided'() {
