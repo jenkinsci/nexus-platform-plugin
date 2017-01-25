@@ -9,8 +9,6 @@ package com.sonatype.nexus.ci.iq
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
 import com.sonatype.nexus.ci.config.NxiqConfiguration
-import com.sonatype.nexus.ci.iq.IqClientFactory
-import com.sonatype.nexus.ci.util.IqUtil
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
@@ -45,18 +43,6 @@ class IqClientFactoryTest
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentialsId: 42/
-  }
-
-  def 'it requires authentication'() {
-    setup:
-      def url = 'http://foo.com'
-      def credentialsId = null
-      CredentialsMatchers.firstOrNull(_, _) >> null
-    when:
-      IqClientFactory.buildIqClient(URI.create(url), credentialsId)
-    then:
-      NullPointerException ex = thrown()
-      ex.message =~ /IQ Server authentication is required/
   }
 
   def 'it creates a client when credentialsId given'() {
