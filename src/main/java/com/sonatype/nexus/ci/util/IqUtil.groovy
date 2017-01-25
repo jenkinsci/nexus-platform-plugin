@@ -28,16 +28,16 @@ class IqUtil
       def client = IqClientFactory.getIqClient()
       FormUtil.buildListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
     } else {
-      new ListBoxModel()
+      FormUtil.buildListBoxModelWithEmptyOption()
     }
   }
 
   static ListBoxModel doFillIqApplicationItems() {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.getIqClient()
-      FormUtil.buildListBoxModel({ it.name }, { it.name }, client.getApplicationsForApplicationEvaluation())
+      FormUtil.buildListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     } else {
-      new ListBoxModel()
+      FormUtil.buildListBoxModelWithEmptyOption()
     }
   }
 }
