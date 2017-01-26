@@ -23,7 +23,7 @@ class Nxrm2ConfigurationTest
 
   def 'it validates that display name is unique'() {
     setup:
-      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
@@ -70,7 +70,7 @@ class Nxrm2ConfigurationTest
 
   def 'it validates that id is unique'() {
     setup:
-      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)

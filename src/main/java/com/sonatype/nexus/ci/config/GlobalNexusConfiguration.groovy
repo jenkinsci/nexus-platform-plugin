@@ -5,6 +5,8 @@
  */
 package com.sonatype.nexus.ci.config
 
+import javax.annotation.Nullable
+
 import hudson.Extension
 import hudson.model.Descriptor
 import jenkins.model.GlobalConfiguration
@@ -42,5 +44,9 @@ class GlobalNexusConfiguration
   @Override
   String getDisplayName() {
     return 'Sonatype Nexus'
+  }
+
+  static @Nullable getGlobalNexusConfiguration() {
+    return all().get(GlobalNexusConfiguration.class)
   }
 }

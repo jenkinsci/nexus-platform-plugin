@@ -28,8 +28,7 @@ class PackageUploaderUtil {
     PrintStream logger = taskListener.getLogger();
     EnvVars envVars = run.getEnvironment(taskListener);
 
-    def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
-    def nexusConfiguration = globalConfiguration.nxrmConfigs.find {
+    def nexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
       return it.id == nxrmPublisher.nexusInstanceId
     }
 

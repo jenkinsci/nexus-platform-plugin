@@ -6,7 +6,6 @@
 package com.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
-import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.NxiqConfiguration
@@ -27,7 +26,7 @@ public class IqUtilTest
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
 
-      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
@@ -57,7 +56,7 @@ public class IqUtilTest
 
   def 'doFillIqApplicationItems populates empty list when no server is configured'() {
     setup:
-      def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 

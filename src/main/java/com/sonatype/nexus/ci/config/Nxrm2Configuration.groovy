@@ -45,7 +45,7 @@ class Nxrm2Configuration
 
     @SuppressWarnings('unused')
     public FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
-      def globalConfigurations = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
         if (!config.internalId.equals(internalId) && config.displayName.equals(value)) {
           return FormValidation.error('Display Name must be unique')
@@ -56,7 +56,7 @@ class Nxrm2Configuration
 
     @SuppressWarnings('unused')
     public FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
-      def globalConfigurations = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class)
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
         if (!config.internalId.equals(internalId) && config.id.equals(value)) {
           return FormValidation.error('Server ID must be unique')

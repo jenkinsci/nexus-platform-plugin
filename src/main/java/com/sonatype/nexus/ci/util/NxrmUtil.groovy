@@ -16,7 +16,7 @@ import hudson.util.ListBoxModel
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class).nxrmConfigs.size() > 0;
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.size() > 0;
   }
 
   static FormValidation doCheckNexusInstanceId(final String value) {
@@ -24,10 +24,9 @@ class NxrmUtil
   }
 
   static ListBoxModel doFillNexusInstanceIdItems() {
-    def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
     return FormUtil.
         buildListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
-            globalConfiguration.nxrmConfigs)
+            GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {
@@ -46,8 +45,7 @@ class NxrmUtil
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
-    def globalConfiguration = GlobalNexusConfiguration.all().get(GlobalNexusConfiguration.class);
-    def configuration = globalConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
+    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
       config.id == nexusInstanceId
     }
     return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId);
