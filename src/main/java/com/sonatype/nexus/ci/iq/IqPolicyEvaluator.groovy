@@ -17,6 +17,7 @@ import hudson.Launcher
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
+
 import org.apache.commons.lang.exception.ExceptionUtils
 
 @ParametersAreNonnullByDefault
@@ -55,8 +56,10 @@ trait IqPolicyEvaluator
 
       Result result = handleEvaluationResult(evaluationResult, listener, iqApplication)
       run.setResult(result)
-    }
-    catch (IqNetworkException e) {
+
+      def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
+      run.addAction(healthAction)
+    } catch (IqNetworkException e) {
       if (failBuildOnNetworkError) {
         throw e.cause
       }
@@ -90,7 +93,8 @@ trait IqPolicyEvaluator
     iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - "" ?: DEFAULT_SCAN_PATTERN
   }
 
-  private Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult, final TaskListener listener,
+  private Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,
+                                        final TaskListener listener,
                                         final String appId)
   {
     if (evaluationResult.hasFailures()) {
