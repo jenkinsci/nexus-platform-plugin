@@ -8,9 +8,9 @@ package com.sonatype.nexus.ci.nxrm.NxrmPublisherBuildStep
 import com.sonatype.nexus.ci.util.NxrmUtil
 
 def f = namespace(lib.FormTagLib)
-def st = namespace("jelly:stapler")
+def l = namespace(lib.LayoutTagLib)
 
-st.include(class: 'com.sonatype.nexus.ci.config.GlobalNexusConfiguration', page: 'css.jelly')
+l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
 
 f.section(title: descriptor.displayName) {
   if (!NxrmUtil.hasNexusRepositoryManagerConfiguration()) {

@@ -10,9 +10,9 @@ import com.sonatype.nexus.ci.config.NxiqConfiguration
 
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
-def st = namespace("jelly:stapler")
+def l = namespace(lib.LayoutTagLib)
 
-st.include(class: 'com.sonatype.nexus.ci.config.GlobalNexusConfiguration', page: 'css.jelly')
+l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
 
 f.section(title: descriptor.displayName) {
   if (!NxiqConfiguration.iqConfig) {
