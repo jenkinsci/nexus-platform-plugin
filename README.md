@@ -6,3 +6,9 @@
 
 -->
 # Nexus Jenkins Plugin #
+
+Sonatype plugin for Jenkins supporting the Nexus platform. Jenkins can be run with the plugin installed via
+
+```
+mvn hpi:run
+```
