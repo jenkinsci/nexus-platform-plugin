@@ -10,8 +10,8 @@ import javax.annotation.Nullable
 
 import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.ServerConfig
-import com.sonatype.nexus.api.iq.IqClient
-import com.sonatype.nexus.api.iq.IqClientBuilder
+import com.sonatype.nexus.api.iq.internal.InternalIqClient
+import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
@@ -20,25 +20,45 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
 import hudson.model.ItemGroup
 import hudson.security.ACL
+import org.slf4j.Logger
 
 class IqClientFactory
 {
-  static IqClient getIqClient() {
-    return buildIqClient(new URI(NxiqConfiguration.serverUrl), NxiqConfiguration.credentialsId)
+  static InternalIqClient getIqClient() {
+    return getIqClient(NxiqConfiguration.serverUrl, NxiqConfiguration.credentialsId)
   }
 
-  static IqClient buildIqClient(URI url, @Nullable String credentialsId) {
-    def serverConfig
+  static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId) {
+    //TODO probably need to add proxy support
+    return (InternalIqClient) InternalIqClientBuilder.create()
+        .withServerConfig(getServerConfig(serverUrl, credentialsId))
+        .build()
+  }
+
+  static InternalIqClient getIqClient(Logger log, @Nullable String credentialsId) {
+    //TODO probably need to add proxy support
+    return (InternalIqClient) InternalIqClientBuilder.create()
+        .withServerConfig(getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId))
+        .withLogger(log)
+        .build()
+  }
+
+  static InternalIqClient getIqClient(URI serverUrl, Logger log) {
+    //TODO probably need to add proxy support
+    return (InternalIqClient) InternalIqClientBuilder.create()
+        .withServerConfig(new ServerConfig(serverUrl))
+        .withLogger(log)
+        .build()
+  }
+
+  static ServerConfig getServerConfig(URI url, @Nullable String credentialsId) {
     if (credentialsId) {
       def authentication = loadCredentials(url, credentialsId)
-      serverConfig = new ServerConfig(url, authentication)
+      return new ServerConfig(url, authentication)
     }
     else {
-      serverConfig = new ServerConfig(url)
+      return new ServerConfig(url)
     }
-
-    //TODO probably need to add proxy support
-    return IqClientBuilder.create().withServerConfig(serverConfig).build()
   }
 
   static private Authentication loadCredentials(final URI url, final String credentialsId) {

@@ -7,6 +7,7 @@ package com.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.IqClient
+import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 import com.sonatype.nexus.ci.iq.IqClientFactory
@@ -33,7 +34,7 @@ public class IqUtilTest
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
-      def iqClient = Mock(IqClient)
+      def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient() >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [

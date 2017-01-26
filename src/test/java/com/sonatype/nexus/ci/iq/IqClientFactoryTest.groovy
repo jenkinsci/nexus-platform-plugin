@@ -7,7 +7,7 @@
 package com.sonatype.nexus.ci.iq
 
 import com.sonatype.nexus.api.iq.IqClient
-import com.sonatype.nexus.api.iq.IqClientBuilder
+import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
@@ -15,6 +15,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import hudson.util.Secret
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
+import org.slf4j.Logger
 import spock.lang.Specification
 
 class IqClientFactoryTest
@@ -39,7 +40,7 @@ class IqClientFactoryTest
       def credentialsId = '42'
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      IqClientFactory.buildIqClient(URI.create(url), credentialsId)
+      IqClientFactory.getIqClient(URI.create(url), credentialsId)
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentialsId: 42/
@@ -51,7 +52,7 @@ class IqClientFactoryTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      IqClient client = IqClientFactory.buildIqClient(URI.create(url), credentialsId)
+      IqClient client = IqClientFactory.getIqClient(URI.create(url), credentialsId)
     then:
       client != null
   }
@@ -59,10 +60,10 @@ class IqClientFactoryTest
   def 'it uses configured serverUrl and credentialsId'() {
     setup:
       GroovyMock(NxiqConfiguration, global: true)
-      GroovyMock(IqClientBuilder, global: true)
-      def iqClientBuilder = Mock(IqClientBuilder)
-      IqClientBuilder.create() >> iqClientBuilder
-      NxiqConfiguration.serverUrl >> "https://server/url/"
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
       NxiqConfiguration.credentialsId >> "123-cred-456"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
@@ -71,5 +72,24 @@ class IqClientFactoryTest
       1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
     and:
       1 * CredentialsMatchers.withId("123-cred-456")
+  }
+
+  def 'it uses job specific credentialsId when provided'() {
+    setup:
+      GroovyMock(NxiqConfiguration, global: true)
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
+      NxiqConfiguration.credentialsId >> "123-cred-456"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+      Logger logger = Mock()
+    when:
+      IqClientFactory.getIqClient(logger, 'job-specific-creds')
+    then:
+      1 * iqClientBuilder.withLogger(logger) >> iqClientBuilder
+      1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
+    and:
+      1 * CredentialsMatchers.withId("job-specific-creds")
   }
 }

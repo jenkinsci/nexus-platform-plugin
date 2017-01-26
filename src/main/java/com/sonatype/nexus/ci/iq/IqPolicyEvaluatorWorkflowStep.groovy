@@ -5,6 +5,7 @@
  */
 package com.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.ci.config.NxiqConfiguration
 import com.sonatype.nexus.ci.util.FormUtil
 import com.sonatype.nexus.ci.util.IqUtil
 
@@ -15,15 +16,18 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
-import com.sonatype.nexus.ci.config.NxiqConfiguration
 
 class IqPolicyEvaluatorWorkflowStep
     extends AbstractStepImpl
     implements IqPolicyEvaluator
 {
+
   @DataBoundConstructor
-  IqPolicyEvaluatorWorkflowStep(final String iqStage, final String iqApplication, final List<ScanPattern> iqScanPatterns,
-                                final Boolean failBuildOnNetworkError, final String jobCredentialsId)
+  IqPolicyEvaluatorWorkflowStep(final String iqStage,
+                                final String iqApplication,
+                                final List<ScanPattern> iqScanPatterns,
+                                final Boolean failBuildOnNetworkError,
+                                final String jobCredentialsId)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
@@ -83,7 +87,7 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl)
+      FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl.toString())
     }
   }
 }

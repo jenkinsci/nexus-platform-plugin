@@ -30,9 +30,13 @@ class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, SimpleBuildStep
 {
+
   @DataBoundConstructor
-  IqPolicyEvaluatorBuildStep(final String iqStage, final String iqApplication, final List<ScanPattern> iqScanPatterns,
-                             final Boolean failBuildOnNetworkError, final String jobCredentialsId)
+  IqPolicyEvaluatorBuildStep(final String iqStage,
+                             final String iqApplication,
+                             final List<ScanPattern> iqScanPatterns,
+                             final Boolean failBuildOnNetworkError,
+                             final String jobCredentialsId)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
@@ -95,7 +99,7 @@ class IqPolicyEvaluatorBuildStep
 
     @Override
     ListBoxModel doFillJobCredentialsIdItems() {
-      return FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl)
+      return FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl.toString())
     }
   }
 }

@@ -42,8 +42,9 @@ class NxiqConfiguration
     return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass());
   }
 
-  static @Nullable String getServerUrl() {
-    getIqConfig()?.@serverUrl
+  static @Nullable URI getServerUrl() {
+    def serverUrl = getIqConfig()?.@serverUrl
+    serverUrl ? new URI(serverUrl) : null
   }
 
   static @Nullable String getCredentialsId() {

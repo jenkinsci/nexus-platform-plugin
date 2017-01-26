@@ -6,15 +6,22 @@
 
 package com.sonatype.nexus.ci.iq
 
+import javax.annotation.ParametersAreNonnullByDefault
+
+import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.ci.config.NxiqConfiguration
+import com.sonatype.nexus.ci.util.LoggerBridge
+
 import hudson.FilePath
 import hudson.Launcher
+import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
+import org.apache.commons.lang.exception.ExceptionUtils
 
+@ParametersAreNonnullByDefault
 trait IqPolicyEvaluator
 {
-  static final List<String> DEFAULT_SCAN_PATTERN = ["**/*.jar", "**/*.war", "**/*.ear", "**/*.zip", "**/*.tar.gz"]
-
   String iqStage
 
   String iqApplication
@@ -25,26 +32,87 @@ trait IqPolicyEvaluator
 
   String jobCredentialsId
 
-  void evaluatePolicy(final Run run, final FilePath workspace, final Launcher launcher, final TaskListener listener) {
-    def client = IqClientFactory.getIqClient()
+  private static final List<String> DEFAULT_SCAN_PATTERN =
+      ["**/*.jar", "**/*.war", "**/*.ear", "**/*.zip", "**/*.tar.gz"]
+
+  void evaluatePolicy(final Run run,
+                      final FilePath workspace,
+                      final Launcher launcher,
+                      final TaskListener listener)
+  {
+    try {
+      LoggerBridge loggerBridge = new LoggerBridge(listener)
+      def iqClient = IqClientFactory.getIqClient(loggerBridge, jobCredentialsId)
+      def scanPatterns = getPatterns(iqScanPatterns, listener, run)
+
+      def proprietaryConfig =
+          rethrowNetworkErrors { iqClient.getProprietaryConfigForApplicationEvaluation(iqApplication) }
+      def remoteScanner = RemoteScannerFactory.getRemoteScanner(iqApplication, iqStage, scanPatterns, workspace,
+          NxiqConfiguration.serverUrl, proprietaryConfig, loggerBridge)
+      def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
+
+      def evaluationResult = rethrowNetworkErrors { iqClient.evaluateApplication(iqApplication, iqStage, scanResult) }
+
+      Result result = handleEvaluationResult(evaluationResult, listener, iqApplication)
+      run.setResult(result)
+    }
+    catch (IqNetworkException e) {
+      if (failBuildOnNetworkError) {
+        throw e.cause
+      }
+      else {
+        listener.getLogger().println("WARNING: Unable to communicate with IQ Server: " + e.getMessage())
+        run.setResult(Result.UNSTABLE)
+      }
+    }
+  }
+
+  private <T> T rethrowNetworkErrors(Closure<T> closure) {
+    try {
+      closure()
+    }
+    catch (Exception e) {
+      if (isNetworkError(e)) {
+        throw new IqNetworkException(e.getMessage(), e)
+      }
+      else {
+        throw e
+      }
+    }
+  }
+
+  private boolean isNetworkError(Exception throwable) {
+    ExceptionUtils.indexOfType(throwable, IOException.class) >= 0
+  }
+
+  private List<String> getPatterns(List<ScanPattern> iqScanPatterns, TaskListener listener, Run run) {
     def envVars = run.getEnvironment(listener)
-    def iqPolicyEvaluator = IqApplicationEvaluatorFactory.getPolicyEvaluator(client)
-    def targets = iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ""
-    if (targets.isEmpty()) {
-      targets = DEFAULT_SCAN_PATTERN
-    }
-    def evaluationResult = iqPolicyEvaluator.performScan(iqApplication, iqStage, targets, workspace)
+    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - "" ?: DEFAULT_SCAN_PATTERN
+  }
 
-    // TODO INT-99 will expand this skeleton implementation
-    if (evaluationResult.hasWarnings()) {
-      listener.getLogger().println("WARNING: IQ Server evaluation of application {} detected warnings.")
-    }
-
-    // TODO INT-99 will expand this skeleton implementation
+  private Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult, final TaskListener listener,
+                                        final String appId)
+  {
     if (evaluationResult.hasFailures()) {
-      PrintWriter errorWriter = listener.fatalError("IQ Server evaluation of application %s failed.", iqApplication)
-      errorWriter.println("Meaning error description goes here")
-      throw new IqPolicyEvaluationException("Policy violations found")
+      def log = listener.fatalError("IQ Server evaluation of application %s failed.", appId)
+      printComponentSummary(log, evaluationResult)
+      return Result.FAILURE
     }
+    else if (evaluationResult.hasWarnings()) {
+      def log = listener.getLogger()
+      log.println("WARNING: IQ Server evaluation of application " + appId + " detected warnings.")
+      printComponentSummary(log, evaluationResult)
+      return Result.UNSTABLE
+    }
+    else {
+      return Result.SUCCESS
+    }
+  }
+
+  private void printComponentSummary(log, ApplicationPolicyEvaluation evaluationResult) {
+    log.println("Triggered by policy alert: " + evaluationResult.policyAlerts.trigger)
+    log.println("Critical components: " + evaluationResult.criticalComponentCount)
+    log.println("Severe components: " + evaluationResult.severeComponentCount)
+    log.println("Moderate components: " + evaluationResult.moderateComponentCount)
   }
 }

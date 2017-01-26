@@ -19,7 +19,7 @@ class IqUtil
    * Return Nexus IQ Server applications which are applicable for evaluation.
    */
   static List<ApplicationSummary> getApplicableApplications(final String serverUrl, final String credentialsId) {
-    def client = IqClientFactory.buildIqClient(new URI(serverUrl), credentialsId)
+    def client = IqClientFactory.getIqClient(new URI(serverUrl), credentialsId)
     return client.getApplicationsForApplicationEvaluation()
   }
 
