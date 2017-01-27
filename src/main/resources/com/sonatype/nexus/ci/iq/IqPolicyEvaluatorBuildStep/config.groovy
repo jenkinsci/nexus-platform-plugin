@@ -44,7 +44,7 @@ f.section(title: descriptor.displayName) {
   f.advanced() {
     f.section(title: _('Advanced options')) {
       f.entry(title: _('Scan files in workspace. Wildcards allowed e.g: **/*.jar'),
-          help: '/plugin/nexus-jenkins-plugin/help-iqScanPatterns.html') {
+          help: descriptor.getHelpFile('iqScanPatterns')) {
         f.repeatable(field: 'iqScanPatterns', minimum: '0') {
           f.textbox(field: 'scanPattern')
           f.repeatableDeleteButton()
