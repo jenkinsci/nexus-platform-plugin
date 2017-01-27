@@ -53,7 +53,7 @@ class IqPolicyEvaluatorBuildStep
   }
 
   @Extension
-  static final class PolicyEvaluatorDescriptorImpl
+  static final class DescriptorImpl
       extends BuildStepDescriptor<Builder>
       implements IqPolicyEvaluatorDescriptor
   {
