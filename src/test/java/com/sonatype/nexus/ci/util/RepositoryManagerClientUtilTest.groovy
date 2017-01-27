@@ -7,14 +7,13 @@
 package com.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
 
-import com.cloudbees.plugins.credentials.Credentials
 import com.cloudbees.plugins.credentials.CredentialsMatchers
-import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
+import hudson.ProxyConfiguration
 import hudson.util.Secret
 import org.junit.Rule
-import org.junit.rules.ExpectedException
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
@@ -68,5 +67,24 @@ class RepositoryManagerClientUtilTest
       RepositoryManagerClient client = RepositoryManagerClientUtil.buildRmClient(url, credentialsId)
     then:
       client != null
+  }
+
+  def 'it creates a client with proxy when configured'() {
+    setup:
+      GroovyMock(RepositoryManagerClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerClientBuilder)
+      RepositoryManagerClientBuilder.create() >> clientBuilder
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      jenkinsRule.instance.proxy = new ProxyConfiguration('http://proxy/url', 9080, null, null, '')
+
+    when:
+      RepositoryManagerClientUtil.buildRmClient(url, credentialsId)
+    then:
+      1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
+      1 * clientBuilder.withProxyConfig { it.address == URI.create("http://proxy:9080/url/") } >> clientBuilder
+
   }
 }

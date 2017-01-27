@@ -12,6 +12,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import hudson.FilePath
+import jenkins.model.Jenkins
 import org.codehaus.plexus.util.DirectoryScanner
 import org.slf4j.Logger
 import spock.lang.Specification
@@ -25,6 +26,9 @@ class RemoteScannerTest
   DirectoryScanner directoryScanner
 
   def setup() {
+    GroovyMock(Jenkins, global: true)
+    Jenkins.instance >> Mock(Jenkins)
+
     log = Stub()
     proprietaryConfig = new ProprietaryConfig([], [])
     GroovyMock(InternalIqClientBuilder, global: true)
@@ -36,6 +40,7 @@ class RemoteScannerTest
     InternalIqClientBuilder.create() >> iqClientBuilder
     iqClientBuilder.withLogger(log) >> iqClientBuilder
     iqClientBuilder.withServerConfig(_) >> iqClientBuilder
+    iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
     iqClientBuilder.build() >> iqClient
   }
 

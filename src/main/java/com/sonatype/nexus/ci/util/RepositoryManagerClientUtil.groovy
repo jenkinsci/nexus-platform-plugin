@@ -16,6 +16,7 @@ import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
 import hudson.security.ACL
+import jenkins.model.Jenkins
 
 class RepositoryManagerClientUtil
 {
@@ -37,7 +38,14 @@ class RepositoryManagerClientUtil
 
     def serverConfig = authentication != null ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
 
-    //TODO probably need to add proxy support
-    return new RepositoryManagerClientBuilder().create().withServerConfig(serverConfig).build();
+    def clientBuilder = RepositoryManagerClientBuilder.create().withServerConfig(serverConfig)
+
+    def jenkinsProxy = Jenkins.instance.proxy
+
+    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
+      clientBuilder.withProxyConfig(ProxyUtil.buildProxyConfig(jenkinsProxy))
+    }
+
+    return clientBuilder.build()
   }
 }

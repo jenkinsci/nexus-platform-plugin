@@ -13,6 +13,7 @@ import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.ci.config.NxiqConfiguration
+import com.sonatype.nexus.ci.util.ProxyUtil
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
@@ -21,6 +22,7 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
 import hudson.model.ItemGroup
 import hudson.security.ACL
 import org.slf4j.Logger
+import jenkins.model.Jenkins
 
 class IqClientFactory
 {
@@ -29,24 +31,24 @@ class IqClientFactory
   }
 
   static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId) {
-    //TODO probably need to add proxy support
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(getServerConfig(serverUrl, credentialsId))
+        .withProxyConfig(getProxyConfig(serverUrl))
         .build()
   }
 
   static InternalIqClient getIqClient(Logger log, @Nullable String credentialsId) {
-    //TODO probably need to add proxy support
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId))
+        .withProxyConfig(getProxyConfig(NxiqConfiguration.serverUrl))
         .withLogger(log)
         .build()
   }
 
   static InternalIqClient getIqClient(URI serverUrl, Logger log) {
-    //TODO probably need to add proxy support
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(new ServerConfig(serverUrl))
+        .withProxyConfig(getProxyConfig(serverUrl))
         .withLogger(log)
         .build()
   }
@@ -58,6 +60,16 @@ class IqClientFactory
     }
     else {
       return new ServerConfig(url)
+    }
+  }
+
+  static ServerConfig getProxyConfig(URI url) {
+    def jenkinsProxy = Jenkins.instance.proxy
+
+    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, url)) {
+      return ProxyUtil.buildProxyConfig(jenkinsProxy)
+    } else {
+      return null
     }
   }
 
