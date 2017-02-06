@@ -20,9 +20,10 @@ class RemoteScannerFactory
                                         final FilePath workspace,
                                         final URI iqServerUrl,
                                         final ProprietaryConfig proprietaryConfig,
-                                        final Logger log)
+                                        final Logger log,
+                                        final String instanceId)
   {
-    new RemoteScanner(appId, stageId, patterns, workspace, iqServerUrl, proprietaryConfig, log)
+    new RemoteScanner(appId, stageId, patterns, workspace, iqServerUrl, proprietaryConfig, log, instanceId)
   }
 
   static DirectoryScanner getDirectoryScanner() {

@@ -45,8 +45,9 @@ class IqClientFactory
         .build()
   }
 
-  static InternalIqClient getIqClient(URI serverUrl, Logger log) {
+  static InternalIqClient getIqClient(URI serverUrl, Logger log, String instanceId) {
     return (InternalIqClient) InternalIqClientBuilder.create()
+        .withInstanceId(instanceId)
         .withServerConfig(new ServerConfig(serverUrl))
         .withProxyConfig(getProxyConfig(serverUrl))
         .withLogger(log)

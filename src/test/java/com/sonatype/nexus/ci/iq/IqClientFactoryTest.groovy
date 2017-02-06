@@ -123,6 +123,7 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
+      iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
     when:
       clientGetter()
@@ -139,7 +140,7 @@ class IqClientFactoryTest
           { -> IqClientFactory.getIqClient() },
           { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), '') },
           { -> IqClientFactory.getIqClient((Logger) null, '') },
-          { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), (Logger) null) },
+          { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), (Logger) null, 'instance-id') },
       ]
       expectedServerUrl << [
         'http://localhost/',

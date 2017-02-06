@@ -18,9 +18,10 @@ import hudson.model.Descriptor
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
-import jenkins.model.GlobalConfiguration
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
+
+import static com.sonatype.nexus.ci.config.GlobalNexusConfiguration.globalNexusConfiguration
 
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
@@ -52,7 +53,7 @@ class NxiqConfiguration
   }
 
   static @Nullable NxiqConfiguration getIqConfig() {
-    return GlobalConfiguration.all().get(GlobalNexusConfiguration.class).iqConfigs?.find { true }
+    return globalNexusConfiguration.iqConfigs?.find { true }
   }
 
   @Extension

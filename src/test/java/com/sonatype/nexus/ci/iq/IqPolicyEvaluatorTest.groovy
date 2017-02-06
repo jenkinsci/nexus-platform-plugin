@@ -6,16 +6,14 @@
 
 package com.sonatype.nexus.ci.iq
 
-import com.sonatype.clm.dto.model.component.ComponentIdentifier
-import com.sonatype.clm.dto.model.policy.ComponentFact
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.PolicyAlert
-import com.sonatype.nexus.api.iq.PolicyFact
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.scan.ScanResult
+import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 
 import hudson.EnvVars
@@ -28,6 +26,7 @@ import hudson.remoting.Channel
 import org.slf4j.Logger
 import spock.lang.Specification
 
+import static com.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 import static java.util.Collections.emptyList
 
 class IqPolicyEvaluatorTest
@@ -58,12 +57,14 @@ class IqPolicyEvaluatorTest
   def reportUrl = 'http://server/report'
 
   def setup() {
-    GroovyMock(com.sonatype.nexus.ci.config.NxiqConfiguration, global: true)
+    GroovyMock(NxiqConfiguration, global: true)
+    GroovyMock(GlobalNexusConfiguration, global: true)
     GroovyMock(IqClientFactory, global: true)
     GroovyMock(RemoteScannerFactory, global: true)
     RemoteScannerFactory.getRemoteScanner("appId", "stage", _, workspace, "http://server/path", _, _) >> Mock(RemoteScanner)
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
+    GlobalNexusConfiguration.instanceId >> 'instance-id'
     iqClient.evaluateApplication("appId", "stage", _) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false,
         reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
@@ -85,7 +86,7 @@ class IqPolicyEvaluatorTest
 
     then: 'performs a remove scan'
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ["*.jar"], workspace,
-          URI.create("http://server/path"), proprietaryConfig, _ as Logger) >> remoteScanner
+          URI.create("http://server/path"), proprietaryConfig, _ as Logger, 'instance-id') >> remoteScanner
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'evaluates the result'
@@ -103,7 +104,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", defaultPatterns, workspace,
-          URI.create("http://server/path"), _, _ as Logger) >> remoteScanner
+          URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
   }
 
   def 'it expands environment variables for scan pattern'() {
@@ -117,7 +118,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ['/path1/some-scan-pattern/path2/'], workspace,
-          URI.create("http://server/path"), _, _ as Logger) >> remoteScanner
+          URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
   }
 
   def 'it ignores when no environment variables set for scan pattern'() {
@@ -131,7 +132,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ['/path1/$NONEXISTENT_SCAN_PATTERN/path2/'],
-          workspace, URI.create("http://server/path"), _, _ as Logger) >> remoteScanner
+          workspace, URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
   }
 
   def 'exception handling (part 1)'() {
@@ -246,35 +247,62 @@ class IqPolicyEvaluatorTest
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')
       TaskListener listener = Mock()
-      PrintWriter log = Mock()
-      def trigger = new PolicyFact('s', 's1', 5, [new ComponentFact(new ComponentIdentifier('s', [k:'v']), 's')])
+      PrintStream log = Mock()
+      listener.getLogger() >> log
+      def trigger = createAlert(Action.ID_FAIL).trigger
 
     when:
       buildStep.perform(run, workspace, launcher, listener)
 
     then:
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
-          new ApplicationPolicyEvaluation(0, 0, 0, 0, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])], false,
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])], false,
               reportUrl)
-      1 * listener.fatalError('IQ Server evaluation of application %s failed.', 'appId') >> log
-      1 * log.println({ it.startsWith('Triggered by policy alert:') })
+      1 * log.println(
+          'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +
+              'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
+              ' viewed online at http://server/report\nSummary of policy violations: 1 critical, 2 severe, 3 moderate')
+      1 * listener.fatalError('IQ Server evaluation of application %s failed.', 'appId')
   }
 
-  def 'prints an log message on warnings'() {
+  def 'prints a log message on warnings'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')
-      PrintStream logger = Mock()
-      TaskListener listener = Mock() {
-        getLogger() >> logger
-      }
-      def result = new ApplicationPolicyEvaluation(0, 0, 0, 0, [new PolicyAlert(null, [new Action(Action.ID_WARN)])],
-          false, reportUrl)
+      TaskListener listener = Mock()
+      PrintStream log = Mock()
+      listener.getLogger() >> log
+      def trigger = createAlert(Action.ID_FAIL).trigger
 
     when:
       buildStep.perform(run, workspace, launcher, listener)
 
     then:
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >> result
-      1 * logger.println("WARNING: IQ Server evaluation of application appId detected warnings.")
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], false,
+              reportUrl)
+      1 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
+      1 * log.println(
+          'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
+              'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
+              ' viewed online at http://server/report\nSummary of policy violations: 1 critical, 2 severe, 3 moderate')
+  }
+
+  def 'prints a summary on success'() {
+    setup:
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')
+      TaskListener listener = Mock()
+      PrintStream log = Mock()
+      listener.getLogger() >> log
+
+    when:
+      buildStep.perform(run, workspace, launcher, listener)
+
+    then:
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false,
+              reportUrl)
+      0 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
+      1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
+          'Summary of policy violations: 0 critical, 0 severe, 0 moderate')
   }
 }

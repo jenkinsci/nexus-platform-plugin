@@ -9,6 +9,7 @@ package com.sonatype.nexus.ci.iq
 import javax.annotation.ParametersAreNonnullByDefault
 
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 import com.sonatype.nexus.ci.util.LoggerBridge
 
@@ -17,7 +18,6 @@ import hudson.Launcher
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
-
 import org.apache.commons.lang.exception.ExceptionUtils
 
 @ParametersAreNonnullByDefault
@@ -49,7 +49,7 @@ trait IqPolicyEvaluator
       def proprietaryConfig =
           rethrowNetworkErrors { iqClient.getProprietaryConfigForApplicationEvaluation(iqApplication) }
       def remoteScanner = RemoteScannerFactory.getRemoteScanner(iqApplication, iqStage, scanPatterns, workspace,
-          NxiqConfiguration.serverUrl, proprietaryConfig, loggerBridge)
+          NxiqConfiguration.serverUrl, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = rethrowNetworkErrors { iqClient.evaluateApplication(iqApplication, iqStage, scanResult) }
@@ -70,7 +70,7 @@ trait IqPolicyEvaluator
     }
   }
 
-  private <T> T rethrowNetworkErrors(Closure<T> closure) {
+  private <T> T rethrowNetworkErrors(final Closure<T> closure) {
     try {
       closure()
     }
@@ -84,11 +84,11 @@ trait IqPolicyEvaluator
     }
   }
 
-  private boolean isNetworkError(Exception throwable) {
+  private boolean isNetworkError(final Exception throwable) {
     ExceptionUtils.indexOfType(throwable, IOException.class) >= 0
   }
 
-  private List<String> getPatterns(List<ScanPattern> iqScanPatterns, TaskListener listener, Run run) {
+  private List<String> getPatterns(final List<ScanPattern> iqScanPatterns, final TaskListener listener, final Run run) {
     def envVars = run.getEnvironment(listener)
     iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - "" ?: DEFAULT_SCAN_PATTERN
   }
@@ -97,26 +97,19 @@ trait IqPolicyEvaluator
                                         final TaskListener listener,
                                         final String appId)
   {
-    if (evaluationResult.hasFailures()) {
-      def log = listener.fatalError("IQ Server evaluation of application %s failed.", appId)
-      printComponentSummary(log, evaluationResult)
+    def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
+    listener.logger.println(policyFailureMessageFormatter.message)
+
+    if (policyFailureMessageFormatter.hasFailures()) {
+      listener.fatalError("IQ Server evaluation of application %s failed.", appId)
       return Result.FAILURE
     }
-    else if (evaluationResult.hasWarnings()) {
-      def log = listener.getLogger()
-      log.println("WARNING: IQ Server evaluation of application " + appId + " detected warnings.")
-      printComponentSummary(log, evaluationResult)
+    else if (policyFailureMessageFormatter.hasWarnings()) {
+      listener.logger.println("WARNING: IQ Server evaluation of application " + appId + " detected warnings.")
       return Result.UNSTABLE
     }
     else {
       return Result.SUCCESS
     }
-  }
-
-  private void printComponentSummary(log, ApplicationPolicyEvaluation evaluationResult) {
-    log.println("Triggered by policy alert: " + evaluationResult.policyAlerts.trigger)
-    log.println("Critical components: " + evaluationResult.criticalComponentCount)
-    log.println("Severe components: " + evaluationResult.severeComponentCount)
-    log.println("Moderate components: " + evaluationResult.moderateComponentCount)
   }
 }

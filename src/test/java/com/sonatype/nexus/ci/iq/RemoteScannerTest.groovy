@@ -40,13 +40,15 @@ class RemoteScannerTest
     InternalIqClientBuilder.create() >> iqClientBuilder
     iqClientBuilder.withLogger(log) >> iqClientBuilder
     iqClientBuilder.withServerConfig(_) >> iqClientBuilder
+    iqClientBuilder.withInstanceId(_) >> iqClientBuilder
     iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
     iqClientBuilder.build() >> iqClient
   }
 
   def "creates a list of targets from the result of a directory scan"() {
     setup:
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], workspace, URI.create('http://server/path'), proprietaryConfig, log)
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], workspace, URI.create('http://server/path'),
+          proprietaryConfig, log, "instance-id")
       directoryScanner.getIncludedDirectories() >> matchedDirs.toArray(new String[matchedDirs.size()])
       directoryScanner.getIncludedFiles() >> matchedFiles.toArray(new String[matchedFiles.size()])
 
@@ -62,5 +64,21 @@ class RemoteScannerTest
 
       workspace = new FilePath(new File('/file/path'))
       expectedFiles = (matchedFiles + matchedDirs).collect { new File(workspace.getRemote(), it) }
+  }
+
+  def 'RemoteScanner passes arguments to IqClient'() {
+    setup:
+      GroovyMock(IqClientFactory, global: true)
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], new FilePath(new File('/file/path')),
+          URI.create('http://server/url'), proprietaryConfig, log, 'instance-id')
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.call()
+
+    then:
+      1 * iqClient.scan('appId', proprietaryConfig, _, []) >> new ScanResult(null, new File('file'))
+      1 * IqClientFactory.getIqClient(URI.create('http://server/url'), log, 'instance-id') >> iqClient
   }
 }

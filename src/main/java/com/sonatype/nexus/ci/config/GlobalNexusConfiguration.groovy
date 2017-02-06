@@ -22,8 +22,14 @@ class GlobalNexusConfiguration
 
   List<NxiqConfiguration> iqConfigs
 
+  String instanceId
+
   GlobalNexusConfiguration() {
     load()
+    if (!instanceId) {
+      instanceId = generateInstanceId()
+      save()
+    }
   }
 
   @DataBoundConstructor
@@ -48,5 +54,13 @@ class GlobalNexusConfiguration
 
   static @Nullable getGlobalNexusConfiguration() {
     return all().get(GlobalNexusConfiguration.class)
+  }
+
+  static getInstanceId() {
+    getGlobalNexusConfiguration()?.@instanceId
+  }
+
+  private def generateInstanceId() {
+    UUID.randomUUID().toString().replace("-", "")
   }
 }
