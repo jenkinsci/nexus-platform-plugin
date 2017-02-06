@@ -71,7 +71,7 @@ class PolicyEvaluationHealthAction
 
   @Override
   String getDisplayName() {
-    return 'Application Composition Report'
+    return Messages.IqPolicyEvaluation_ReportName()
   }
 
   @Override

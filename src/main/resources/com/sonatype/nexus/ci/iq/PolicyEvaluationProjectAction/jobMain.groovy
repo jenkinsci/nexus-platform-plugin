@@ -5,6 +5,7 @@
  */
 package com.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 
+import com.sonatype.nexus.ci.iq.Messages
 import com.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import com.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 
@@ -18,7 +19,7 @@ if (action) {
   l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
-      a(href: "lastCompletedBuild/${action.getUrlName()}", 'Latest Application Composition Report')
+      a(href: "lastCompletedBuild/${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
       br()
       img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")
       if (action.criticalComponentCount) {
@@ -31,7 +32,7 @@ if (action) {
         span(class: 'iq-chiclet moderate', action.moderateComponentCount)
       }
       if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
-        span('No violations')
+        span(Messages.IqPolicyEvaluation_NoViolations())
       }
     }
   }

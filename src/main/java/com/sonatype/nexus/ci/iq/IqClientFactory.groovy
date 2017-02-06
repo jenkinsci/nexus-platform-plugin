@@ -89,7 +89,7 @@ class IqClientFactory
 
     def credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
     if (!credentials) {
-      throw new IllegalArgumentException("No credentials were found for credentialsId: ${credentialsId}")
+      throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
     }
 
     return new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText())

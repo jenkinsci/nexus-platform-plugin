@@ -49,12 +49,12 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     String getFunctionName() {
-      return 'nexusPolicyEvaluator'
+      Messages.IqPolicyEvaluation_FunctionName()
     }
 
     @Override
     String getDisplayName() {
-      'Nexus IQ Policy Evaluator'
+      Messages.IqPolicyEvaluation_DisplayName()
     }
 
     @Override
@@ -89,7 +89,7 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl.toString())
+      FormUtil.buildCredentialsItems(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId)
     }
   }
 }

@@ -3,9 +3,11 @@
  * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
-package com.sonatype.nexus.ci.iq.IqPolicyEvaluatorWorkflowStep
+
+package com.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 
 import com.sonatype.nexus.ci.config.NxiqConfiguration
+import com.sonatype.nexus.ci.iq.Messages
 
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
@@ -25,26 +27,26 @@ f.section(title: descriptor.displayName) {
 
       }
       td(class: 'nexus-jenkins-error') {
-        h3('No IQ Server configured.')
+        h3(Messages.IqPolicyEvaluation_NoIqServersConfigured())
         div {
-          yield "Add IQ Servers via: "
+          yield Messages.IqPolicyEvaluation_AddIqServers()
           a(href: jenkins.model.Jenkins.instance.rootUrl + "/configure", "Configure System")
         }
       }
     }
   }
 
-  f.entry(title: _('Stage'), field: 'iqStage') {
+  f.entry(title: _(Messages.IqPolicyEvaluation_Stage()), field: 'iqStage') {
     f.select()
   }
 
-  f.entry(title: _('Application'), field: 'iqApplication') {
+  f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'iqApplication') {
     f.select()
   }
 
   f.advanced() {
-    f.section(title: _('Advanced options')) {
-      f.entry(title: _('Scan files in workspace. Wildcards allowed e.g: **/*.jar'),
+    f.section(title: _(Messages.IqPolicyEvaluation_AdvancedOptions())) {
+      f.entry(title: _(Messages.IqPolicyEvaluation_ScanPatterns()),
           help: descriptor.getHelpFile('iqScanPatterns')) {
         f.repeatable(field: 'iqScanPatterns', minimum: '0') {
           f.textbox(field: 'scanPattern')
@@ -52,16 +54,20 @@ f.section(title: descriptor.displayName) {
         }
       }
 
-      f.entry(title: _('Fail build when unable to communicate with IQ Server'), field: 'failBuildOnNetworkError') {
+      f.entry(title: _(Messages.IqPolicyEvaluation_FailOnNetwork()), field: 'failBuildOnNetworkError') {
         f.checkbox()
       }
 
-      if (!nxiqConfiguration?.isPkiAuthentication) {
-        f.entry(title: _('Use job specific credentials'), field: 'jobCredentialsId') {
-          c.select()
+      if (!nxiqConfiguration?.@isPkiAuthentication) {
+        f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
+          c.select(context:app, includeUser:false, expressionAllowed:false)
         }
       } else {
-        div(class: 'nexus-jenkins-error', 'Job specific credentials are unavailable when Global PKI Authentication is enabled')
+        f.entry() {
+          div(class: 'nexus-jenkins-error') {
+            yield Messages.IqPolicyEvaluation_NoJobSpecificCredentials()
+          }
+        }
       }
     }
   }

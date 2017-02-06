@@ -27,7 +27,7 @@ class ScanPattern
   {
     @Override
     String getDisplayName() {
-      return "Scan pattern"
+      return Messages.ScanPattern_DisplayName()
     }
   }
 }

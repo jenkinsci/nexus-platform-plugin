@@ -57,8 +57,8 @@ class NxiqConfigurationTest
 
     where:
       url              | kind       | message
-      ''               | Kind.ERROR | 'Server Url is required'
-      null             | Kind.ERROR | 'Server Url is required'
+      ''               | Kind.ERROR | 'Server URL is required'
+      null             | Kind.ERROR | 'Server URL is required'
       'http://foo.com' | Kind.OK    | '<div/>'
   }
 

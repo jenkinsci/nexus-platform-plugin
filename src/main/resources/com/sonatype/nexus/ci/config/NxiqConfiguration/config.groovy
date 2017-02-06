@@ -7,6 +7,7 @@
 package com.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.sonatype.nexus.ci.config.NxiqConfiguration
+import com.sonatype.nexus.ci.config.Messages
 
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
@@ -14,13 +15,13 @@ def c = namespace(lib.CredentialsTagLib)
 def nxiqConfiguration = (NxiqConfiguration) instance
 
 f.section(title: descriptor.displayName) {
-  f.entry(title: _('Server URL'), field: 'serverUrl') {
+  f.entry(title: _(Messages.Configuration_ServerUrl()), field: 'serverUrl') {
     f.textbox(clazz: 'required')
   }
 
   f.radioBlock(
       name: _('isPkiAuthentication'),
-      title: _('PKI Authentication'),
+      title: _(Messages.Configuration_PKIAuthentication()),
       inline: true,
       value: true,
       checked: nxiqConfiguration?.@isPkiAuthentication,
@@ -28,7 +29,7 @@ f.section(title: descriptor.displayName) {
   ) {
     f.block() {
       f.validateButton(
-          title: _('Test connection'),
+          title: _(Messages.Configuration_TestConnection()),
           progress: _('Testing...'),
           method: 'verifyCredentials',
           with: 'serverUrl'
@@ -38,19 +39,19 @@ f.section(title: descriptor.displayName) {
 
   f.radioBlock(
       name: _('isPkiAuthentication'),
-      title: _('User Authentication'),
+      title: _(Messages.Configuration_UserAuthentication()),
       inline: true,
       value: false,
       checked: !nxiqConfiguration?.@isPkiAuthentication,
       help: descriptor.getHelpFile('isNotPkiAuthentication')
   ) {
-    f.entry(title: _('Credentials'), field: 'credentialsId') {
-      c.select()
+    f.entry(title: _(Messages.Configuration_Credentials()), field: 'credentialsId') {
+      c.select(context:app, includeUser:false, expressionAllowed:false)
     }
 
     f.block() {
       f.validateButton(
-          title: _('Test connection'),
+          title: _(Messages.Configuration_TestConnection()),
           progress: _('Testing...'),
           method: 'verifyCredentials',
           with: 'serverUrl,credentialsId'

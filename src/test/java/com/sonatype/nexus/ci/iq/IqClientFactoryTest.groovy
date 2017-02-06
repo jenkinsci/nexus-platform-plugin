@@ -47,7 +47,7 @@ class IqClientFactoryTest
       IqClientFactory.getIqClient(URI.create(url), credentialsId)
     then:
       IllegalArgumentException ex = thrown()
-      ex.message =~ /No credentials were found for credentialsId: 42/
+      ex.message =~ /No credentials were found for credentials 42/
   }
 
   def 'it creates a client when credentialsId given'() {

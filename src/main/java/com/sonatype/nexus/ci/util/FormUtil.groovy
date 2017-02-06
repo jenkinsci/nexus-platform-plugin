@@ -5,6 +5,7 @@
  */
 package com.sonatype.nexus.ci.util
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import hudson.security.ACL
@@ -12,7 +13,6 @@ import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 
-import static com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials
 import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri
 
 class FormUtil
@@ -48,17 +48,16 @@ class FormUtil
     return FormValidation.ok()
   }
 
-  static ListBoxModel buildCredentialsItems(final String serverUrl) {
+  static ListBoxModel buildCredentialsItems(final String serverUrl, final String credentialsId) {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
-      return new ListBoxModel()
+      return new StandardListBoxModel().includeCurrentValue(credentialsId)
     }
     return new StandardListBoxModel()
-        .withEmptySelection()
-        .withAll(lookupCredentials(
-        StandardUsernamePasswordCredentials.class,
-        Jenkins.getInstance(),
-        ACL.SYSTEM, fromUri(serverUrl).build())
-    )
+        .includeEmptyValue()
+        .includeMatchingAs(ACL.SYSTEM,
+          Jenkins.getInstance(),
+          StandardUsernamePasswordCredentials.class,
+          fromUri(serverUrl).build(), CredentialsMatchers.always())
   }
 
   static ListBoxModel buildListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items) {

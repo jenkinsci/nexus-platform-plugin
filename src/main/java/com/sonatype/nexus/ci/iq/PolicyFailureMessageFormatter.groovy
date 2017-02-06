@@ -30,11 +30,13 @@ class PolicyFailureMessageFormatter
   }
 
   String getMessage() {
-    def failures = groupedActions.get(Action.ID_FAIL).collect { 'Nexus IQ reports policy failing due to ' + it }
-    def warnings = groupedActions.get(Action.ID_WARN).collect { 'Nexus IQ reports policy warning due to ' + it }
-    def summary = ['The detailed report can be viewed online at ' + evaluation.applicationCompositionReportUrl,
-        'Summary of policy violations: ' + evaluation.criticalComponentCount + ' critical, ' +
-        evaluation.severeComponentCount + ' severe, ' + evaluation.moderateComponentCount + ' moderate']
+    def failures = groupedActions.get(Action.ID_FAIL).
+        collect { Messages.PolicyFailureMessageFormatter_PolicyFailing(it) }
+    def warnings = groupedActions.get(Action.ID_WARN).
+        collect { Messages.PolicyFailureMessageFormatter_PolicyWarning(it) }
+    def summary = [Messages.PolicyFailureMessageFormatter_EvaluationReport(evaluation.applicationCompositionReportUrl),
+                   Messages.PolicyFailureMessageFormatter_EvaluationSummary(evaluation.criticalComponentCount,
+                       evaluation.severeComponentCount, evaluation.moderateComponentCount)]
     return ([(failures + warnings).join('\n\n')] + summary).join('\n')
   }
 

@@ -159,12 +159,13 @@ public abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(FormUtil, global: true)
       GroovyMock(NxiqConfiguration, global: true)
       NxiqConfiguration.serverUrl >> URI.create("http://server/path")
+      NxiqConfiguration.credentialsId >> 'credentialsId'
 
     when:
       descriptor.doFillJobCredentialsIdItems()
 
     then:
-      1 * FormUtil.buildCredentialsItems("http://server/path")
+      1 * FormUtil.buildCredentialsItems("http://server/path", 'credentialsId')
   }
 
   def 'it sets job specific credentials to null when global pki authentication'() {

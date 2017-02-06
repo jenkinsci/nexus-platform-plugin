@@ -27,6 +27,7 @@
     <jenkins.version>2.7</jenkins.version>
     <jenkins-test-harness.version>2.7</jenkins-test-harness.version>
     <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
+    <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <concurrency>1</concurrency>
     <java.level>7</java.level>
     <slf4j.version>1.7.7</slf4j.version>
@@ -56,7 +57,7 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>credentials</artifactId>
-        <version>1.22</version>
+        <version>2.1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -274,6 +275,22 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.jvnet.localizer</groupId>
+        <artifactId>maven-localizer-plugin</artifactId>
+        <version>${jvnet-localizer-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <fileMask>Messages.properties</fileMask>
+              <outputDirectory>target/generated-sources/localizer</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -301,10 +318,10 @@
 
   <profiles>
     <profile>
-      <id>jenkins-1.580.1</id>
+      <id>jenkins-1.609</id>
       <properties>
-        <jenkins.version>1.580.1</jenkins.version>
-        <jenkins-test-harness.version>1.580.1</jenkins-test-harness.version>
+        <jenkins.version>1.609</jenkins.version>
+        <jenkins-test-harness.version>1.609</jenkins-test-harness.version>
       </properties>
     </profile>
   </profiles>

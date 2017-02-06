@@ -34,9 +34,6 @@ class PolicyEvaluatorExecution
 
   @Override
   protected Void run() throws Exception {
-    PrintStream logger = taskListener.getLogger()
-    logger.println("Evaluating policy")
-
     iqPolicyEvaluator.evaluatePolicy(run, workspace, launcher, taskListener)
   }
 }

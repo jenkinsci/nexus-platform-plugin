@@ -28,7 +28,7 @@ f.section(title: descriptor.displayName) {
   }
 
   f.entry(title: _('Credentials'), field: 'credentialsId') {
-    c.select()
+    c.select(context:app, includeUser:false, expressionAllowed:false)
   }
 
   f.block() {

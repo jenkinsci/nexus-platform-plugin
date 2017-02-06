@@ -79,8 +79,9 @@ class Nxrm2Configuration
     }
 
     @SuppressWarnings('unused')
-    public ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl) {
-      return FormUtil.buildCredentialsItems(serverUrl)
+    public ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
+                                                 @QueryParameter String credentialsId) {
+      return FormUtil.buildCredentialsItems(serverUrl, credentialsId)
     }
 
     @SuppressWarnings('unused')

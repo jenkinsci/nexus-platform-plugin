@@ -70,21 +70,22 @@ class NxiqConfiguration
   {
     @Override
     String getDisplayName() {
-      return 'Nexus IQ Server'
+      Messages.NxiqConfiguration_DisplayName()
     }
 
     @SuppressWarnings('unused')
     FormValidation doCheckServerUrl(@QueryParameter String value) {
       def validation = FormUtil.validateUrl(value)
       if (validation.kind == Kind.OK) {
-        validation = FormUtil.validateNotEmpty(value, 'Server Url is required')
+        validation = FormUtil.validateNotEmpty(value, Messages.Configuration_ServerUrlRequired())
       }
       return validation
     }
 
     @SuppressWarnings('unused')
-    ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl) {
-      return FormUtil.buildCredentialsItems(serverUrl)
+    ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
+                                          @QueryParameter String credentialsId) {
+      return FormUtil.buildCredentialsItems(serverUrl, credentialsId)
     }
 
     @SuppressWarnings('unused')
@@ -95,11 +96,10 @@ class NxiqConfiguration
       try {
         def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId)
 
-        return FormValidation.
-            ok("Nexus IQ Server connection succeeded (${applications.size()} applications)")
+        return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
       }
       catch (IqClientException e) {
-        return FormValidation.error(e, 'Nexus IQ Server connection failed');
+        return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed());
       }
     }
   }

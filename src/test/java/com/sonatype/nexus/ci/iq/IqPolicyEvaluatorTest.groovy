@@ -173,7 +173,7 @@ class IqPolicyEvaluatorTest
     then:
       noExceptionThrown()
       1 * run.setResult(Result.UNSTABLE)
-      1 * logger.println('WARNING: Unable to communicate with IQ Server: BOOM!!')
+      1 * logger.println('Unable to communicate with IQ Server: BOOM!!')
 
     where:
       exception                     | failBuildOnNetworkError || expectedException | expectedMessage
@@ -291,7 +291,7 @@ class IqPolicyEvaluatorTest
           'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
               ' viewed online at http://server/report\nSummary of policy violations: 1 critical, 2 severe, 3 moderate')
-      1 * listener.fatalError('IQ Server evaluation of application %s failed.', 'appId')
+      1 * listener.fatalError('IQ Server evaluation of application appId failed')
   }
 
   def 'prints a log message on warnings'() {
@@ -309,7 +309,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], false,
               reportUrl)
-      1 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
+      1 * log.println("IQ Server evaluation of application appId detected warnings")
       1 * log.println(
           'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +

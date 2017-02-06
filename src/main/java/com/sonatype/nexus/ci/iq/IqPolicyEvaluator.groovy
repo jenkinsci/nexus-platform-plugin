@@ -43,6 +43,7 @@ trait IqPolicyEvaluator
   {
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
+      loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def credentialsId = NxiqConfiguration.isPkiAuthentication ? null : (jobCredentialsId ?: NxiqConfiguration.credentialsId)
       def iqClient = IqClientFactory.getIqClient(loggerBridge, credentialsId)
@@ -66,7 +67,7 @@ trait IqPolicyEvaluator
         throw e.cause
       }
       else {
-        listener.getLogger().println("WARNING: Unable to communicate with IQ Server: " + e.getMessage())
+        listener.getLogger().println(Messages.IqPolicyEvaluation_UnableToCommunicate(e.message))
         run.setResult(Result.UNSTABLE)
       }
     }
@@ -103,11 +104,11 @@ trait IqPolicyEvaluator
     listener.logger.println(policyFailureMessageFormatter.message)
 
     if (policyFailureMessageFormatter.hasFailures()) {
-      listener.fatalError("IQ Server evaluation of application %s failed.", appId)
+      listener.fatalError(Messages.IqPolicyEvaluation_EvaluationFailed(appId))
       return Result.FAILURE
     }
     else if (policyFailureMessageFormatter.hasWarnings()) {
-      listener.logger.println("WARNING: IQ Server evaluation of application " + appId + " detected warnings.")
+      listener.logger.println(Messages.IqPolicyEvaluation_EvaluationWarning(appId))
       return Result.UNSTABLE
     }
     else {
