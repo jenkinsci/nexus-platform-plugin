@@ -5,6 +5,8 @@
  */
 package com.sonatype.nexus.ci.iq
 
+import javax.annotation.Nullable
+
 import com.sonatype.nexus.ci.config.NxiqConfiguration
 import com.sonatype.nexus.ci.util.FormUtil
 import com.sonatype.nexus.ci.util.IqUtil
@@ -29,7 +31,7 @@ class IqPolicyEvaluatorWorkflowStep
                                 final Boolean failBuildOnNetworkError,
                                 final String jobCredentialsId)
   {
-    this.jobCredentialsId = jobCredentialsId
+    this.jobCredentialsId = !NxiqConfiguration.isPkiAuthentication ? jobCredentialsId : null
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
@@ -61,8 +63,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems() {
-      IqUtil.doFillIqStageItems()
+    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId) {
+      IqUtil.doFillIqStageItems(jobCredentialsId)
     }
 
     @Override
@@ -71,8 +73,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems() {
-      IqUtil.doFillIqApplicationItems()
+    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId) {
+      IqUtil.doFillIqApplicationItems(jobCredentialsId)
     }
 
     @Override

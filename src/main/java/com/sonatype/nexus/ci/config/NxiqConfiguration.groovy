@@ -28,14 +28,18 @@ class NxiqConfiguration
 {
   String serverUrl
 
+  boolean isPkiAuthentication
+
   String credentialsId
 
   @DataBoundConstructor
   NxiqConfiguration(final String serverUrl,
+                    final boolean isPkiAuthentication,
                     final String credentialsId)
   {
     this.serverUrl = serverUrl
-    this.credentialsId = credentialsId
+    this.isPkiAuthentication = isPkiAuthentication
+    this.credentialsId = isPkiAuthentication ? null : credentialsId
   }
 
   @Override
@@ -46,6 +50,10 @@ class NxiqConfiguration
   static @Nullable URI getServerUrl() {
     def serverUrl = getIqConfig()?.@serverUrl
     serverUrl ? new URI(serverUrl) : null
+  }
+
+  static boolean getIsPkiAuthentication() {
+    return getIqConfig()?.@isPkiAuthentication
   }
 
   static @Nullable String getCredentialsId() {
@@ -82,7 +90,7 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
-        @QueryParameter String credentialsId) throws IOException
+        @QueryParameter @Nullable String credentialsId) throws IOException
     {
       try {
         def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId)

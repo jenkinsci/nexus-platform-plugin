@@ -27,14 +27,14 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient() >> iqClient
+      IqClientFactory.getIqClient('') >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
@@ -42,7 +42,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems()
+      def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
       applicationItems.size() == 3
@@ -61,11 +61,38 @@ public class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems()
+      def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
       applicationItems.size() == 1
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'doFillIqApplicationItems uses jobSpecificCredentialsId'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient('jobCredentialsId') >> iqClient
+
+      iqClient.applicationsForApplicationEvaluation >> []
+
+    when: 'doFillIqApplicationItems is called with specific credentialsId'
+      def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId')
+
+    then:
+      applicationItems.size() == 1
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+
   }
 }

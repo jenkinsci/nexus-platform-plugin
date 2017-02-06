@@ -38,7 +38,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId)
   {
-    this.jobCredentialsId = jobCredentialsId
+    this.jobCredentialsId = !NxiqConfiguration.isPkiAuthentication ? jobCredentialsId : null
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
@@ -73,8 +73,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems() {
-      IqUtil.doFillIqStageItems()
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId) {
+      // JobCredentialsId is an empty String if not set
+      IqUtil.doFillIqStageItems(jobCredentialsId)
     }
 
     @Override
@@ -83,8 +84,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems() {
-      IqUtil.doFillIqApplicationItems()
+    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId) {
+      // JobCredentialsId is an empty String if not set
+      IqUtil.doFillIqApplicationItems(jobCredentialsId)
     }
 
     @Override

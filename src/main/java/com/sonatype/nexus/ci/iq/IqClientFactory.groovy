@@ -27,7 +27,13 @@ import jenkins.model.Jenkins
 class IqClientFactory
 {
   static InternalIqClient getIqClient() {
-    return getIqClient(NxiqConfiguration.serverUrl, NxiqConfiguration.credentialsId)
+    return getIqClient(NxiqConfiguration.serverUrl, (String) NxiqConfiguration.credentialsId)
+  }
+
+  static InternalIqClient getIqClient(String credentialsId) {
+    //TODO probably need to add proxy support
+    // credentialsId can be an empty String if unset. Empty strings are falsy in Groovy
+    return getIqClient(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId)
   }
 
   static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId) {
@@ -54,7 +60,7 @@ class IqClientFactory
         .build()
   }
 
-  static ServerConfig getServerConfig(URI url, @Nullable String credentialsId) {
+  private static ServerConfig getServerConfig(URI url, @Nullable String credentialsId) {
     if (credentialsId) {
       def authentication = loadCredentials(url, credentialsId)
       return new ServerConfig(url, authentication)

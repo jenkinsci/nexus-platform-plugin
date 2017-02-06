@@ -11,10 +11,12 @@ def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
 def l = namespace(lib.LayoutTagLib)
 
+def nxiqConfiguration = NxiqConfiguration.iqConfig
+
 l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
 
 f.section(title: descriptor.displayName) {
-  if (!NxiqConfiguration.iqConfig) {
+  if (!nxiqConfiguration) {
     tr {
       td(class: 'setting-leftspace') {
 
@@ -54,8 +56,12 @@ f.section(title: descriptor.displayName) {
         f.checkbox()
       }
 
-      f.entry(title: _('Use job specific credentials'), field: 'jobCredentialsId') {
-        c.select()
+      if (!nxiqConfiguration?.isPkiAuthentication) {
+        f.entry(title: _('Use job specific credentials'), field: 'jobCredentialsId') {
+          c.select()
+        }
+      } else {
+        div(class: 'nexus-jenkins-error', 'Job specific credentials are unavailable when Global PKI Authentication is enabled')
       }
     }
   }

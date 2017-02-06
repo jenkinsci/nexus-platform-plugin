@@ -111,10 +111,22 @@ public abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(IqUtil, global: true)
 
     when:
-      descriptor.doFillIqApplicationItems()
+      descriptor.doFillIqApplicationItems('')
 
     then:
-      1 * IqUtil.doFillIqApplicationItems()
+      1 * IqUtil.doFillIqApplicationItems('')
+  }
+
+  def 'it uses custom credentials for application items'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+
+    when:
+      descriptor.doFillIqApplicationItems('credentialsId')
+
+    then:
+      1 * IqUtil.doFillIqApplicationItems('credentialsId')
   }
 
   def 'it validates that stage items are filled'() {
@@ -123,10 +135,22 @@ public abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(IqUtil, global: true)
 
     when:
-      descriptor.doFillIqStageItems()
+      descriptor.doFillIqStageItems('')
 
     then:
-      1 * IqUtil.doFillIqStageItems()
+      1 * IqUtil.doFillIqStageItems('')
+  }
+
+  def 'it uses custom credentials for stage items'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+
+    when:
+      descriptor.doFillIqStageItems('credentialsId')
+
+    then:
+      1 * IqUtil.doFillIqStageItems('credentialsId')
   }
 
   def 'it validates that credentials items are filled'() {
@@ -141,5 +165,29 @@ public abstract class IqPolicyEvaluatorDescriptorTest
 
     then:
       1 * FormUtil.buildCredentialsItems("http://server/path")
+  }
+
+  def 'it sets job specific credentials to null when global pki authentication'() {
+    setup:
+      GroovyMock(NxiqConfiguration, global: true)
+      NxiqConfiguration.isPkiAuthentication >> true
+
+    when:
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, 'jobSpecificCredentialsId')
+
+    then:
+      !buildStep.jobCredentialsId
+  }
+
+  def 'it sets job specific credentials when no global pki authentication'() {
+    setup:
+      GroovyMock(NxiqConfiguration, global: true)
+      NxiqConfiguration.isPkiAuthentication >> false
+
+    when:
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, 'jobSpecificCredentialsId')
+
+    then:
+      buildStep.jobCredentialsId == 'jobSpecificCredentialsId'
   }
 }

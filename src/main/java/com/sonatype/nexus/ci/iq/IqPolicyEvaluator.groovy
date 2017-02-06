@@ -43,7 +43,9 @@ trait IqPolicyEvaluator
   {
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
-      def iqClient = IqClientFactory.getIqClient(loggerBridge, jobCredentialsId)
+
+      def credentialsId = NxiqConfiguration.isPkiAuthentication ? null : (jobCredentialsId ?: NxiqConfiguration.credentialsId)
+      def iqClient = IqClientFactory.getIqClient(loggerBridge, credentialsId)
       def scanPatterns = getPatterns(iqScanPatterns, listener, run)
 
       def proprietaryConfig =

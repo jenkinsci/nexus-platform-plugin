@@ -6,6 +6,8 @@
 
 package com.sonatype.nexus.ci.util
 
+import javax.annotation.Nullable
+
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
 import com.sonatype.nexus.ci.config.NxiqConfiguration
@@ -23,18 +25,18 @@ class IqUtil
     return client.getApplicationsForApplicationEvaluation()
   }
 
-  static ListBoxModel doFillIqStageItems() {
+  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient()
+      def client = IqClientFactory.getIqClient(credentialsId)
       FormUtil.buildListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
     } else {
       FormUtil.buildListBoxModelWithEmptyOption()
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems() {
+  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient()
+      def client = IqClientFactory.getIqClient(credentialsId)
       FormUtil.buildListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     } else {
       FormUtil.buildListBoxModelWithEmptyOption()
