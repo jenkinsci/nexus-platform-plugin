@@ -3,7 +3,7 @@
  * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
-package com.sonatype.nexus.ci.nxrm.NxrmPublisherBuildStep
+package com.sonatype.nexus.ci.nxrm.NexusPublisherBuildStep
 
 import com.sonatype.nexus.ci.util.NxrmUtil
 
