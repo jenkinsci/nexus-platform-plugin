@@ -7,6 +7,8 @@ package com.sonatype.nexus.ci.iq
 
 import javax.inject.Inject
 
+import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Run
@@ -15,7 +17,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepEx
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter
 
 class PolicyEvaluatorExecution
-    extends AbstractSynchronousNonBlockingStepExecution<Void>
+    extends AbstractSynchronousNonBlockingStepExecution<ApplicationPolicyEvaluation>
 {
   @Inject
   private transient IqPolicyEvaluatorWorkflowStep iqPolicyEvaluator
@@ -33,7 +35,10 @@ class PolicyEvaluatorExecution
   private transient Launcher launcher
 
   @Override
-  protected Void run() throws Exception {
+  protected ApplicationPolicyEvaluation run() throws Exception {
+    PrintStream logger = taskListener.getLogger()
+    logger.println("Evaluating policy")
+
     iqPolicyEvaluator.evaluatePolicy(run, workspace, launcher, taskListener)
   }
 }

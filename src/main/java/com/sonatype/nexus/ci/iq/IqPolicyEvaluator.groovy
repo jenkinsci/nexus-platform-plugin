@@ -36,10 +36,10 @@ trait IqPolicyEvaluator
   private static final List<String> DEFAULT_SCAN_PATTERN =
       ["**/*.jar", "**/*.war", "**/*.ear", "**/*.zip", "**/*.tar.gz"]
 
-  void evaluatePolicy(final Run run,
-                      final FilePath workspace,
-                      final Launcher launcher,
-                      final TaskListener listener)
+  ApplicationPolicyEvaluation evaluatePolicy(final Run run,
+                                             final FilePath workspace,
+                                             final Launcher launcher,
+                                             final TaskListener listener)
   {
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
@@ -62,6 +62,8 @@ trait IqPolicyEvaluator
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
+
+      return evaluationResult
     } catch (IqNetworkException e) {
       if (failBuildOnNetworkError) {
         throw e.cause
@@ -69,6 +71,7 @@ trait IqPolicyEvaluator
       else {
         listener.getLogger().println(Messages.IqPolicyEvaluation_UnableToCommunicate(e.message))
         run.setResult(Result.UNSTABLE)
+        return null
       }
     }
   }
