@@ -111,7 +111,7 @@ class PackageUploaderUtil
       uploadCallableClosure()
     }
 
-    logger.println('Successfully Uploaded hudson.tasks.Maven Assets')
+    logger.println('Successfully Uploaded Maven Assets')
   }
 
   @SuppressWarnings('Instanceof') // TODO warning ignored for existing code. refactor when convenient
