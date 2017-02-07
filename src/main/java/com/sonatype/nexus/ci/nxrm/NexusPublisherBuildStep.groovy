@@ -48,12 +48,12 @@ class NexusPublisherBuildStep
   }
 
   @Extension
-  public static final class DescriptorImpl
+  static final class DescriptorImpl
       extends BuildStepDescriptor<Builder>
       implements NexusPublisherDescriptor
   {
     @Override
-    public String getDisplayName() {
+    String getDisplayName() {
       'Nexus Repository Manager Publisher'
     }
 
@@ -62,19 +62,19 @@ class NexusPublisherBuildStep
       true
     }
 
-    public FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
+    FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
       NxrmUtil.doCheckNexusInstanceId(value)
     }
 
-    public ListBoxModel doFillNexusInstanceIdItems() {
+    ListBoxModel doFillNexusInstanceIdItems() {
       NxrmUtil.doFillNexusInstanceIdItems()
     }
 
-    public FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
+    FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
       NxrmUtil.doCheckNexusRepositoryId(value)
     }
 
-    public ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
+    ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
       NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
     }
   }

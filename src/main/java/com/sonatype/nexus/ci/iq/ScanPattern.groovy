@@ -14,7 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor
 class ScanPattern
     extends AbstractDescribableImpl<ScanPattern>
 {
-  public String scanPattern
+  String scanPattern
 
   @DataBoundConstructor
   ScanPattern(String scanPattern) {

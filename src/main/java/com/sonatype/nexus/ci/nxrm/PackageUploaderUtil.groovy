@@ -20,13 +20,16 @@ import hudson.model.TaskListener
 import hudson.remoting.VirtualChannel
 import jenkins.MasterToSlaveFileCallable
 
-class PackageUploaderUtil {
-  public static void uploadPackage(final NexusPublisher nxrmPublisher, final Run run,
+// TODO ignore for existing code. exceptions are only logged and then rethrown. refactor to reduce complexity
+@SuppressWarnings(value=['CatchException', 'AbcMetric', 'MethodSize'])
+class PackageUploaderUtil
+{
+  static void uploadPackage(final NexusPublisher nxrmPublisher, final Run run,
                                    final TaskListener taskListener, final FilePath filePath)
       throws IOException, InterruptedException
   {
-    PrintStream logger = taskListener.getLogger();
-    EnvVars envVars = run.getEnvironment(taskListener);
+    PrintStream logger = taskListener.getLogger()
+    EnvVars envVars = run.getEnvironment(taskListener)
 
     def nexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
       return it.id == nxrmPublisher.nexusInstanceId
@@ -51,19 +54,20 @@ class PackageUploaderUtil {
     def nxrmClient
 
     try {
-      nxrmClient = RepositoryManagerClientUtil.buildRmClient(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
+      nxrmClient = RepositoryManagerClientUtil.buildRmClient(nexusConfiguration.serverUrl,
+          nexusConfiguration.credentialsId)
     }
     catch (Exception e) {
-      def message = "Error creating RepositoryManagerClient"
+      def message = 'Error creating RepositoryManagerClient'
       logger.println(message)
       logger.println('Failing build due to error creating RepositoryManagerClient')
       run.setResult(Result.FAILURE)
       throw e
     }
 
-    def uploadCallableClosures = new ArrayList<Closure>()
+    List<Closure> uploadCallableClosures = []
 
-    def mavenPackages = getPackagesOfType(nxrmPublisher.packages, MavenPackage.class)
+    def mavenPackages = getPackagesOfType(nxrmPublisher.packages, MavenPackage)
 
     // Iterate through all packages and assets first to ensure that everything exists
     // This prevents uploading assets from an incomplete set
@@ -107,9 +111,10 @@ class PackageUploaderUtil {
       uploadCallableClosure()
     }
 
-    logger.println("Successfully Uploaded Maven Assets")
+    logger.println('Successfully Uploaded hudson.tasks.Maven Assets')
   }
 
+  @SuppressWarnings('Instanceof') // TODO warning ignored for existing code. refactor when convenient
   private static <T extends Package> List<T> getPackagesOfType(List<Package> packageList, Class<T> type) {
     return packageList.findAll { Package iPackage ->
       return iPackage instanceof T
@@ -123,6 +128,7 @@ class PackageUploaderUtil {
    *
    * <strong>Warning:</code> implementations must be serializable, so prefer a static nested class to an inner class.
    */
+  @SuppressWarnings('UnnecessaryTransientModifier')  // TODO confirm if transient is used by jenkins or framework ?
   static class MavenAssetUploaderCallable
       extends MasterToSlaveFileCallable<Void>
   {
@@ -137,7 +143,7 @@ class PackageUploaderUtil {
     private final transient EnvVars envVars
 
     MavenAssetUploaderCallable(final RepositoryManagerClient client, final String repositoryId,
-                                      final MavenCoordinate coordinate, final MavenAsset mavenAsset, final EnvVars envVars)
+                               final MavenCoordinate coordinate, final MavenAsset mavenAsset, final EnvVars envVars)
     {
       this.client = client
       this.repositoryId = repositoryId

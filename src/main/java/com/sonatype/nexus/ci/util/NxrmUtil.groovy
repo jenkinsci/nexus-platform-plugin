@@ -16,11 +16,11 @@ import hudson.util.ListBoxModel
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.size() > 0;
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.size() > 0
   }
 
   static FormValidation doCheckNexusInstanceId(final String value) {
-    return FormUtil.validateNotEmpty(value, "Nexus Instance is required")
+    return FormUtil.validateNotEmpty(value, 'Nexus Instance is required')
   }
 
   static ListBoxModel doFillNexusInstanceIdItems() {
@@ -30,7 +30,7 @@ class NxrmUtil
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {
-    return FormUtil.validateNotEmpty(value, "Nexus Repository is required")
+    return FormUtil.validateNotEmpty(value, 'Nexus Repository is required')
   }
 
   static ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId) {
@@ -45,10 +45,10 @@ class NxrmUtil
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
-    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { Nxrm2Configuration config ->
-      config.id == nexusInstanceId
+    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
+      Nxrm2Configuration config -> config.id == nexusInstanceId
     }
-    return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId);
+    return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)
   }
 
   /**

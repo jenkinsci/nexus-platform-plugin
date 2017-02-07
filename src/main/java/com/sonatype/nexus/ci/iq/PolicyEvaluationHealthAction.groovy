@@ -20,7 +20,7 @@ import org.kohsuke.stapler.StaplerResponse
 class PolicyEvaluationHealthAction
     implements HealthReportingAction, LastBuildAction
 {
-  private final Run run;
+  private final Run run
 
   private final String reportLink
 
@@ -32,7 +32,7 @@ class PolicyEvaluationHealthAction
 
   private final int moderateComponentCount
 
-  public PolicyEvaluationHealthAction(final Run run,
+  PolicyEvaluationHealthAction(final Run run,
                                       final ApplicationPolicyEvaluation policyEvaluationResult)
   {
     this.run = run
@@ -89,9 +89,10 @@ class PolicyEvaluationHealthAction
     return Collections.singleton(new PolicyEvaluationProjectAction(job))
   }
 
-  public synchronized void doIndex(final StaplerRequest req, final StaplerResponse rsp)
+  @SuppressWarnings(value = ['UnusedMethodParameter', 'SynchronizedMethod']) // TODO ignored for existing code
+  synchronized void doIndex(final StaplerRequest req, final StaplerResponse rsp)
       throws IOException, ServletException
   {
-    rsp.sendRedirect(reportLink);
+    rsp.sendRedirect(reportLink)
   }
 }

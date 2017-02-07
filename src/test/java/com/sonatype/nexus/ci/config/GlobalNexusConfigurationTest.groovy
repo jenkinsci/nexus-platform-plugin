@@ -8,6 +8,7 @@ package com.sonatype.nexus.ci.config
 
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.WithoutJenkins
 import spock.lang.Specification
 
 class GlobalNexusConfigurationTest
@@ -15,6 +16,14 @@ class GlobalNexusConfigurationTest
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
+
+  List<? extends NxrmConfiguration> nxrmConfiguration
+  List<NxiqConfiguration> nxiqConfiguration
+
+  void setup() {
+    nxrmConfiguration = [new Nxrm2Configuration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id')]
+    nxiqConfiguration = [new NxiqConfiguration('http://server/url', false, 'creds-id')]
+  }
 
   def 'new instance ID is generated and loaded from configuration file'() {
     setup:
@@ -28,5 +37,15 @@ class GlobalNexusConfigurationTest
 
     then:
       uuid1 == uuid2
+  }
+
+  @WithoutJenkins
+  def 'DataBoundConstructor initialises fields'() {
+    when:
+      def globalNexusConfiguration = new GlobalNexusConfiguration(nxrmConfiguration, nxiqConfiguration)
+
+    then:
+      globalNexusConfiguration.iqConfigs == nxiqConfiguration
+      globalNexusConfiguration.nxrmConfigs == nxrmConfiguration
   }
 }

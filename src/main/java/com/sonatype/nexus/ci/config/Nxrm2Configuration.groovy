@@ -31,23 +31,23 @@ class Nxrm2Configuration
   }
 
   @Extension
-  public static class DescriptorImpl
+  static class DescriptorImpl
       extends NxrmConfiguration.NxrmDescriptor
   {
-    public DescriptorImpl() {
-      super(Nxrm2Configuration.class)
+    DescriptorImpl() {
+      super(Nxrm2Configuration)
     }
 
     @Override
-    public String getDisplayName() {
+    String getDisplayName() {
       return 'Nexus Repository Manager 2.x Server'
     }
 
     @SuppressWarnings('unused')
-    public FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
+    FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
-        if (!config.internalId.equals(internalId) && config.displayName.equals(value)) {
+        if (config.internalId != internalId && config.displayName == value) {
           return FormValidation.error('Display Name must be unique')
         }
       }
@@ -55,10 +55,10 @@ class Nxrm2Configuration
     }
 
     @SuppressWarnings('unused')
-    public FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
+    FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
-        if (!config.internalId.equals(internalId) && config.id.equals(value)) {
+        if (config.internalId != internalId && config.id == value) {
           return FormValidation.error('Server ID must be unique')
         }
       }
@@ -70,7 +70,7 @@ class Nxrm2Configuration
     }
 
     @SuppressWarnings('unused')
-    public FormValidation doCheckServerUrl(@QueryParameter String value) {
+    FormValidation doCheckServerUrl(@QueryParameter String value) {
       def validation = FormUtil.validateUrl(value)
       if (validation.kind == Kind.OK) {
         validation = FormUtil.validateNotEmpty(value, 'Server Url is required')
@@ -79,24 +79,23 @@ class Nxrm2Configuration
     }
 
     @SuppressWarnings('unused')
-    public ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
-                                                 @QueryParameter String credentialsId) {
+    ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl, @QueryParameter String credentialsId) {
       return FormUtil.buildCredentialsItems(serverUrl, credentialsId)
     }
 
     @SuppressWarnings('unused')
-    public FormValidation doVerifyCredentials(
+    FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
         @QueryParameter String credentialsId) throws IOException
     {
       try {
         def repositories = NxrmUtil.getApplicableRepositories(serverUrl, credentialsId)
 
-        return FormValidation.
-            ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} hosted release Maven 2 repositories)")
+        return FormValidation.ok("Nexus Repository Manager 2.x connection succeeded (${repositories.size()} hosted " +
+            'release Maven 2 repositories)')
       }
       catch (RepositoryManagerException e) {
-        return FormValidation.error(e, 'Nexus Repository Manager 2.x connection failed');
+        return FormValidation.error(e, 'Nexus Repository Manager 2.x connection failed')
       }
     }
   }

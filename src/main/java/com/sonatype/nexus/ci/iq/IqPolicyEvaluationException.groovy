@@ -6,10 +6,10 @@
 
 package com.sonatype.nexus.ci.iq
 
-public class IqPolicyEvaluationException
+class IqPolicyEvaluationException
     extends IOException
 {
-  public IqPolicyEvaluationException(final String message) {
-    super(message);
+  IqPolicyEvaluationException(final String message) {
+    super(message)
   }
 }

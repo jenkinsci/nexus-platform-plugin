@@ -26,19 +26,23 @@ class NexusPublisherWorkflowStep
   List<Package> packages
 
   @DataBoundConstructor
-  NexusPublisherWorkflowStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
+  NexusPublisherWorkflowStep(
+      final String nexusInstanceId,
+      final String nexusRepositoryId,
+      final List<Package> packages)
+  {
     this.nexusInstanceId = nexusInstanceId
     this.nexusRepositoryId = nexusRepositoryId
-    this.packages = packages ?: new ArrayList<>()
+    this.packages = packages ?: []
   }
 
   @Extension
-  public static class DescriptorImpl
+  static class DescriptorImpl
       extends AbstractStepDescriptorImpl
       implements NexusPublisherDescriptor
   {
-    public DescriptorImpl() {
-      super(PackagePublisherExecution.class)
+    DescriptorImpl() {
+      super(PackagePublisherExecution)
     }
 
     @Override
@@ -47,23 +51,23 @@ class NexusPublisherWorkflowStep
     }
 
     @Override
-    public String getDisplayName() {
+    String getDisplayName() {
       return 'Nexus Repository Manager Publisher'
     }
 
-    public FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
+    FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
       return NxrmUtil.doCheckNexusInstanceId(value)
     }
 
-    public ListBoxModel doFillNexusInstanceIdItems() {
+    ListBoxModel doFillNexusInstanceIdItems() {
       return NxrmUtil.doFillNexusInstanceIdItems()
     }
 
-    public FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
+    FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
       return NxrmUtil.doCheckNexusRepositoryId(value)
     }
 
-    public ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
+    ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
       return NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
     }
   }

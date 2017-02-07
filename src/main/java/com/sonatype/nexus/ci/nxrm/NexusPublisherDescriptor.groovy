@@ -11,14 +11,14 @@ import hudson.util.ListBoxModel
 interface NexusPublisherDescriptor
 {
   @SuppressWarnings('unused')
-  public FormValidation doCheckNexusInstanceId(final String value)
+  FormValidation doCheckNexusInstanceId(final String value)
 
   @SuppressWarnings('unused')
-  public ListBoxModel doFillNexusInstanceIdItems()
+  ListBoxModel doFillNexusInstanceIdItems()
 
   @SuppressWarnings('unused')
-  public FormValidation doCheckNexusRepositoryId(final String value)
+  FormValidation doCheckNexusRepositoryId(final String value)
 
   @SuppressWarnings('unused')
-  public ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId)
+  ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId)
 }

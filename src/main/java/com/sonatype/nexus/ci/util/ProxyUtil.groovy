@@ -14,16 +14,17 @@ import com.sonatype.nexus.api.common.ServerConfig
 import hudson.ProxyConfiguration
 import org.apache.http.client.utils.URIBuilder
 
+@SuppressWarnings('FactoryMethodName') // TODO ignore naming convention in existing code, refactor when convenient
 class ProxyUtil
 {
   static boolean shouldProxyForUri(ProxyConfiguration proxy, URI uri) {
-    !proxy.noProxyHostPatterns?.find() { Pattern pattern -> uri.host ==~ pattern }
+    !proxy.noProxyHostPatterns?.find { Pattern pattern -> uri.host ==~ pattern }
   }
 
   static ServerConfig buildProxyConfig(ProxyConfiguration proxy) {
     def proxyUri = new URIBuilder(proxy.name).setPort(proxy.port).build()
 
-    if(proxy.userName) {
+    if (proxy.userName) {
       def authentication = new Authentication(proxy.userName, proxy.password)
       return new ServerConfig(proxyUri, authentication)
     } else {

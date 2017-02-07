@@ -8,6 +8,7 @@ package com.sonatype.nexus.ci.nxrm
 import hudson.model.AbstractDescribableImpl
 import hudson.model.Descriptor
 
+@SuppressWarnings('AbstractClassWithoutAbstractMethod') // TODO ignored for existing code. refactor when convenient
 abstract class Asset
     extends AbstractDescribableImpl<Asset>
 {

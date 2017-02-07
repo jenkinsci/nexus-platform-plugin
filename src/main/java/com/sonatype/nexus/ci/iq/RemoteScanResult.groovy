@@ -24,7 +24,7 @@ class RemoteScanResult
   }
 
   ScanResult copyToLocalScanResult() {
-    def localFile = File.createTempFile("scan", ".xml.gz")
+    def localFile = File.createTempFile('scan', '.xml.gz')
     localFile.deleteOnExit()
     new FileOutputStream(localFile).withStream { filePath.copyTo(it) }
     return new ScanResult(scan, localFile)

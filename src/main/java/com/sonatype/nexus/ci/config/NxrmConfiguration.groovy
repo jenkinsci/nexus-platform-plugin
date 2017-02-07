@@ -9,6 +9,7 @@ import hudson.model.Describable
 import hudson.model.Descriptor
 import jenkins.model.Jenkins
 
+@SuppressWarnings('AbstractClassWithoutAbstractMethod') // TODO ignored for existing code. refactor when convenient
 abstract class NxrmConfiguration
     implements Describable<NxrmConfiguration>
 {
@@ -27,7 +28,7 @@ abstract class NxrmConfiguration
 
   @Override
   Descriptor<NxrmConfiguration> getDescriptor() {
-    return Jenkins.getInstance().getDescriptorOrDie(this.getClass());
+    return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
   /**
@@ -38,7 +39,8 @@ abstract class NxrmConfiguration
   static abstract class NxrmDescriptor
       extends Descriptor<NxrmConfiguration>
   {
-    public NxrmDescriptor(Class<? extends NxrmConfiguration> clazz) {
+    @SuppressWarnings('AbstractClassWithPublicConstructor') // TODO ignored for existing code. refactor when convenient
+    NxrmDescriptor(Class<? extends NxrmConfiguration> clazz) {
       super(clazz)
     }
   }

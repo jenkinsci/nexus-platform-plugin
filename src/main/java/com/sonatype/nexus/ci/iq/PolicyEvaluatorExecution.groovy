@@ -16,6 +16,7 @@ import hudson.model.TaskListener
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter
 
+@SuppressWarnings('UnnecessaryTransientModifier')  // TODO confirm if transient is used by jenkins or framework ?
 class PolicyEvaluatorExecution
     extends AbstractSynchronousNonBlockingStepExecution<ApplicationPolicyEvaluation>
 {
@@ -35,10 +36,8 @@ class PolicyEvaluatorExecution
   private transient Launcher launcher
 
   @Override
+  @SuppressWarnings('ConfusingMethodName')
   protected ApplicationPolicyEvaluation run() throws Exception {
-    PrintStream logger = taskListener.getLogger()
-    logger.println("Evaluating policy")
-
     iqPolicyEvaluator.evaluatePolicy(run, workspace, launcher, taskListener)
   }
 }

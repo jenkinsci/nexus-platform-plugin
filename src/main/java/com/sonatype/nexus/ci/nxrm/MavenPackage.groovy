@@ -42,15 +42,15 @@ class MavenPackage
   }
 
   @Extension
-  public static final class DescriptorImpl
+  static final class DescriptorImpl
       extends Package.PackageDescriptor
   {
-    public DescriptorImpl() {
-      super(MavenPackage.class)
+    DescriptorImpl() {
+      super(MavenPackage)
     }
 
     @Override
-    public String getDisplayName() {
+    String getDisplayName() {
       return 'Maven Package'
     }
   }

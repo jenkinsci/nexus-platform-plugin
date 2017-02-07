@@ -13,6 +13,7 @@ import hudson.model.TaskListener
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter
 
+@SuppressWarnings('UnnecessaryTransientModifier') // TODO find out why this uses transient. used by jenkins framework ?
 class PackagePublisherExecution
     extends AbstractSynchronousNonBlockingStepExecution<Void>
 {
@@ -20,17 +21,18 @@ class PackagePublisherExecution
   private transient NexusPublisherWorkflowStep nxrmPublisher
 
   @StepContextParameter
-  private transient TaskListener taskListener;
+  private transient TaskListener taskListener
 
   @StepContextParameter
-  private transient Run run;
+  private transient Run run
 
   @StepContextParameter
-  private transient FilePath filePath;
+  private transient FilePath filePath
 
   @Override
+  @SuppressWarnings('ConfusingMethodName')
   protected Void run() throws Exception {
-    PrintStream logger = taskListener.getLogger();
+    PrintStream logger = taskListener.getLogger()
     logger.println("Attempting to upload ${filePath} to Nexus.")
 
     try {

@@ -39,8 +39,8 @@ class GlobalNexusConfiguration
   }
 
   @Override
-  boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException {
-    def globalConfiguration = req.bindJSON(GlobalNexusConfiguration.class, json)
+  boolean configure(final StaplerRequest req, final JSONObject json) throws Descriptor.FormException {
+    def globalConfiguration = req.bindJSON(GlobalNexusConfiguration, json)
     this.nxrmConfigs = globalConfiguration.nxrmConfigs
     this.iqConfigs = globalConfiguration.iqConfigs
     save()
@@ -53,14 +53,14 @@ class GlobalNexusConfiguration
   }
 
   static @Nullable getGlobalNexusConfiguration() {
-    return all().get(GlobalNexusConfiguration.class)
+    return all().get(GlobalNexusConfiguration)
   }
 
   static getInstanceId() {
     getGlobalNexusConfiguration()?.@instanceId
   }
 
-  private def generateInstanceId() {
-    UUID.randomUUID().toString().replace("-", "")
+  private generateInstanceId() {
+    UUID.randomUUID().toString().replace('-', '')
   }
 }

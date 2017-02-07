@@ -15,6 +15,7 @@ import jenkins.model.Jenkins
 
 import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri
 
+@SuppressWarnings('FactoryMethodName') // TODO ignore naming convention in existing code, refactor when convenient
 class FormUtil
 {
   final static String EMPTY_LIST_BOX_NAME = '-----------'
@@ -30,7 +31,7 @@ class FormUtil
       return FormValidation.ok()
     }
     catch (MalformedURLException e) {
-      return FormValidation.error("Malformed url (%s)", e.getMessage())
+      return FormValidation.error('Malformed url (%s)', e.getMessage())
     }
   }
 
@@ -56,7 +57,7 @@ class FormUtil
         .includeEmptyValue()
         .includeMatchingAs(ACL.SYSTEM,
           Jenkins.getInstance(),
-          StandardUsernamePasswordCredentials.class,
+          StandardUsernamePasswordCredentials,
           fromUri(serverUrl).build(), CredentialsMatchers.always())
   }
 

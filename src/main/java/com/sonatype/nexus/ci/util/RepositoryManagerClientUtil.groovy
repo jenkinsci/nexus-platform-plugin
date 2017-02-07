@@ -18,14 +18,16 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
 import hudson.security.ACL
 import jenkins.model.Jenkins
 
+// TODO ignore naming convention in existing code, refactor to reduce complexity when convenient
+@SuppressWarnings(value = ['FactoryMethodName', 'AbcMetric'])
 class RepositoryManagerClientUtil
 {
   static RepositoryManagerClient buildRmClient(String url, String credentialsId) throws URISyntaxException {
     def uri = new URI(url)
 
     def credentials = CredentialsMatchers.firstOrNull(CredentialsProvider
-        .lookupCredentials(StandardUsernamePasswordCredentials.class, jenkins.model.Jenkins.getInstance(), ACL.SYSTEM,
-        URIRequirementBuilder.fromUri(url).build()), CredentialsMatchers.withId(credentialsId));
+        .lookupCredentials(StandardUsernamePasswordCredentials, Jenkins.getInstance(), ACL.SYSTEM,
+        URIRequirementBuilder.fromUri(url).build()), CredentialsMatchers.withId(credentialsId))
 
     def authentication
 

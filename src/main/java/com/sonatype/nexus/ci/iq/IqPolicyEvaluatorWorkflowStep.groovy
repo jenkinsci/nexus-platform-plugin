@@ -31,7 +31,7 @@ class IqPolicyEvaluatorWorkflowStep
                                 final Boolean failBuildOnNetworkError,
                                 final String jobCredentialsId)
   {
-    this.jobCredentialsId = !NxiqConfiguration.isPkiAuthentication ? jobCredentialsId : null
+    this.jobCredentialsId = NxiqConfiguration.isPkiAuthentication ? null : jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
@@ -44,7 +44,7 @@ class IqPolicyEvaluatorWorkflowStep
       implements IqPolicyEvaluatorDescriptor
   {
     DescriptorImpl() {
-      super(PolicyEvaluatorExecution.class)
+      super(PolicyEvaluatorExecution)
     }
 
     @Override

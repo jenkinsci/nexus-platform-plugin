@@ -27,11 +27,11 @@ class MavenAsset
   }
 
   @Extension
-  public static final class DescriptorImpl
+  static final class DescriptorImpl
       extends Asset.AssetDescriptor<MavenAsset>
   {
     @Override
-    public String getDisplayName() {
+    String getDisplayName() {
       return 'Maven Artifact'
     }
   }

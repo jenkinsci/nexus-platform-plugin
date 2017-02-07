@@ -14,6 +14,7 @@ import org.slf4j.Logger
 
 class RemoteScannerFactory
 {
+  @SuppressWarnings('ParameterCount') // TODO ignore warning for existing code, refactor when convenient
   static RemoteScanner getRemoteScanner(final String appId,
                                         final String stageId,
                                         final List<String> patterns,

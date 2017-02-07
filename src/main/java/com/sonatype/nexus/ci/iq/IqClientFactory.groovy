@@ -44,9 +44,11 @@ class IqClientFactory
   }
 
   static InternalIqClient getIqClient(Logger log, @Nullable String credentialsId) {
+    def serverConfig = getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId)
+    def proxyConfig = getProxyConfig(NxiqConfiguration.serverUrl)
     return (InternalIqClient) InternalIqClientBuilder.create()
-        .withServerConfig(getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId))
-        .withProxyConfig(getProxyConfig(NxiqConfiguration.serverUrl))
+        .withServerConfig(serverConfig)
+        .withProxyConfig(proxyConfig)
         .withLogger(log)
         .build()
   }
@@ -82,8 +84,8 @@ class IqClientFactory
 
   static private Authentication loadCredentials(final URI url, final String credentialsId) {
     def lookupCredentials = CredentialsProvider.lookupCredentials(
-        StandardUsernamePasswordCredentials.class,
-        (ItemGroup) jenkins.model.Jenkins.getInstance(),
+        StandardUsernamePasswordCredentials,
+        (ItemGroup) Jenkins.getInstance(),
         ACL.SYSTEM,
         URIRequirementBuilder.fromUri(url.toString()).build())
 

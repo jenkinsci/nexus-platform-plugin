@@ -30,7 +30,7 @@ class MavenCoordinate
   }
 
   @Extension
-  public static final class DescriptorImpl
+  static final class DescriptorImpl
       extends Coordinate.CoordinateDescriptor<MavenCoordinate>
   {
     @Override

@@ -34,7 +34,7 @@ trait IqPolicyEvaluator
   String jobCredentialsId
 
   private static final List<String> DEFAULT_SCAN_PATTERN =
-      ["**/*.jar", "**/*.war", "**/*.ear", "**/*.zip", "**/*.tar.gz"]
+      ['**/*.jar', '**/*.war', '**/*.ear', '**/*.zip', '**/*.tar.gz']
 
   ApplicationPolicyEvaluation evaluatePolicy(final Run run,
                                              final FilePath workspace,
@@ -45,7 +45,7 @@ trait IqPolicyEvaluator
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def credentialsId = NxiqConfiguration.isPkiAuthentication ? null : (jobCredentialsId ?: NxiqConfiguration.credentialsId)
+      def credentialsId = getCredentials()
       def iqClient = IqClientFactory.getIqClient(loggerBridge, credentialsId)
       def scanPatterns = getPatterns(iqScanPatterns, listener, run)
 
@@ -76,6 +76,13 @@ trait IqPolicyEvaluator
     }
   }
 
+  private String getCredentials() {
+    NxiqConfiguration.isPkiAuthentication ?
+        null :
+        (jobCredentialsId ?: NxiqConfiguration.credentialsId)
+  }
+
+  @SuppressWarnings('CatchException') // all exceptions are rethrown and possibly modified
   private <T> T rethrowNetworkErrors(final Closure<T> closure) {
     try {
       closure()
@@ -91,12 +98,12 @@ trait IqPolicyEvaluator
   }
 
   private boolean isNetworkError(final Exception throwable) {
-    ExceptionUtils.indexOfType(throwable, IOException.class) >= 0
+    ExceptionUtils.indexOfType(throwable, IOException) >= 0
   }
 
   private List<String> getPatterns(final List<ScanPattern> iqScanPatterns, final TaskListener listener, final Run run) {
     def envVars = run.getEnvironment(listener)
-    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - "" ?: DEFAULT_SCAN_PATTERN
+    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - '' ?: DEFAULT_SCAN_PATTERN
   }
 
   private Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,

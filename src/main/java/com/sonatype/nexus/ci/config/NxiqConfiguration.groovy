@@ -44,7 +44,7 @@ class NxiqConfiguration
 
   @Override
   Descriptor<NxiqConfiguration> getDescriptor() {
-    return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass());
+    return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
   static @Nullable URI getServerUrl() {
@@ -99,7 +99,7 @@ class NxiqConfiguration
         return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
       }
       catch (IqClientException e) {
-        return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed());
+        return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed())
       }
     }
   }

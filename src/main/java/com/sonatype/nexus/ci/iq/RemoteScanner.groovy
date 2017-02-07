@@ -32,6 +32,7 @@ class RemoteScanner
 
   private final String instanceId
 
+  @SuppressWarnings('ParameterCount') // TODO ignore warning for existing code, refactor when convenient
   RemoteScanner(final String appId,
                 final String stageId,
                 final List<String> patterns,

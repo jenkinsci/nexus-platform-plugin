@@ -20,10 +20,12 @@ abstract class Package
    * {@link com.sonatype.nexus.ci.nxrm.Package} in order to build the view's
    * {@link lib.FormTagLib#repeatableHeteroProperty(java.util.Map, groovy.lang.Closure)}
    */
+  // TODO warning ignored for existing code. refactor when convenient
+  @SuppressWarnings(value = ['AbstractClassWithoutAbstractMethod', 'AbstractClassWithPublicConstructor'])
   static abstract class PackageDescriptor
       extends Descriptor<Package>
   {
-    public PackageDescriptor(Class<? extends Package> clazz) {
+    PackageDescriptor(Class<? extends Package> clazz) {
       super(clazz)
     }
   }

@@ -13,7 +13,7 @@ class PolicyEvaluationProjectAction
 {
   private final Job job
 
-  public PolicyEvaluationProjectAction(Job job) {
+  PolicyEvaluationProjectAction(Job job) {
     this.job = job
   }
 
