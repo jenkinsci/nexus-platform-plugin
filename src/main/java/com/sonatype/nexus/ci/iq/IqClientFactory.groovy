@@ -9,6 +9,7 @@ package com.sonatype.nexus.ci.iq
 import javax.annotation.Nullable
 
 import com.sonatype.nexus.api.common.Authentication
+import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
@@ -70,7 +71,7 @@ class IqClientFactory
     }
   }
 
-  static ServerConfig getProxyConfig(URI url) {
+  static ProxyConfig getProxyConfig(URI url) {
     def jenkinsProxy = Jenkins.instance.proxy
 
     if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, url)) {

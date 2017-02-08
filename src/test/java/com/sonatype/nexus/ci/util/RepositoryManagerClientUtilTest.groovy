@@ -6,6 +6,7 @@
 
 package com.sonatype.nexus.ci.util
 
+import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
 
@@ -31,8 +32,6 @@ class RepositoryManagerClientUtilTest
     credentials.getPassword() >> secret
 
     GroovyMock(CredentialsMatchers.class, global: true)
-    //CredentialsMatchers.firstOrNull(_, _) >> credentials
-
   }
 
   def 'it throws exception when credentialsId given but no credentials found'() {
@@ -78,13 +77,39 @@ class RepositoryManagerClientUtilTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
 
-      jenkinsRule.instance.proxy = new ProxyConfiguration('http://proxy/url', 9080, null, null, '')
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, null, null, '')
 
     when:
       RepositoryManagerClientUtil.buildRmClient(url, credentialsId)
     then:
       1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
-      1 * clientBuilder.withProxyConfig { it.address == URI.create("http://proxy:9080/url/") } >> clientBuilder
+      1 * clientBuilder.withProxyConfig { ProxyConfig config ->
+        config.host == 'localhost'
+        config.port == 8888
+        config.authentication == null
+      } >> clientBuilder
+  }
 
+  def 'it creates a client with proxy with authentication when configured'() {
+    setup:
+      GroovyMock(RepositoryManagerClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerClientBuilder)
+      RepositoryManagerClientBuilder.create() >> clientBuilder
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, 'username', 'password', '')
+
+    when:
+      RepositoryManagerClientUtil.buildRmClient(url, credentialsId)
+    then:
+      1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
+      1 * clientBuilder.withProxyConfig { ProxyConfig config ->
+        config.host == 'localhost'
+        config.port == 8888
+        config.authentication.username == 'username'
+        config.authentication.password.toString() == 'password'
+      } >> clientBuilder
   }
 }

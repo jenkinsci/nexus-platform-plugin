@@ -9,10 +9,9 @@ package com.sonatype.nexus.ci.util
 import java.util.regex.Pattern
 
 import com.sonatype.nexus.api.common.Authentication
-import com.sonatype.nexus.api.common.ServerConfig
+import com.sonatype.nexus.api.common.ProxyConfig
 
 import hudson.ProxyConfiguration
-import org.apache.http.client.utils.URIBuilder
 
 @SuppressWarnings('FactoryMethodName') // TODO ignore naming convention in existing code, refactor when convenient
 class ProxyUtil
@@ -21,14 +20,12 @@ class ProxyUtil
     !proxy.noProxyHostPatterns?.find { Pattern pattern -> uri.host ==~ pattern }
   }
 
-  static ServerConfig buildProxyConfig(ProxyConfiguration proxy) {
-    def proxyUri = new URIBuilder(proxy.name).setPort(proxy.port).build()
-
+  static ProxyConfig buildProxyConfig(ProxyConfiguration proxy) {
     if (proxy.userName) {
       def authentication = new Authentication(proxy.userName, proxy.password)
-      return new ServerConfig(proxyUri, authentication)
+      return new ProxyConfig(proxy.name, proxy.port, authentication)
     } else {
-      return new ServerConfig(proxyUri)
+      return new ProxyConfig(proxy.name, proxy.port)
     }
   }
 }

@@ -6,6 +6,7 @@
 
 package com.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
@@ -163,7 +164,7 @@ class IqClientFactoryTest
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
-      jenkinsRule.instance.proxy = new ProxyConfiguration('http://proxy/url', 9080, null, null, '')
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, null, null, '')
 
       CredentialsMatchers.firstOrNull(_, _) >> credentials
 
@@ -178,8 +179,10 @@ class IqClientFactoryTest
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create(expectedServerUrl)
       } >> iqClientBuilder
-      1 * iqClientBuilder.withProxyConfig { ServerConfig config ->
-        config.address == URI.create('http://proxy:9080/url/')
+      1 * iqClientBuilder.withProxyConfig { ProxyConfig proxy ->
+        proxy.host == 'localhost'
+        proxy.port == 8888
+        proxy.authentication == null
       } >> iqClientBuilder
 
     where:
@@ -193,6 +196,41 @@ class IqClientFactoryTest
         'http://127.0.0.1/',
         'http://localhost/'
       ]
+  }
+
+  def 'it uses configured proxy with authentication when configured'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = '123-cred-456'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, 'username', 'password', '')
+
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      iqClientBuilder.withInstanceId(_) >> iqClientBuilder
+
+    when:
+      IqClientFactory.getIqClient()
+    then:
+      1 * iqClientBuilder.withServerConfig { ServerConfig config ->
+        config.address == URI.create(serverUrl)
+      } >> iqClientBuilder
+      1 * iqClientBuilder.withProxyConfig { ProxyConfig proxy ->
+        proxy.host == 'localhost'
+        proxy.port == 8888
+        proxy.authentication.username == 'username'
+        proxy.authentication.password.toString() == 'password'
+      } >> iqClientBuilder
   }
 
   def 'it does not populate credentials when pki authentication is true'() {
