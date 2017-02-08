@@ -10,7 +10,7 @@ import com.sonatype.nexus.ci.util.NxrmUtil
 def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 
-l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
+l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
 
 f.section(title: descriptor.displayName) {
   if (!NxrmUtil.hasNexusRepositoryManagerConfiguration()) {

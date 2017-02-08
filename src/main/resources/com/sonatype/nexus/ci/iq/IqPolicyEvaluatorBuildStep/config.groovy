@@ -15,7 +15,7 @@ def l = namespace(lib.LayoutTagLib)
 
 def nxiqConfiguration = NxiqConfiguration.iqConfig
 
-l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
+l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
 
 f.section(title: descriptor.displayName) {
   if (!nxiqConfiguration) {
