@@ -28,18 +28,18 @@ class IqUtil
   static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.getIqClient(credentialsId)
-      FormUtil.buildListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
+      FormUtil.buildListBoxModel(false, { it.name }, { it.id }, client.getLicensedStages(Context.CI))
     } else {
-      FormUtil.buildListBoxModelWithEmptyOption()
+      FormUtil.buildListBoxModel(false)
     }
   }
 
   static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.getIqClient(credentialsId)
-      FormUtil.buildListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
+      FormUtil.buildListBoxModel(false, { it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     } else {
-      FormUtil.buildListBoxModelWithEmptyOption()
+      FormUtil.buildListBoxModel(false)
     }
   }
 }

@@ -77,7 +77,7 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>1.15</version>
+        <version>2.8</version>
       </dependency>
 
       <dependency>
@@ -367,7 +367,7 @@
             <lineRate>0</lineRate>
             <haltOnFailure>true</haltOnFailure>
             <!-- IMPORTANT never approve a code review where any of the numbers below have decreased -->
-            <totalBranchRate>52</totalBranchRate>
+            <totalBranchRate>54</totalBranchRate>
             <totalLineRate>71</totalLineRate>
             <packageBranchRate>61</packageBranchRate>
             <packageLineRate>78</packageLineRate>

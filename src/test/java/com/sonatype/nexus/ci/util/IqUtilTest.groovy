@@ -6,6 +6,7 @@
 package com.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
+import com.sonatype.nexus.api.iq.Stage
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import com.sonatype.nexus.ci.config.NxiqConfiguration
@@ -45,16 +46,14 @@ public class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
-      applicationItems.size() == 3
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      applicationItems.get(1).name == 'name1'
-      applicationItems.get(1).value == 'publicId1'
-      applicationItems.get(2).name == 'name2'
-      applicationItems.get(2).value == 'publicId2'
+      applicationItems.size() == 2
+      applicationItems.get(0).name == 'name1'
+      applicationItems.get(0).value == 'publicId1'
+      applicationItems.get(1).name == 'name2'
+      applicationItems.get(1).value == 'publicId2'
   }
 
-  def 'doFillIqApplicationItems populates empty list when no server is configured'() {
+  def 'doFillIqApplicationItems does not populates empty list when no server is configured'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
@@ -64,9 +63,7 @@ public class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
-      applicationItems.size() == 1
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      applicationItems.size() == 0
   }
 
   def 'doFillIqApplicationItems uses jobSpecificCredentialsId'() {
@@ -84,15 +81,89 @@ public class IqUtilTest
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient('jobCredentialsId') >> iqClient
 
-      iqClient.applicationsForApplicationEvaluation >> []
+      iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
       def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId')
 
     then:
       applicationItems.size() == 1
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      applicationItems.get(0).name == 'name'
+      applicationItems.get(0).value == 'publicId'
+  }
 
+  def 'doFillIqStageItems populates stage items'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient('') >> iqClient
+
+      iqClient.getLicensedStages(_) >> [
+          new Stage('id1', 'build'),
+          new Stage('id2', 'operate')
+      ]
+
+    when: 'doFillIqStageItems is called'
+      def applicationItems = IqUtil.doFillIqStageItems('')
+
+    then:
+      applicationItems.size() == 2
+      applicationItems.get(0).name == 'build'
+      applicationItems.get(0).value == 'id1'
+      applicationItems.get(1).name == 'operate'
+      applicationItems.get(1).value == 'id2'
+  }
+
+  def 'doFillIqStageItems uses jobSpecificCredentialsId'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+    when: 'doFillIqStageItems is called'
+      def applicationItems = IqUtil.doFillIqStageItems('')
+
+    then:
+      applicationItems.size() == 0
+  }
+
+  def 'doFillIqStageItems does not populates empty list when no server is configured'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient('jobCredentialsId') >> iqClient
+
+      iqClient.getLicensedStages(_) >> [
+          new Stage('id1', 'build'),
+          new Stage('id2', 'operate')
+      ]
+
+    when: 'doFillIqStageItems is called'
+      def applicationItems = IqUtil.doFillIqStageItems('jobCredentialsId')
+
+    then:
+      applicationItems.size() == 2
+      applicationItems.get(0).name == 'build'
+      applicationItems.get(0).value == 'id1'
+      applicationItems.get(1).name == 'operate'
+      applicationItems.get(1).value == 'id2'
   }
 }

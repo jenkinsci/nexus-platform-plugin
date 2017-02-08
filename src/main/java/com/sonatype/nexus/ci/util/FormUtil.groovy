@@ -15,7 +15,8 @@ import jenkins.model.Jenkins
 
 import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri
 
-@SuppressWarnings('FactoryMethodName') // TODO ignore naming convention in existing code, refactor when convenient
+@SuppressWarnings('FactoryMethodName')
+// TODO ignore naming convention in existing code, refactor when convenient
 class FormUtil
 {
   final static String EMPTY_LIST_BOX_NAME = '-----------'
@@ -61,17 +62,23 @@ class FormUtil
           fromUri(serverUrl).build(), CredentialsMatchers.always())
   }
 
-  static ListBoxModel buildListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items) {
-    def listBoxModel = buildListBoxModelWithEmptyOption()
+  static ListBoxModel buildListBoxModel(boolean withEmptyOption,
+                                        Closure<String> nameSelector,
+                                        Closure<String> valueSelector,
+                                        List items)
+  {
+    def listBoxModel = buildListBoxModel(withEmptyOption)
     items.each { item ->
       listBoxModel.add(nameSelector(item), valueSelector(item))
     }
     return listBoxModel
   }
 
-  static ListBoxModel buildListBoxModelWithEmptyOption() {
+  static ListBoxModel buildListBoxModel(final boolean withEmptyOption) {
     def listBoxModel = new ListBoxModel()
-    listBoxModel.add(EMPTY_LIST_BOX_NAME, EMPTY_LIST_BOX_VALUE)
+    if (withEmptyOption) {
+      listBoxModel.add(EMPTY_LIST_BOX_NAME, EMPTY_LIST_BOX_VALUE)
+    }
     return listBoxModel
   }
 }

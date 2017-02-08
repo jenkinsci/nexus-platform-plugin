@@ -20,6 +20,8 @@ import hudson.model.Run
 import hudson.model.TaskListener
 import org.apache.commons.lang.exception.ExceptionUtils
 
+import static com.google.common.base.Preconditions.checkArgument
+
 @ParametersAreNonnullByDefault
 trait IqPolicyEvaluator
 {
@@ -42,6 +44,7 @@ trait IqPolicyEvaluator
                                              final TaskListener listener)
   {
     try {
+      checkArgument(iqStage && iqApplication, 'Arguments iqApplication and iqStage are mandatory')
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
@@ -65,14 +68,18 @@ trait IqPolicyEvaluator
 
       return evaluationResult
     } catch (IqNetworkException e) {
-      if (failBuildOnNetworkError) {
-        throw e.cause
-      }
-      else {
-        listener.getLogger().println(Messages.IqPolicyEvaluation_UnableToCommunicate(e.message))
-        run.setResult(Result.UNSTABLE)
-        return null
-      }
+      return handleNetworkException(e, listener, run)
+    }
+  }
+
+  def handleNetworkException(final IqNetworkException e, final TaskListener listener, final Run run) {
+    if (failBuildOnNetworkError) {
+      throw e.cause
+    }
+    else {
+      listener.logger.println Messages.IqPolicyEvaluation_UnableToCommunicate(e.message)
+      run.result = Result.UNSTABLE
+      return null
     }
   }
 

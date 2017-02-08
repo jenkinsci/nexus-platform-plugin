@@ -25,7 +25,7 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusInstanceIdItems() {
     return FormUtil.
-        buildListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
+        buildListBoxModel(true, { NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
             GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
   }
 
@@ -35,10 +35,10 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId) {
     if (!nexusInstanceId) {
-      return FormUtil.buildListBoxModelWithEmptyOption()
+      return FormUtil.buildListBoxModel(true)
     }
     def repositories = getApplicableRepositories(nexusInstanceId)
-    return FormUtil.buildListBoxModel({ it.name }, { it.id }, repositories)
+    return FormUtil.buildListBoxModel(true, { it.name }, { it.id }, repositories)
   }
 
   /**

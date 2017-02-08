@@ -250,6 +250,36 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatus(Result.FAILURE, build)
   }
 
+  def 'Pipeline build step should fail with exception when mandatory parameter is missing'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed without stage'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\'\n' +
+          'echo \'result-after-failure:\' + result' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the build status is unstable and the result is null'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(99).contains('java.lang.IllegalArgumentException: Arguments iqApplication and iqStage are mandatory')
+
+    when: 'the nexus policy evaluator is executed without application'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqStage: \'build\'\n' +
+          'echo \'result-after-failure:\' + result' +
+          '}\n')
+      build = project.scheduleBuild2(0).get()
+
+    then: 'the build status is unstable and the result is null'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(99).contains('java.lang.IllegalArgumentException: Arguments iqApplication and iqStage are mandatory')
+  }
+
   def configureJenkins() {
     nxiqConfiguration = [new NxiqConfiguration('http://server/url', false, 'cred-id')]
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
