@@ -61,7 +61,6 @@ class IqPolicyEvaluatorTest
     GroovyMock(GlobalNexusConfiguration, global: true)
     GroovyMock(IqClientFactory, global: true)
     GroovyMock(RemoteScannerFactory, global: true)
-    RemoteScannerFactory.getRemoteScanner("appId", "stage", _, workspace, "http://server/path", _, _) >> Mock(RemoteScanner)
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
     GlobalNexusConfiguration.instanceId >> 'instance-id'
@@ -84,9 +83,9 @@ class IqPolicyEvaluatorTest
     then: 'retrieves proprietary config'
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
 
-    then: 'performs a remove scan'
+    then: 'performs a remote scan'
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ["*.jar"], workspace,
-          URI.create("http://server/path"), proprietaryConfig, _ as Logger, 'instance-id') >> remoteScanner
+          proprietaryConfig, _ as Logger, 'instance-id') >> remoteScanner
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'evaluates the result'
@@ -103,8 +102,8 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", defaultPatterns, workspace,
-          URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
+      1 * RemoteScannerFactory.
+          getRemoteScanner("appId", "stage", defaultPatterns, workspace, _, _ as Logger, 'instance-id') >> remoteScanner
   }
 
   def 'it expands environment variables for scan pattern'() {
@@ -117,8 +116,9 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ['/path1/some-scan-pattern/path2/'], workspace,
-          URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
+      1 * RemoteScannerFactory.
+          getRemoteScanner("appId", "stage", ['/path1/some-scan-pattern/path2/'], workspace, _, _ as Logger,
+              'instance-id') >> remoteScanner
   }
 
   def 'it ignores when no environment variables set for scan pattern'() {
@@ -131,8 +131,9 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ['/path1/$NONEXISTENT_SCAN_PATTERN/path2/'],
-          workspace, URI.create("http://server/path"), _, _ as Logger, 'instance-id') >> remoteScanner
+      1 * RemoteScannerFactory.
+          getRemoteScanner("appId", "stage", ['/path1/$NONEXISTENT_SCAN_PATTERN/path2/'], workspace, _, _ as Logger,
+              'instance-id') >> remoteScanner
   }
 
   def 'exception handling (part 1)'() {

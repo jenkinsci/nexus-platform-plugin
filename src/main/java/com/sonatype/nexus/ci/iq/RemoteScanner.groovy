@@ -24,8 +24,6 @@ class RemoteScanner
 
   private final FilePath workspace
 
-  private final URI iqServerUrl
-
   private final ProprietaryConfig proprietaryConfig
 
   private final Logger log
@@ -37,7 +35,6 @@ class RemoteScanner
                 final String stageId,
                 final List<String> patterns,
                 final FilePath workspace,
-                final URI iqServerUrl,
                 final ProprietaryConfig proprietaryConfig,
                 final Logger log,
                 final String instanceId)
@@ -46,7 +43,6 @@ class RemoteScanner
     this.stageId = stageId
     this.patterns = patterns
     this.workspace = workspace
-    this.iqServerUrl = iqServerUrl
     this.proprietaryConfig = proprietaryConfig
     this.log = log
     this.instanceId = instanceId
@@ -54,7 +50,7 @@ class RemoteScanner
 
   @Override
   RemoteScanResult call() throws RuntimeException {
-    InternalIqClient iqClient = IqClientFactory.getIqClient(iqServerUrl, log, instanceId)
+    InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def targets = getTargets(new File(workspace.getRemote()), patterns)
     def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))

@@ -171,7 +171,6 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
-      iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
     when:
       clientGetter()
@@ -187,14 +186,12 @@ class IqClientFactoryTest
       clientGetter << [
           { -> IqClientFactory.getIqClient() },
           { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), '') },
-          { -> IqClientFactory.getIqClient((Logger) null, '') },
-          { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), (Logger) null, 'instance-id') },
+          { -> IqClientFactory.getIqClient((Logger) null, '') }
       ]
       expectedServerUrl << [
         'http://localhost/',
         'http://127.0.0.1/',
-        'http://localhost/',
-        'http://127.0.0.1/'
+        'http://localhost/'
       ]
   }
 
@@ -239,5 +236,27 @@ class IqClientFactoryTest
         config.authentication.username == 'username'
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+  }
+
+  def 'getLocalIqClient uses logger and instanceId but does not populate the server or proxy configuration'() {
+    GroovyMock(InternalIqClientBuilder, global: true)
+    def iqClientBuilder = Mock(InternalIqClientBuilder)
+    InternalIqClientBuilder.create() >> iqClientBuilder
+
+    def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+    globalConfiguration.iqConfigs = []
+    globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', false, 'credentialsId'))
+    globalConfiguration.save()
+
+    def logger = Mock(Logger)
+
+    when:
+      IqClientFactory.getIqLocalClient(logger, 'instanceId')
+
+    then:
+      1 * iqClientBuilder.withLogger(logger) >> iqClientBuilder
+      1 * iqClientBuilder.withInstanceId('instanceId') >> iqClientBuilder
+      0 * iqClientBuilder.withServerConfig(_)
+      0 * iqClientBuilder.withProxyConfig(_)
   }
 }

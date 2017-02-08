@@ -55,7 +55,7 @@ trait IqPolicyEvaluator
       def proprietaryConfig =
           rethrowNetworkErrors { iqClient.getProprietaryConfigForApplicationEvaluation(iqApplication) }
       def remoteScanner = RemoteScannerFactory.getRemoteScanner(iqApplication, iqStage, scanPatterns, workspace,
-          NxiqConfiguration.serverUrl, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+          proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = rethrowNetworkErrors { iqClient.evaluateApplication(iqApplication, iqStage, scanResult) }
