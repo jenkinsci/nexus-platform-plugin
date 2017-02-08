@@ -53,7 +53,7 @@ public class IqUtilTest
       applicationItems.get(1).value == 'publicId2'
   }
 
-  def 'doFillIqApplicationItems does not populates empty list when no server is configured'() {
+  def 'doFillIqApplicationItems returns empty list when no server is configured'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
@@ -113,14 +113,14 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def applicationItems = IqUtil.doFillIqStageItems('')
+      def stageItems = IqUtil.doFillIqStageItems('')
 
     then:
-      applicationItems.size() == 2
-      applicationItems.get(0).name == 'build'
-      applicationItems.get(0).value == 'id1'
-      applicationItems.get(1).name == 'operate'
-      applicationItems.get(1).value == 'id2'
+      stageItems.size() == 2
+      stageItems.get(0).name == 'build'
+      stageItems.get(0).value == 'id1'
+      stageItems.get(1).name == 'operate'
+      stageItems.get(1).value == 'id2'
   }
 
   def 'doFillIqStageItems uses jobSpecificCredentialsId'() {
@@ -130,13 +130,13 @@ public class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqStageItems is called'
-      def applicationItems = IqUtil.doFillIqStageItems('')
+      def stageItems = IqUtil.doFillIqStageItems('')
 
     then:
-      applicationItems.size() == 0
+      stageItems.size() == 0
   }
 
-  def 'doFillIqStageItems does not populates empty list when no server is configured'() {
+  def 'doFillIqStageItems returns empty list when no server is configured'() {
     setup:
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
@@ -157,13 +157,13 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def applicationItems = IqUtil.doFillIqStageItems('jobCredentialsId')
+      def stageItems = IqUtil.doFillIqStageItems('jobCredentialsId')
 
     then:
-      applicationItems.size() == 2
-      applicationItems.get(0).name == 'build'
-      applicationItems.get(0).value == 'id1'
-      applicationItems.get(1).name == 'operate'
-      applicationItems.get(1).value == 'id2'
+      stageItems.size() == 2
+      stageItems.get(0).name == 'build'
+      stageItems.get(0).value == 'id1'
+      stageItems.get(1).name == 'operate'
+      stageItems.get(1).value == 'id2'
   }
 }
