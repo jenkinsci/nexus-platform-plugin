@@ -46,14 +46,16 @@ public class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
-      applicationItems.size() == 2
-      applicationItems.get(0).name == 'name1'
-      applicationItems.get(0).value == 'publicId1'
-      applicationItems.get(1).name == 'name2'
-      applicationItems.get(1).value == 'publicId2'
+      applicationItems.size() == 3
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      applicationItems.get(1).name == 'name1'
+      applicationItems.get(1).value == 'publicId1'
+      applicationItems.get(2).name == 'name2'
+      applicationItems.get(2).value == 'publicId2'
   }
 
-  def 'doFillIqApplicationItems returns empty list when no server is configured'() {
+  def 'doFillIqApplicationItems returns list with empty options no server is configured'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
@@ -63,7 +65,9 @@ public class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('')
 
     then:
-      applicationItems.size() == 0
+      applicationItems.size() == 1
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqApplicationItems uses jobSpecificCredentialsId'() {
@@ -87,9 +91,11 @@ public class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId')
 
     then:
-      applicationItems.size() == 1
-      applicationItems.get(0).name == 'name'
-      applicationItems.get(0).value == 'publicId'
+      applicationItems.size() == 2
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      applicationItems.get(1).name == 'name'
+      applicationItems.get(1).value == 'publicId'
   }
 
   def 'doFillIqStageItems populates stage items'() {
@@ -116,11 +122,13 @@ public class IqUtilTest
       def stageItems = IqUtil.doFillIqStageItems('')
 
     then:
-      stageItems.size() == 2
-      stageItems.get(0).name == 'build'
-      stageItems.get(0).value == 'id1'
-      stageItems.get(1).name == 'operate'
-      stageItems.get(1).value == 'id2'
+      stageItems.size() == 3
+      stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      stageItems.get(1).name == 'build'
+      stageItems.get(1).value == 'id1'
+      stageItems.get(2).name == 'operate'
+      stageItems.get(2).value == 'id2'
   }
 
   def 'doFillIqStageItems uses jobSpecificCredentialsId'() {
@@ -133,18 +141,15 @@ public class IqUtilTest
       def stageItems = IqUtil.doFillIqStageItems('')
 
     then:
-      stageItems.size() == 0
+      stageItems.size() == 1
+      stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
-  def 'doFillIqStageItems returns empty list when no server is configured'() {
+  def 'doFillIqStageItems returns list with empty options when no server is configured'() {
     setup:
-      final String serverUrl = 'http://localhost/'
-      final String credentialsId = 'credentialsId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
       globalConfiguration.iqConfigs = []
-      globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
@@ -160,10 +165,8 @@ public class IqUtilTest
       def stageItems = IqUtil.doFillIqStageItems('jobCredentialsId')
 
     then:
-      stageItems.size() == 2
-      stageItems.get(0).name == 'build'
-      stageItems.get(0).value == 'id1'
-      stageItems.get(1).name == 'operate'
-      stageItems.get(1).value == 'id2'
+      stageItems.size() == 1
+      stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 }

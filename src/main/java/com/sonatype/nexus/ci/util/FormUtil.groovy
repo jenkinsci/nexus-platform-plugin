@@ -62,23 +62,18 @@ class FormUtil
           fromUri(serverUrl).build(), CredentialsMatchers.always())
   }
 
-  static ListBoxModel buildListBoxModel(boolean withEmptyOption,
-                                        Closure<String> nameSelector,
-                                        Closure<String> valueSelector,
-                                        List items)
+  static ListBoxModel buildListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items)
   {
-    def listBoxModel = buildListBoxModel(withEmptyOption)
+    def listBoxModel = buildListBoxModelWithEmptyOption()
     items.each { item ->
       listBoxModel.add(nameSelector(item), valueSelector(item))
     }
     return listBoxModel
   }
 
-  static ListBoxModel buildListBoxModel(final boolean withEmptyOption) {
+  static ListBoxModel buildListBoxModelWithEmptyOption() {
     def listBoxModel = new ListBoxModel()
-    if (withEmptyOption) {
-      listBoxModel.add(EMPTY_LIST_BOX_NAME, EMPTY_LIST_BOX_VALUE)
-    }
+    listBoxModel.add(EMPTY_LIST_BOX_NAME, EMPTY_LIST_BOX_VALUE)
     return listBoxModel
   }
 }
