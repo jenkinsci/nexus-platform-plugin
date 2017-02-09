@@ -19,32 +19,33 @@ f.section(title: descriptor.displayName) {
     f.textbox(clazz: 'required')
   }
 
-  f.radioBlock(
-      name: _('isPkiAuthentication'),
-      title: _(Messages.Configuration_PKIAuthentication()),
-      inline: true,
-      value: true,
-      checked: nxiqConfiguration?.@isPkiAuthentication,
-      help: descriptor.getHelpFile('isPkiAuthentication')
-  ) {
-    f.block() {
-      f.validateButton(
-          title: _(Messages.Configuration_TestConnection()),
-          progress: _('Testing...'),
-          method: 'verifyCredentials',
-          with: 'serverUrl'
-      )
-    }
-  }
+//  TODO INT-134 - PKI Authentication support needed in nexus-java-api
+//  f.radioBlock(
+//      name: _('isPkiAuthentication'),
+//      title: _(Messages.Configuration_PKIAuthentication()),
+//      inline: true,
+//      value: true,
+//      checked: nxiqConfiguration?.@isPkiAuthentication,
+//      help: descriptor.getHelpFile('isPkiAuthentication')
+//  ) {
+//    f.block() {
+//      f.validateButton(
+//          title: _(Messages.Configuration_TestConnection()),
+//          progress: _('Testing...'),
+//          method: 'verifyCredentials',
+//          with: 'serverUrl'
+//      )
+//    }
+//  }
 
-  f.radioBlock(
-      name: _('isPkiAuthentication'),
-      title: _(Messages.Configuration_UserAuthentication()),
-      inline: true,
-      value: false,
-      checked: !nxiqConfiguration?.@isPkiAuthentication,
-      help: descriptor.getHelpFile('isNotPkiAuthentication')
-  ) {
+//  f.radioBlock(
+//      name: _('isPkiAuthentication'),
+//      title: _(Messages.Configuration_UserAuthentication()),
+//      inline: true,
+//      value: false,
+//      checked: !nxiqConfiguration?.@isPkiAuthentication,
+//      help: descriptor.getHelpFile('isNotPkiAuthentication')
+//  ) {
     f.entry(title: _(Messages.Configuration_Credentials()), field: 'credentialsId') {
       c.select(context:app, includeUser:false, expressionAllowed:false)
     }
@@ -57,5 +58,5 @@ f.section(title: descriptor.displayName) {
           with: 'serverUrl,credentialsId'
       )
     }
-  }
+//  }
 }
