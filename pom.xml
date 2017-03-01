@@ -1,8 +1,15 @@
 <!--
 
     Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
-    Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
-    "Sonatype" is a trademark of Sonatype, Inc.
+
+    This program is licensed to you under the Apache License Version 2.0,
+    and you may not use this file except in compliance with the Apache License Version 2.0.
+    You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Apache License Version 2.0 is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -10,10 +17,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.sonatype.buildsupport</groupId>
-    <artifactId>private-parent</artifactId>
-    <version>9</version>
-    <relativePath />
+    <groupId>org.sonatype.buildsupport</groupId>
+    <artifactId>public-parent</artifactId>
+    <version>10</version>
   </parent>
 
   <groupId>com.sonatype.nexus.ci</groupId>
@@ -297,7 +303,7 @@
         <version>1.119</version>
         <extensions>true</extensions>
         <configuration>
-          <compatibleSinceVersion>1.580.1</compatibleSinceVersion>
+          <compatibleSinceVersion>1.642.3</compatibleSinceVersion>
         </configuration>
       </plugin>
       <plugin>
