@@ -45,8 +45,8 @@
     <dependencies>
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
-        <artifactId>nexus-java-api</artifactId>
-        <version>1.1.0-01</version>
+        <artifactId>nexus-platform-api</artifactId>
+        <version>1.2.0-01</version>
         <classifier>internal</classifier>
       </dependency>
 
@@ -136,7 +136,7 @@
   <dependencies>
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
-      <artifactId>nexus-java-api</artifactId>
+      <artifactId>nexus-platform-api</artifactId>
       <classifier>internal</classifier>
     </dependency>
 
