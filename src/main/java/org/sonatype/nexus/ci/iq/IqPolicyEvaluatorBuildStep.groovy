@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import javax.annotation.Nonnull
+import javax.annotation.ParametersAreNonnullByDefault
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
@@ -32,10 +33,20 @@ import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
+@ParametersAreNonnullByDefault
 class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, SimpleBuildStep
 {
+  String iqStage
+
+  String iqApplication
+
+  List<ScanPattern> iqScanPatterns
+
+  Boolean failBuildOnNetworkError
+
+  String jobCredentialsId
 
   @DataBoundConstructor
   IqPolicyEvaluatorBuildStep(final String iqStage,
@@ -55,7 +66,7 @@ class IqPolicyEvaluatorBuildStep
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    evaluatePolicy(run, workspace, launcher, listener)
+    IqPolicyEvaluatorUtil.evaluatePolicy(this, run, workspace, launcher, listener)
   }
 
   @Extension

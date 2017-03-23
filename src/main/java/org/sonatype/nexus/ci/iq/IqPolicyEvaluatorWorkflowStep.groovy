@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import javax.annotation.Nullable
+import javax.annotation.ParametersAreNonnullByDefault
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
@@ -26,10 +27,20 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
+@ParametersAreNonnullByDefault
 class IqPolicyEvaluatorWorkflowStep
     extends AbstractStepImpl
     implements IqPolicyEvaluator
 {
+  String iqStage
+
+  String iqApplication
+
+  List<ScanPattern> iqScanPatterns
+
+  Boolean failBuildOnNetworkError
+
+  String jobCredentialsId
 
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage,

@@ -45,6 +45,6 @@ class PolicyEvaluatorExecution
   @Override
   @SuppressWarnings('ConfusingMethodName')
   protected ApplicationPolicyEvaluation run() throws Exception {
-    iqPolicyEvaluator.evaluatePolicy(run, workspace, launcher, taskListener)
+    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener)
   }
 }
