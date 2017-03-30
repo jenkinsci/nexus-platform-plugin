@@ -22,7 +22,7 @@
     <version>2.22</version>
   </parent>
 
-  <groupId>com.sonatype.nexus.ci</groupId>
+  <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
   <version>1.2.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
@@ -59,14 +59,6 @@
     <concurrency>1</concurrency>
     <java.level>7</java.level>
     <slf4j.version>1.7.7</slf4j.version>
-
-    <buildsupport.version>10</buildsupport.version>
-    <buildsupport.license-maven-plugin.version>2.11</buildsupport.license-maven-plugin.version>
-    <public.serverId>sonatype-public</public.serverId>
-    <public.nexusUrl>https://repository.sonatype.org</public.nexusUrl>
-    <staging.serverId>${public.serverId}</staging.serverId>
-    <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
-    <staging.progressTimeout>15</staging.progressTimeout>
   </properties>
 
 
@@ -389,12 +381,12 @@
       <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>${buildsupport.license-maven-plugin.version}</version>
+        <version>2.11</version>
         <dependencies>
           <dependency>
             <groupId>org.sonatype.buildsupport</groupId>
             <artifactId>licenses</artifactId>
-            <version>${buildsupport.version}</version>
+            <version>10</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -431,24 +423,6 @@
           <headerDefinitions>
             <headerDefinition>buildsupportHeaders.xml</headerDefinition>
           </headerDefinitions>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.6</version>
-        <extensions>true</extensions>
-        <configuration>
-          <nexusUrl>${staging.nexusUrl}</nexusUrl>
-          <serverId>${staging.serverId}</serverId>
-          <altStagingDirectory>${staging.directory}</altStagingDirectory>
-          <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
-          <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
-          <tags>
-            <localUsername>${user.name}</localUsername>
-            <javaVersion>${java.version}</javaVersion>
-          </tags>
         </configuration>
       </plugin>
 
