@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+
+    Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+
+    This program is licensed to you under the Apache License Version 2.0,
+    and you may not use this file except in compliance with the Apache License Version 2.0.
+    You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Apache License Version 2.0 is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+
+-->
+<com.sonatype.nexus.ci.config.GlobalNexusConfiguration plugin="nexus-jenkins-plugin@1.1.0-05">
+  <nxrmConfigs>
+    <com.sonatype.nexus.ci.config.Nxrm2Configuration>
+      <id>nexus-rm</id>
+      <internalId>605a8c1e-5152-4dbd-b41e-0d1b26a66317</internalId>
+      <displayName>Nexus Repository Manager</displayName>
+      <serverUrl>http://localhost:8070</serverUrl>
+      <credentialsId>user</credentialsId>
+    </com.sonatype.nexus.ci.config.Nxrm2Configuration>
+  </nxrmConfigs>
+  <iqConfigs>
+    <com.sonatype.nexus.ci.config.NxiqConfiguration>
+      <serverUrl>http://localhost:8080</serverUrl>
+      <isPkiAuthentication>false</isPkiAuthentication>
+      <credentialsId>user</credentialsId>
+    </com.sonatype.nexus.ci.config.NxiqConfiguration>
+  </iqConfigs>
+  <instanceId>8b51730a06d74513ac1bffdb02594251</instanceId>
+</com.sonatype.nexus.ci.config.GlobalNexusConfiguration>

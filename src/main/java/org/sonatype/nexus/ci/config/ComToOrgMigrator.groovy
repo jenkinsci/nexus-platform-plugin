@@ -83,16 +83,11 @@ class ComToOrgMigrator
     }
 
     def iqPolicyEvaluatorTraitFieldMappings = [
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqStage'                :
-            'org_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqStage',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqApplication'          :
-            'org_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqApplication',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqScanPatterns'         :
-            'org_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqScanPatterns',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__failBuildOnNetworkError':
-            'org_sonatype_nexus_ci_iq_IqPolicyEvaluator__failBuildOnNetworkError',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'       :
-            'org_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqStage'                : 'iqStage',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqApplication'          : 'iqApplication',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqScanPatterns'         : 'iqScanPatterns',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__failBuildOnNetworkError': 'failBuildOnNetworkError',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'       : 'jobCredentialsId'
     ]
 
     iqPolicyEvaluatorTraitFieldMappings.each { key, value ->
