@@ -43,6 +43,14 @@
     <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
   </scm>
 
+  <developers>
+    <developer>
+      <id>whyjustin</id>
+      <name>Sonatype, Inc.</name>
+      <organization>Sonatype, Inc.</organization>
+    </developer>
+  </developers>
+
   <properties>
     <jenkins.version>2.7</jenkins.version>
     <jenkins-test-harness.version>2.7</jenkins-test-harness.version>
