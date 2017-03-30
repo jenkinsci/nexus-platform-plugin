@@ -28,7 +28,7 @@
   <packaging>hpi</packaging>
 
   <name>Nexus Platform Plugin</name>
-  <url>http://www.sonatype.com</url>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Nexus+Platform+Plugin</url>
 
   <licenses>
     <license>
@@ -36,6 +36,20 @@
       <url>http://opensource.org/licenses/Apache-2.0</url>
     </license>
   </licenses>
+
+  <scm>
+    <connection>scm:git:ssh://github.com/jenkinsci/nexus-platform-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nexus-platform-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>whyjustin</id>
+      <name>Sonatype, Inc.</name>
+      <organization>Sonatype, Inc.</organization>
+    </developer>
+  </developers>
 
   <properties>
     <jenkins.version>2.7</jenkins.version>
