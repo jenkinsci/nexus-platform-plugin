@@ -444,24 +444,6 @@
         </configuration>
       </plugin>
 
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.6</version>
-        <extensions>true</extensions>
-        <configuration>
-          <nexusUrl>${staging.nexusUrl}</nexusUrl>
-          <serverId>${staging.serverId}</serverId>
-          <altStagingDirectory>${staging.directory}</altStagingDirectory>
-          <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
-          <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
-            <tags>
-              <localUsername>${user.name}</localUsername>
-              <javaVersion>${java.version}</javaVersion>
-            </tags>
-          </configuration>
-        </plugin>
-
 <!--
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -527,6 +509,27 @@
           <url>${public-snapshot.url}</url>
         </snapshotRepository>
       </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.6</version>
+            <extensions>true</extensions>
+            <configuration>
+              <nexusUrl>${staging.nexusUrl}</nexusUrl>
+              <serverId>${staging.serverId}</serverId>
+              <altStagingDirectory>${staging.directory}</altStagingDirectory>
+              <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+              <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
+              <tags>
+                <localUsername>${user.name}</localUsername>
+                <javaVersion>${java.version}</javaVersion>
+              </tags>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
