@@ -8,13 +8,16 @@ import com.sonatype.jenkins.pipeline.GitHub
 import com.sonatype.jenkins.pipeline.OsTools
 
 node {
-  def commitId
+  def commitId, pom, version
   GitHub gitHub
 
   stage('Preparation') {
     checkout scm
     sh 'git rev-parse HEAD > .git/commit-id'
     commitId = readFile('.git/commit-id')
+
+    pom = readMavenPom file: 'pom.xml'
+    version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
@@ -24,14 +27,23 @@ node {
     gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
   }
   stage('License Check') {
-    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+    gitHub.statusUpdate commitId, 'pending', 'license', 'License check is running'
+
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
       OsTools.runSafe(this, 'mvn license:check')
+    }
+
+    if (currentBuild.result == 'FAILURE') {
+      gitHub.statusUpdate commitId, 'failure', 'license', 'License check failed'
+      return
+    } else {
+      gitHub.statusUpdate commitId, 'success', 'license', 'License check succeeded'
     }
   }
   stage('Build') {
-    gitHub.statusUpdate commitId, 'pending', 'build', 'Build in running'
+    gitHub.statusUpdate commitId, 'pending', 'build', 'Build is running'
 
-    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
       OsTools.runSafe(this, 'mvn clean package')
     }
 
@@ -54,8 +66,18 @@ node {
       gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed', "${evaluation.applicationCompositionReportUrl}"
     }
   }
-  stage('Results') {
+  stage('Archive Results') {
     junit '**/target/surefire-reports/TEST-*.xml'
-    archive 'target/*.jar'
+    archive 'target/*.hpi'
+  }
+  if (env.BRANCH_NAME == 'master') {
+    input 'Publish to Jenkins Update Center?'
+
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
+      OsTools.runSafe(this, "mvn -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+    }
+    OsTools.runSafe(this, "git push ${pom.artifactId}-${version}")
+  } else {
+    input 'Non master noop?'
   }
 }
