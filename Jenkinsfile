@@ -16,8 +16,11 @@ node {
     sh 'git rev-parse HEAD > .git/commit-id'
     commitId = readFile('.git/commit-id')
 
+    OsTools.runSafe(this, 'git config --global user.email sonatype-ci@sonatype.com')
+    OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
+
     pom = readMavenPom file: 'pom.xml'
-    version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+    version = pom.version.replace("-SNAPSHOT", ".${String.format('%03d', currentBuild.number)}")
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
@@ -76,7 +79,7 @@ node {
 //  }
   stage('Deploy to Sonatype Internal') {
     withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml') {
-      OsTools.runSafe(this, "mvn -Psonatype-internal -DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+      OsTools.runSafe(this, "mvn -Psonatype-internal -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
     }
   }
   return
@@ -84,7 +87,7 @@ node {
     input 'Publish to Jenkins Update Center?'
 
     withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
-      OsTools.runSafe(this, "mvn -DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+      OsTools.runSafe(this, "mvn -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
     }
     OsTools.runSafe(this, "git push ${pom.artifactId}-${version}")
   }
