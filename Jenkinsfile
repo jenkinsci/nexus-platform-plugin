@@ -70,14 +70,27 @@ node {
     junit '**/target/surefire-reports/TEST-*.xml'
     archive 'target/*.hpi'
   }
-  if (env.BRANCH_NAME == 'master') {
+  if (env.BRANCH_NAME != 'master')
+  {
+    stage('Deploy to Sonatype Internal') {
+      withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+        OsTools.runSafe(this, 'mvn -Psonatype-internal deploy')
+      }
+    }
+    return
+  }
+  stage('Deploy to Sonatype Internal') {
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+      OsTools.runSafe(this, "mvn -Psonatype-internal -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+    }
+  }
+  return
+  stage ('Deploy to Jenkins') {
     input 'Publish to Jenkins Update Center?'
 
     withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
       OsTools.runSafe(this, "mvn -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
     }
     OsTools.runSafe(this, "git push ${pom.artifactId}-${version}")
-  } else {
-    input 'Non master noop?'
   }
 }
