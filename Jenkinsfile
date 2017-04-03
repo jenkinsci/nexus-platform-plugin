@@ -16,10 +16,8 @@ node {
 
     checkout scm
 
-    OsTools.runSafe(this, 'git rev-parse --short HEAD > .git/commit-id')
-    commitId = readFile('.git/commit-id')
-    OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId} > .git/commit-date")
-    commitDate = readFile('.git/commit-date')
+    commitId = OsTools.runSafe(this, 'git rev-parse --short HEAD > .git/commit-id')
+    commitDate = OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId} > .git/commit-date")
 
     OsTools.runSafe(this, 'git config --global user.email sonatype-ci@sonatype.com')
     OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
