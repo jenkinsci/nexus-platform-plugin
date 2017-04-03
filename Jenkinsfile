@@ -13,6 +13,9 @@ node {
 
   stage('Preparation') {
     checkout scm
+
+    OsTools.runSafe(this, 'git clean -f && git reset --hard origin/master')
+
     OsTools.runSafe(this, 'git rev-parse --short HEAD > .git/commit-id')
     commitId = readFile('.git/commit-id')
     OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId} > .git/commit-date")
