@@ -12,9 +12,9 @@ node {
   GitHub gitHub
 
   stage('Preparation') {
-    checkout scm
+    deleteDir()
 
-    OsTools.runSafe(this, 'git clean -f && git reset --hard origin/master')
+    checkout scm
 
     OsTools.runSafe(this, 'git rev-parse --short HEAD > .git/commit-id')
     commitId = readFile('.git/commit-id')
