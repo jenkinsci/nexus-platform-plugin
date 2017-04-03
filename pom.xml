@@ -498,7 +498,7 @@
     </profile>
 
     <profile>
-      <id>sonatype-internal</id>
+      <id>sonatype</id>
       <distributionManagement>
         <repository>
           <id>${public-release.serverId}</id>

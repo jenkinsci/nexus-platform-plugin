@@ -8,19 +8,21 @@ import com.sonatype.jenkins.pipeline.GitHub
 import com.sonatype.jenkins.pipeline.OsTools
 
 node {
-  def commitId, pom, version
+  def commitId, commitDate, pom, version
   GitHub gitHub
 
   stage('Preparation') {
     checkout scm
-    sh 'git rev-parse HEAD > .git/commit-id'
+    OsTools.runSafe(this, 'git rev-parse --short HEAD > .git/commit-id')
     commitId = readFile('.git/commit-id')
+    OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId} > .git/commit-date")
+    commitDate = readFile('.git/commit-date')
 
     OsTools.runSafe(this, 'git config --global user.email sonatype-ci@sonatype.com')
     OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
 
     pom = readMavenPom file: 'pom.xml'
-    version = pom.version.replace("-SNAPSHOT", ".${String.format('%03d', currentBuild.number)}")
+    version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId}")
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
@@ -73,13 +75,16 @@ node {
     junit '**/target/surefire-reports/TEST-*.xml'
     archive 'target/*.hpi'
   }
+  if (currentBuild.result == 'FAILURE') {
+    return
+  }
 //  if (env.BRANCH_NAME != 'master')
 //  {
 //    return
 //  }
-  stage('Deploy to Sonatype Internal') {
+  stage('Deploy to Sonatype') {
     withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml') {
-      OsTools.runSafe(this, "mvn -Psonatype-internal -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+      OsTools.runSafe(this, "mvn -Psonatype -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
     }
   }
   return
@@ -87,7 +92,7 @@ node {
     input 'Publish to Jenkins Update Center?'
 
     withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
-      OsTools.runSafe(this, "mvn -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+      OsTools.runSafe(this, "mvn -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
     }
     OsTools.runSafe(this, "git push ${pom.artifactId}-${version}")
   }
