@@ -24,7 +24,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>Nexus Platform Plugin</name>
@@ -59,6 +59,24 @@
     <concurrency>1</concurrency>
     <java.level>7</java.level>
     <slf4j.version>1.7.7</slf4j.version>
+
+    <buildsupport.version>10</buildsupport.version>
+    <buildsupport.license-maven-plugin.version>2.11</buildsupport.license-maven-plugin.version>
+
+    <public.serverId>sonatype-public</public.serverId>
+    <public.nexusUrl>https://repository.sonatype.org</public.nexusUrl>
+    <public-release.serverId>${public.serverId}</public-release.serverId>
+    <public-release.url>
+      https://repository.sonatype.org/service/local/staging/deploy/maven2
+    </public-release.url>
+    <public-snapshot.serverId>${public.serverId}</public-snapshot.serverId>
+    <public-snapshot.url>
+      https://repository.sonatype.org/content/repositories/snapshots
+    </public-snapshot.url>
+
+    <staging.serverId>${public.serverId}</staging.serverId>
+    <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
+    <staging.progressTimeout>15</staging.progressTimeout>
   </properties>
 
 
@@ -353,6 +371,11 @@
             <compatibleSinceVersion>1.642.3</compatibleSinceVersion>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.6</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -381,12 +404,12 @@
       <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>2.11</version>
+        <version>${buildsupport.license-maven-plugin.version}</version>
         <dependencies>
           <dependency>
             <groupId>org.sonatype.buildsupport</groupId>
             <artifactId>licenses</artifactId>
-            <version>10</version>
+            <version>${buildsupport.version}</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -464,16 +487,70 @@
         <jenkins-test-harness.version>1.642.3</jenkins-test-harness.version>
       </properties>
     </profile>
+
     <profile>
       <id>license-check</id>
       <build>
         <defaultGoal>com.mycila:license-maven-plugin:check</defaultGoal>
       </build>
     </profile>
+
     <profile>
       <id>license-format</id>
       <build>
         <defaultGoal>com.mycila:license-maven-plugin:format</defaultGoal>
+      </build>
+    </profile>
+
+    <profile>
+      <id>sonatype</id>
+      <distributionManagement>
+        <repository>
+          <id>${public-release.serverId}</id>
+          <url>${public-release.url}</url>
+        </repository>
+        <snapshotRepository>
+          <id>${public-snapshot.serverId}</id>
+          <url>${public-snapshot.url}</url>
+        </snapshotRepository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.6</version>
+            <extensions>true</extensions>
+            <configuration>
+              <nexusUrl>${staging.nexusUrl}</nexusUrl>
+              <serverId>${staging.serverId}</serverId>
+              <altStagingDirectory>${staging.directory}</altStagingDirectory>
+              <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+              <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
+              <tags>
+                <localUsername>${user.name}</localUsername>
+                <javaVersion>${java.version}</javaVersion>
+              </tags>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <!--suppress MavenModelInspection -->
+              <passphrase>${gpg.passphrase}</passphrase>
+              <useAgent>true</useAgent>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>

@@ -8,13 +8,24 @@ import com.sonatype.jenkins.pipeline.GitHub
 import com.sonatype.jenkins.pipeline.OsTools
 
 node {
-  def commitId
+  def commitId, commitDate, pom, version
   GitHub gitHub
 
   stage('Preparation') {
+    deleteDir()
+
     checkout scm
-    sh 'git rev-parse HEAD > .git/commit-id'
-    commitId = readFile('.git/commit-id')
+
+    commitId = OsTools.runSafe(this, 'git rev-parse HEAD')
+    commitDate = OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}")
+
+    OsTools.runSafe(this, 'git config --global user.email sonatype-ci@sonatype.com')
+    OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
+
+    pom = readMavenPom file: 'pom.xml'
+    version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
+
+    currentBuild.displayName = "#${currentBuild.number} - ${version}"
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
@@ -24,14 +35,23 @@ node {
     gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
   }
   stage('License Check') {
-    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+    gitHub.statusUpdate commitId, 'pending', 'license', 'License check is running'
+
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
       OsTools.runSafe(this, 'mvn license:check')
+    }
+
+    if (currentBuild.result == 'FAILURE') {
+      gitHub.statusUpdate commitId, 'failure', 'license', 'License check failed'
+      return
+    } else {
+      gitHub.statusUpdate commitId, 'success', 'license', 'License check succeeded'
     }
   }
   stage('Build') {
-    gitHub.statusUpdate commitId, 'pending', 'build', 'Build in running'
+    gitHub.statusUpdate commitId, 'pending', 'build', 'Build is running'
 
-    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'private-settings.xml') {
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
       OsTools.runSafe(this, 'mvn clean package')
     }
 
@@ -54,8 +74,37 @@ node {
       gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed', "${evaluation.applicationCompositionReportUrl}"
     }
   }
-  stage('Results') {
+  stage('Archive Results') {
     junit '**/target/surefire-reports/TEST-*.xml'
-    archive 'target/*.jar'
+    archive 'target/*.hpi'
+  }
+  if (currentBuild.result == 'FAILURE') {
+    return
+  }
+  if (env.BRANCH_NAME != 'master')
+  {
+    return
+  }
+  stage('Deploy to Sonatype') {
+    withGpg 'gnupg_home', {
+      withMaven( jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml' ) {
+        OsTools.runSafe(this, "mvn -Psonatype -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                          usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+          OsTools.runSafe(this, "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github.com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}")
+        }
+
+        // Reset all changes to local repository made by the Maven release plugin
+        OsTools.runSafe(this, "git tag -d ${pom.artifactId}-${version}")
+        OsTools.runSafe(this, 'git clean -f && git reset --hard origin/master')
+      }
+    }
+  }
+  input 'Publish to Jenkins Update Center?'
+  stage ('Deploy to Jenkins') {
+    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'jenkins-settings.xml') {
+      OsTools.runSafe(this, "mvn -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
+    }
   }
 }
