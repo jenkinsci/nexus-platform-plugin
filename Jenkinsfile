@@ -23,7 +23,7 @@ node {
     OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
 
     pom = readMavenPom file: 'pom.xml'
-    version = pom.version.replace("-SNAPSHOT", ".${commitDate.trim(7)}.${commitId}")
+    version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
@@ -84,8 +84,8 @@ node {
 //    return
 //  }
   stage('Deploy to Sonatype') {
-    withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml') {
-      withGpg 'gnupg_home', {
+    withGpg 'gnupg_home', {
+      withMaven( jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml' ) {
         OsTools.runSafe(this, "mvn -Psonatype -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
       }
     }

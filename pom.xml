@@ -371,6 +371,11 @@
             <compatibleSinceVersion>1.642.3</compatibleSinceVersion>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.6</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
