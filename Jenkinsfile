@@ -11,19 +11,26 @@ node {
   def commitId, commitDate, pom, version
   GitHub gitHub
 
+  stage('GPG Test') {
+    withGpg('test') {
+
+    }
+  }
+
+  return
   stage('Preparation') {
     deleteDir()
 
     checkout scm
 
-    commitId = OsTools.runSafe(this, 'git rev-parse --short HEAD')
+    commitId = OsTools.runSafe(this, 'git rev-parse HEAD')
     commitDate = OsTools.runSafe(this, "git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}")
 
     OsTools.runSafe(this, 'git config --global user.email sonatype-ci@sonatype.com')
     OsTools.runSafe(this, 'git config --global user.name Sonatype CI')
 
     pom = readMavenPom file: 'pom.xml'
-    version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId}")
+    version = pom.version.replace("-SNAPSHOT", ".${commitDate.trim(7)}.${commitId}")
 
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
