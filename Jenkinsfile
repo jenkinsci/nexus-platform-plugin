@@ -25,6 +25,8 @@ node {
     pom = readMavenPom file: 'pom.xml'
     version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
 
+    currentBuild.displayName = "#${currentBuild.number} - ${version}"
+
     def apiToken
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                       usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
