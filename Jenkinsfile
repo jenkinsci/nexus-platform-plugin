@@ -81,10 +81,10 @@ node {
   if (currentBuild.result == 'FAILURE') {
     return
   }
-//  if (env.BRANCH_NAME != 'master')
-//  {
-//    return
-//  }
+  if (env.BRANCH_NAME != 'master')
+  {
+    return
+  }
   stage('Deploy to Sonatype') {
     withGpg 'gnupg_home', {
       withMaven( jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml' ) {
