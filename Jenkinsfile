@@ -12,7 +12,7 @@ node {
   GitHub gitHub
 
   stage('GPG Test') {
-    withGpg('test') {
+    withGpg 'GPG_HOME', {
 
     }
   }
