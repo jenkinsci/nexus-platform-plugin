@@ -94,7 +94,7 @@ node {
   }
   input 'Push tags and deploy to Jenkins Update Center?'
   stage('Push tags') {
-    withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                       usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
       OsTools.runSafe(this,
           "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github.com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}")
