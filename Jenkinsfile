@@ -81,7 +81,7 @@ node {
   if (currentBuild.result == 'FAILURE') {
     return
   }
-  if (env.BRANCH_NAME != 'master')
+  if (scm.branches[0].name != '*/master')
   {
     return
   }
