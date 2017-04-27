@@ -36,7 +36,6 @@ class PackagePublisherExecutionTest
       def packageList = buildPackageList()
       def nexusPublisher = new NexusPublisherWorkflowStep(nexus2Configuration.id, repositoryId, packageList)
 
-      GroovyMock(PackageUploaderUtil.class, global: true)
       TaskListener taskListener = Mock()
       ByteArrayOutputStream os = new ByteArrayOutputStream();
       PrintStream logger = new PrintStream(os);
@@ -52,14 +51,15 @@ class PackagePublisherExecutionTest
       underTest.run = run
       underTest.filePath = filePath
 
+      GroovyMock(ComponentUploaderFactory.class, global: true)
+      def componentUploader = Mock(ComponentUploader)
+      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+
     when:
       underTest.run()
 
     then:
-      1 * PackageUploaderUtil.uploadPackage(_, _, _, _)
-
-    and:
-      logger.out.toString() =~ /Upload of .* succeeded./
+      1 * componentUploader.uploadComponents(nxrmPublisher, filePath)
   }
 
   def 'it bubbles up IOException when things go wrong'() {
@@ -69,7 +69,6 @@ class PackagePublisherExecutionTest
       def packageList = buildPackageList()
       def nexusPublisher = new NexusPublisherWorkflowStep(nxrm2Configuration.id, repositoryId, packageList)
 
-      GroovyMock(PackageUploaderUtil.class, global: true)
       TaskListener taskListener = Mock()
       ByteArrayOutputStream os = new ByteArrayOutputStream();
       PrintStream logger = new PrintStream(os);
@@ -85,7 +84,11 @@ class PackagePublisherExecutionTest
       underTest.run = run
       underTest.filePath = filePath
 
-    PackageUploaderUtil.uploadPackage(_, _, _, _) >> { throw new IOException("oops") }
+      GroovyMock(ComponentUploaderFactory.class, global: true)
+      def componentUploader = Mock(ComponentUploader)
+      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+
+      componentUploader.uploadComponents(nexusPublisher, filePath) >> { throw new IOException("oops") }
 
     when:
       underTest.run()
@@ -93,9 +96,6 @@ class PackagePublisherExecutionTest
     then:
       IOException ex = thrown()
       ex.message =~ /oops/
-
-    and:
-      logger.out.toString() =~ /Upload of .* failed./
   }
 
   private List<Package> buildPackageList() {
