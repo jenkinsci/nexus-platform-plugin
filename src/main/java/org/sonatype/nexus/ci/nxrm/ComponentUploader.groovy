@@ -95,8 +95,9 @@ class ComponentUploader
         catch (RepositoryManagerException ex) {
           throw new IOException(ex)
         }
-
-        localFile.delete()
+        finally {
+          localFile.delete()
+        }
       }
       catch (IOException ex) {
         final String uploadFailed = "Upload of ${component.Asset.filePath} failed"
