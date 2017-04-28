@@ -12,17 +12,14 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import hudson.model.AbstractDescribableImpl
-import hudson.model.Descriptor
+import hudson.model.Run
+import hudson.model.TaskListener
 
-@SuppressWarnings('AbstractClassWithoutAbstractMethod')
-abstract class Coordinate
-    extends AbstractDescribableImpl<Coordinate>
-    implements Serializable
+class ComponentUploaderFactory
 {
-  static abstract class CoordinateDescriptor<T extends Coordinate>
-      extends Descriptor<T>
+  static ComponentUploader getComponentUploader(final Run run,
+                                                final TaskListener taskListener)
   {
-
+    return new ComponentUploader(run, taskListener)
   }
 }

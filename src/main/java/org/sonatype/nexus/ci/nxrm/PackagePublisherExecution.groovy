@@ -39,18 +39,9 @@ class PackagePublisherExecution
   @Override
   @SuppressWarnings('ConfusingMethodName')
   protected Void run() throws Exception {
-    PrintStream logger = taskListener.getLogger()
-    logger.println("Attempting to upload ${filePath} to Nexus.")
+    def componentUploader = ComponentUploaderFactory.getComponentUploader(run, taskListener)
+    componentUploader.uploadComponents(nxrmPublisher, filePath)
 
-    try {
-      PackageUploaderUtil.uploadPackage(nxrmPublisher, run, taskListener, filePath)
-    }
-    catch (IOException | InterruptedException ex) {
-      logger.println("Upload of ${filePath} failed.")
-      throw ex
-    }
-
-    logger.println("Upload of ${filePath} succeeded.")
     return null
   }
 }

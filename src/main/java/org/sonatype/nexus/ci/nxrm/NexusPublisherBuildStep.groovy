@@ -51,7 +51,8 @@ class NexusPublisherBuildStep
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    PackageUploaderUtil.uploadPackage(this, run, listener, workspace)
+    def componentUploader = ComponentUploaderFactory.getComponentUploader(run, listener)
+    componentUploader.uploadComponents(this, workspace)
   }
 
   @Extension

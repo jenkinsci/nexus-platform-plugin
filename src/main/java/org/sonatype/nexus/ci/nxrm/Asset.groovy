@@ -18,6 +18,7 @@ import hudson.model.Descriptor
 @SuppressWarnings('AbstractClassWithoutAbstractMethod')
 abstract class Asset
     extends AbstractDescribableImpl<Asset>
+    implements Serializable
 {
   /**
    * Assets are selected from the specific {@link Asset} applicable to a

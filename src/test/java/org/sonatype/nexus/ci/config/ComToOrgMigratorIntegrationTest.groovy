@@ -19,10 +19,11 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
+import org.sonatype.nexus.ci.nxrm.ComponentUploader
+import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
 import org.sonatype.nexus.ci.nxrm.MavenPackage
 import org.sonatype.nexus.ci.nxrm.NexusPublisher
 import org.sonatype.nexus.ci.nxrm.NexusPublisherBuildStep
-import org.sonatype.nexus.ci.nxrm.PackageUploaderUtil
 
 import hudson.model.FreeStyleProject
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
@@ -37,6 +38,7 @@ class ComToOrgMigratorIntegrationTest
   public JenkinsRule jenkins
 
   private InternalIqClient iqClient
+  private ComponentUploader componentUploader
 
   def setup() {
     def classLoader = getClass().getClassLoader();
@@ -55,7 +57,9 @@ class ComToOrgMigratorIntegrationTest
     iqClient = Mock(InternalIqClient)
     iqClientBuilder.build() >> iqClient
 
-    GroovyMock(PackageUploaderUtil.class, global: true)
+    GroovyMock(ComponentUploaderFactory.class, global: true)
+    componentUploader = Mock(ComponentUploader)
+    ComponentUploaderFactory.getComponentUploader(*_) >> componentUploader
   }
 
   def 'it migrates the global IQ configuration'() {
@@ -149,7 +153,7 @@ class ComToOrgMigratorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the package is uploaded'
-      1 * PackageUploaderUtil.uploadPackage(*_) >> { arguments ->
+      1 * componentUploader.uploadComponents(*_) >> { arguments ->
         def nxrmPublisher = (NexusPublisher)arguments[0]
         assert nxrmPublisher.nexusInstanceId == 'nexus-rm'
         assert nxrmPublisher.nexusRepositoryId == 'repo'
@@ -176,7 +180,7 @@ class ComToOrgMigratorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the package is uploaded'
-      1 * PackageUploaderUtil.uploadPackage(*_) >> { arguments ->
+      1 * componentUploader.uploadComponents(*_) >> { arguments ->
         def nxrmPublisher = (NexusPublisher)arguments[0]
         assert nxrmPublisher.nexusInstanceId == 'nexus-rm'
         assert nxrmPublisher.nexusRepositoryId == 'repo'
