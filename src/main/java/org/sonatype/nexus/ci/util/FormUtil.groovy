@@ -12,15 +12,26 @@
  */
 package org.sonatype.nexus.ci.util
 
+import com.cloudbees.plugins.credentials.CredentialsMatcher
 import com.cloudbees.plugins.credentials.CredentialsMatchers
+import com.cloudbees.plugins.credentials.CredentialsProvider
+import com.cloudbees.plugins.credentials.common.AbstractIdCredentialsListBoxModel
+import com.cloudbees.plugins.credentials.common.CertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
+import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials
+import hudson.model.Project
 import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
+import org.kohsuke.stapler.AncestorInPath;
 
 import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.anyOf;
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.instanceOf;
 
 class FormUtil
 {
@@ -63,8 +74,24 @@ class FormUtil
         .includeEmptyValue()
         .includeMatchingAs(ACL.SYSTEM,
           Jenkins.getInstance(),
-          StandardUsernamePasswordCredentials,
-          fromUri(serverUrl).build(), CredentialsMatchers.always())
+          StandardCredentials,
+          fromUri(serverUrl).build(),
+          anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
+  }
+
+  static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
+                                                      final String credentialsId,
+                                                      final Project project) {
+    if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
+      return new StandardListBoxModel().includeCurrentValue(credentialsId)
+    }
+    return new StandardListBoxModel()
+        .includeEmptyValue()
+        .includeMatchingAs(ACL.SYSTEM,
+          project,
+          StandardCredentials,
+          fromUri(serverUrl).build(),
+        anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
   }
 
   static ListBoxModel newListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items)

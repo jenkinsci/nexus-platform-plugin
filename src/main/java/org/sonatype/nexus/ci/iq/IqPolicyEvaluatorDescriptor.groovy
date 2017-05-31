@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.iq
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
+import hudson.model.Project
 
 interface IqPolicyEvaluatorDescriptor
 {
@@ -29,5 +30,5 @@ interface IqPolicyEvaluatorDescriptor
 
   FormValidation doCheckFailBuildOnNetworkError(String value)
 
-  ListBoxModel doFillJobCredentialsIdItems()
+  ListBoxModel doFillJobCredentialsIdItems(Project project)
 }

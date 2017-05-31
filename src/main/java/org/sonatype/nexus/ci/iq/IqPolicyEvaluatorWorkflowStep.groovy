@@ -20,10 +20,12 @@ import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.Extension
+import hudson.model.Project
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
+import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -106,8 +108,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId)
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Project project) {
+      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
+        project)
     }
   }
 }

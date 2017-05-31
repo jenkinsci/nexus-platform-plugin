@@ -23,6 +23,7 @@ import hudson.Extension
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.AbstractProject
+import hudson.model.Project
 import hudson.model.Run
 import hudson.model.TaskListener
 import hudson.tasks.BuildStepDescriptor
@@ -30,6 +31,7 @@ import hudson.tasks.Builder
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.tasks.SimpleBuildStep
+import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -117,8 +119,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId)
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Project project) {
+      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
+        project)
     }
   }
 }
