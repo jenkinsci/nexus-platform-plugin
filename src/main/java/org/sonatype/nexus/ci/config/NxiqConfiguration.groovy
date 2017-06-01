@@ -24,6 +24,7 @@ import hudson.model.Descriptor
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
+import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -94,7 +95,7 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
                                           @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
     }
 
     @SuppressWarnings('unused')
@@ -103,8 +104,8 @@ class NxiqConfiguration
         @QueryParameter @Nullable String credentialsId) throws IOException
     {
       try {
-        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId)
-
+        Jenkins context = jenkins.model.Jenkins.instance
+        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId, context)
         return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
       }
       catch (IqClientException e) {

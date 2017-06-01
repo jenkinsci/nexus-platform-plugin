@@ -20,11 +20,11 @@ interface IqPolicyEvaluatorDescriptor
 {
   FormValidation doCheckIqStage(String value)
 
-  ListBoxModel doFillIqStageItems(String jobCredentialsId)
+  ListBoxModel doFillIqStageItems(String jobCredentialsId, Project project)
 
   FormValidation doCheckIqApplication(String value)
 
-  ListBoxModel doFillIqApplicationItems(String jobCredentialsId)
+  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Project project)
 
   FormValidation doCheckScanPattern(String scanPattern)
 

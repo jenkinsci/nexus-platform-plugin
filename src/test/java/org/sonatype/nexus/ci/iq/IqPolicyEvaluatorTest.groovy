@@ -25,8 +25,10 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
+import hudson.model.ItemGroup
 import hudson.model.Result
 import hudson.model.Run
+import hudson.model.Job
 import hudson.model.TaskListener
 import hudson.remoting.Channel
 import org.slf4j.Logger
@@ -60,6 +62,10 @@ class IqPolicyEvaluatorTest
 
   def run = Mock(Run)
 
+  def job = Mock(Job)
+
+  def context = Mock(ItemGroup)
+
   def reportUrl = 'http://server/report'
 
   def setup() {
@@ -75,6 +81,8 @@ class IqPolicyEvaluatorTest
     IqClientFactory.getIqClient(*_) >> iqClient
     remoteScanResult.copyToLocalScanResult() >> scanResult
     run.getEnvironment(_) >> envVars
+    run.parent >> job
+    job.parent >> context
   }
 
   def 'it retrieves proprietary config followed by remote scan followed by evaluation in correct order (happy path)'() {
@@ -227,7 +235,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, '131-cred') >> iqClient
+      1 * IqClientFactory.getIqClient(_ as Logger, context, '131-cred') >> iqClient
   }
 
   def 'global credentials are passed to the client builder when no job credentials provided'() {
@@ -238,7 +246,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, '123-cred-456') >> iqClient
+      1 * IqClientFactory.getIqClient(_ as Logger, context, '123-cred-456') >> iqClient
 
     where:
       jobCredentials << [ null, '' ]
@@ -253,7 +261,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, null) >> iqClient
+      1 * IqClientFactory.getIqClient(_ as Logger, context, null) >> iqClient
 
     where:
       jobCredentials << [ null, '', '131-cred' ]

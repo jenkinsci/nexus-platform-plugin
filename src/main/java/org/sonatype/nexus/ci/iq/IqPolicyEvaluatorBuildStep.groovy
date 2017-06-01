@@ -92,9 +92,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Project project) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqStageItems(jobCredentialsId)
+      IqUtil.doFillIqStageItems(jobCredentialsId, project)
     }
 
     @Override
@@ -103,9 +103,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId) {
+    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Project project) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqApplicationItems(jobCredentialsId)
+      IqUtil.doFillIqApplicationItems(jobCredentialsId, project)
     }
 
     @Override
