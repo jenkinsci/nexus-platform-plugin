@@ -30,6 +30,7 @@ import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
+import hudson.model.Item
 import hudson.model.ItemGroup
 import hudson.security.ACL
 import org.slf4j.Logger
@@ -53,8 +54,8 @@ class IqClientFactory
         .build()
   }
 
-  static InternalIqClient getIqClient(Logger log, ItemGroup project, @Nullable String credentialsId) {
-    def serverConfig = getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId, project)
+  static InternalIqClient getIqClient(Logger log, ItemGroup context, @Nullable String credentialsId) {
+    def serverConfig = getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId, context)
     def proxyConfig = getProxyConfig(NxiqConfiguration.serverUrl)
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
@@ -70,9 +71,9 @@ class IqClientFactory
         .build()
   }
 
-  private static ServerConfig getServerConfig(URI url, @Nullable String credentialsId, @Nullable final ItemGroup project) {
+  private static ServerConfig getServerConfig(URI url, @Nullable String credentialsId, @Nullable ItemGroup context) {
     if (credentialsId) {
-      return loadCredentials(url, credentialsId, project)
+      return loadCredentials(url, credentialsId, context)
     }
     else {
       return new ServerConfig(url)
@@ -89,17 +90,14 @@ class IqClientFactory
     }
   }
 
-  static private ServerConfig loadCredentials(final URI url, final String credentialsId, @Nullable ItemGroup project) {
+  static private ServerConfig loadCredentials(final URI url, final String credentialsId, final @Nullable ItemGroup context) {
     def lookupCredentials = CredentialsProvider.lookupCredentials(
         StandardCredentials,
-        project ? project : Jenkins.instance,
+        context ?: Jenkins.instance,
         ACL.SYSTEM,
         URIRequirementBuilder.fromUri(url.toString()).build())
 
     def credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
-    if (!credentials) {
-      throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
-    }
 
     if (credentials instanceof StandardUsernamePasswordCredentials) {
       return new ServerConfig(url, new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText()))
@@ -107,7 +105,6 @@ class IqClientFactory
       def aliases = credentials.getKeyStore().aliases().toList()
       credentials.getKeyStore().getKey(aliases[0], credentials.password.plainText.toCharArray())
       return new ServerConfig(url, new PkiAuthentication(credentials.getKeyStore(), credentials.password.plainText.toCharArray()))
-
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
     }
