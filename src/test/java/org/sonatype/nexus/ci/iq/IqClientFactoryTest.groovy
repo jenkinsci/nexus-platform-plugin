@@ -17,13 +17,12 @@ import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
-import com.cloudbees.plugins.credentials.CredentialsScope
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
-import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
 import hudson.ProxyConfiguration
 import hudson.model.Project
 import hudson.util.Secret
@@ -39,7 +38,7 @@ class IqClientFactoryTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  StandardUsernamePasswordCredentials credentials = Mock(StandardUsernamePasswordCredentials)
+  StandardUsernamePasswordCredentials credentials = Mock()
   Secret secret = new Secret("password")
 
   def setup() {
@@ -55,7 +54,7 @@ class IqClientFactoryTest
       def credentialsId = '42'
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      IqClientFactory.getIqTestClient(URI.create(url), credentialsId, Jenkins.instance)
+      IqClientFactory.getIqClient(URI.create(url), credentialsId, Jenkins.instance)
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentials 42/
@@ -67,28 +66,9 @@ class IqClientFactoryTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      IqClient client = IqClientFactory.getIqTestClient(URI.create(url), credentialsId, Jenkins.instance)
+      IqClient client = IqClientFactory.getIqClient(URI.create(url), credentialsId, Jenkins.instance)
     then:
       client != null
-  }
-
-  def 'it uses configured serverUrl and credentialsId'() {
-    setup:
-      GroovyMock(NxiqConfiguration, global: true)
-      GroovyMock(InternalIqClientBuilder, global: true)
-      def iqClientBuilder = Mock(InternalIqClientBuilder)
-      InternalIqClientBuilder.create() >> iqClientBuilder
-      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
-      NxiqConfiguration.credentialsId >> "123-cred-456"
-      CredentialsMatchers.firstOrNull(_, _) >> credentials
-    when:
-      IqClientFactory.getIqTestClient()
-    then:
-      1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
-      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
-    and:
-      1 * CredentialsMatchers.withId("123-cred-456")
   }
 
   def 'it uses job specific credentials when provided'() {
@@ -200,12 +180,10 @@ class IqClientFactoryTest
 
     where:
       clientGetter << [
-          { -> IqClientFactory.getIqTestClient() },
-          { -> IqClientFactory.getIqTestClient(URI.create('http://127.0.0.1/'), '', Jenkins.instance) },
+          { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), '', Jenkins.instance) },
           { -> IqClientFactory.getIqClient((Logger) null, Jenkins.instance, '') }
       ]
       expectedServerUrl << [
-        'http://localhost/',
         'http://127.0.0.1/',
         'http://localhost/'
       ]
@@ -233,7 +211,7 @@ class IqClientFactoryTest
       iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqTestClient()
+      IqClientFactory.getIqClient(new URI(serverUrl), credentialsId, jenkinsRule.instance)
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create(serverUrl)
@@ -258,7 +236,7 @@ class IqClientFactoryTest
       globalConfiguration.save()
 
     when:
-      IqClientFactory.getIqTestClient()
+      IqClientFactory.getIqClient()
 
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
@@ -280,7 +258,7 @@ class IqClientFactoryTest
       globalConfiguration.save()
 
     when:
-      IqClientFactory.getIqTestClient()
+      IqClientFactory.getIqClient()
 
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->

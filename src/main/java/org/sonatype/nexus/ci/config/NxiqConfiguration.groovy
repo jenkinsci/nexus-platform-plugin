@@ -104,8 +104,7 @@ class NxiqConfiguration
         @QueryParameter @Nullable String credentialsId) throws IOException
     {
       try {
-        Jenkins context = jenkins.model.Jenkins.instance
-        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId, context)
+        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId, Jenkins.instance)
         return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
       }
       catch (IqClientException e) {

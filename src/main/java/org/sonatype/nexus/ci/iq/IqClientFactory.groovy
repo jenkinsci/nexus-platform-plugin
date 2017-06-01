@@ -39,10 +39,6 @@ import org.slf4j.Logger
 
 class IqClientFactory
 {
-  static InternalIqClient getIqTestClient() {
-    return getIqTestClient(NxiqConfiguration.serverUrl, NxiqConfiguration.credentialsId, Jenkins.instance)
-  }
-
   static InternalIqClient getIqClient(String credentialsId, Item context) {
     // credentialsId can be an empty String if unset. Empty strings are falsy in Groovy
     def credentials = credentialsId ? findCredentials(NxiqConfiguration.serverUrl, credentialsId, context)
@@ -51,7 +47,7 @@ class IqClientFactory
     return createIqClient(NxiqConfiguration.serverUrl, credentials)
   }
 
-  static InternalIqClient getIqTestClient(URI serverUrl, @Nullable String credentialsId, ItemGroup context) {
+  static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId, ItemGroup context) {
     def credentials = findCredentials(serverUrl, credentialsId, context)
     return createIqClient(serverUrl, credentials)
   }
@@ -89,36 +85,22 @@ class IqClientFactory
   }
 
   static private StandardCredentials findCredentials(final URI url, final String credentialsId, final context) {
-    def lookupCredentials
-    if (context instanceof Item) {
-      lookupCredentials = CredentialsProvider.lookupCredentials(
-          StandardCredentials,
-          context,
-          ACL.SYSTEM,
-          URIRequirementBuilder.fromUri(url.toString()).build())
-    } else if (context instanceof ItemGroup) {
-      lookupCredentials = CredentialsProvider.lookupCredentials(
-          StandardCredentials,
-          context,
-          ACL.SYSTEM,
-          URIRequirementBuilder.fromUri(url.toString()).build())
-    } else {
-      throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
-    }
-    StandardCredentials credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
-    if (!credentials) {
-      throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
-    } else {
-      return credentials
-    }
+    //noinspection GroovyAssignabilityCheck
+    List<StandardCredentials> lookupCredentials = CredentialsProvider.lookupCredentials(
+        StandardCredentials,
+        context,
+        ACL.SYSTEM,
+        URIRequirementBuilder.fromUri(url.toString()).build())
+
+    def credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
+    Optional.ofNullable(credentials)
+        .orElseThrow({ new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId)) })
   }
 
   static private ServerConfig createServerConfig(final URI url, final credentials) {
     if (credentials instanceof StandardUsernamePasswordCredentials) {
       return new ServerConfig(url, new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText()))
     } else if (credentials instanceof StandardCertificateCredentials) {
-      def aliases = credentials.getKeyStore().aliases().toList()
-      credentials.getKeyStore().getKey(aliases[0], credentials.password.plainText.toCharArray())
       return new ServerConfig(url, new PkiAuthentication(credentials.getKeyStore(), credentials.password.plainText.toCharArray()))
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class))

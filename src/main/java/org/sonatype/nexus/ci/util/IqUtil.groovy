@@ -22,7 +22,6 @@ import org.sonatype.nexus.ci.iq.IqClientFactory
 import hudson.model.ItemGroup
 import hudson.model.Project
 import hudson.util.ListBoxModel
-import jenkins.model.Jenkins
 
 class IqUtil
 {
@@ -32,7 +31,7 @@ class IqUtil
   static List<ApplicationSummary> getApplicableApplications(final String serverUrl,
                                                             final String credentialsId,
                                                             final ItemGroup context) {
-    def client = IqClientFactory.getIqTestClient(new URI(serverUrl), credentialsId, context)
+    def client = IqClientFactory.getIqClient(new URI(serverUrl), credentialsId, context)
     return client.getApplicationsForApplicationEvaluation()
   }
 

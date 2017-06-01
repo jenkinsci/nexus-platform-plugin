@@ -14,9 +14,9 @@ package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
+
 import org.sonatype.nexus.ci.iq.IqClientFactory
 
-import hudson.model.ItemGroup
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import org.junit.Rule
@@ -75,7 +75,7 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> applications
-      IqClientFactory.getIqTestClient(URI.create(serverUrl), credentialsId, jenkins.instance) >> client
+      IqClientFactory.getIqClient(URI.create(serverUrl), credentialsId, jenkins.instance) >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 
@@ -110,7 +110,7 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> { throw new IqClientException("something went wrong") }
-      IqClientFactory.getIqTestClient(new URI(serverUrl), credentialsId, jenkins.instance) >> client
+      IqClientFactory.getIqClient(new URI(serverUrl), credentialsId, jenkins.instance) >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 

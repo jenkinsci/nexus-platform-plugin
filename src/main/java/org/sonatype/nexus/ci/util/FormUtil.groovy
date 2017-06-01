@@ -62,42 +62,32 @@ class FormUtil
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
-                                                      Item context) {
+                                                      final Item context) {
     return createCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
   }
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
-                                                      ItemGroup context) {
+                                                      final ItemGroup context) {
     return createCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
   }
 
   private static ListBoxModel createCredentialsItemsListBoxModel(final String serverUrl,
-                                                      final String credentialsId,
-                                                      final context)
+                                                                 final String credentialsId,
+                                                                 final context)
   {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
       return new StandardListBoxModel().includeCurrentValue(credentialsId)
     }
-    if (context instanceof Item) {
-      return new StandardListBoxModel()
-          .includeEmptyValue()
-          .includeMatchingAs(ACL.SYSTEM,
+    //noinspection GroovyAssignabilityCheck
+    return new StandardListBoxModel()
+        .includeEmptyValue()
+        .includeMatchingAs(ACL.SYSTEM,
           context,
           StandardCredentials,
           fromUri(serverUrl).build(),
           anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
-    } else if (context instanceof ItemGroup) {
-      return new StandardListBoxModel()
-          .includeEmptyValue()
-          .includeMatchingAs(ACL.SYSTEM,
-          context,
-          StandardCredentials,
-          fromUri(serverUrl).build(),
-          anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
-    } else {
-      return new ListBoxModel()
-    }
+
   }
 
   static ListBoxModel newListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items)
