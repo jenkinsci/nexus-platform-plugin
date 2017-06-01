@@ -20,7 +20,7 @@ import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.Extension
-import hudson.model.Project
+import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
@@ -83,7 +83,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Project project) {
+    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job project) {
       IqUtil.doFillIqStageItems(jobCredentialsId, project)
     }
 
@@ -93,7 +93,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Project project) {
+    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job project) {
       IqUtil.doFillIqApplicationItems(jobCredentialsId, project)
     }
 
@@ -108,9 +108,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Project project) {
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job) {
       FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
-        project)
+          job)
     }
   }
 }

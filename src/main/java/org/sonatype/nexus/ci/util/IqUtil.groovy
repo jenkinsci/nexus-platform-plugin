@@ -16,11 +16,12 @@ import javax.annotation.Nullable
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
+
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
 
 import hudson.model.ItemGroup
-import hudson.model.Project
+import hudson.model.Job
 import hudson.util.ListBoxModel
 
 class IqUtil
@@ -35,7 +36,7 @@ class IqUtil
     return client.getApplicationsForApplicationEvaluation()
   }
 
-  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Project project) {
+  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Job project) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.getIqClient(credentialsId, project)
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
@@ -44,7 +45,7 @@ class IqUtil
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Project project) {
+  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Job project) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.getIqClient(credentialsId, project)
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())

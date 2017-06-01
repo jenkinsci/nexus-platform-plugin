@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import hudson.model.Project
+import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
@@ -20,15 +20,15 @@ interface IqPolicyEvaluatorDescriptor
 {
   FormValidation doCheckIqStage(String value)
 
-  ListBoxModel doFillIqStageItems(String jobCredentialsId, Project project)
+  ListBoxModel doFillIqStageItems(String jobCredentialsId, Job project)
 
   FormValidation doCheckIqApplication(String value)
 
-  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Project project)
+  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Job project)
 
   FormValidation doCheckScanPattern(String scanPattern)
 
   FormValidation doCheckFailBuildOnNetworkError(String value)
 
-  ListBoxModel doFillJobCredentialsIdItems(Project context)
+  ListBoxModel doFillJobCredentialsIdItems(Job context)
 }

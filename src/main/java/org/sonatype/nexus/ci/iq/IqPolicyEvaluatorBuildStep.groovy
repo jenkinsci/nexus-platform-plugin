@@ -23,7 +23,7 @@ import hudson.Extension
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.AbstractProject
-import hudson.model.Project
+import hudson.model.Job
 import hudson.model.Run
 import hudson.model.TaskListener
 import hudson.tasks.BuildStepDescriptor
@@ -92,9 +92,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Project project) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqStageItems(jobCredentialsId, project)
+      IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
     @Override
@@ -103,9 +103,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Project project) {
+    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqApplicationItems(jobCredentialsId, project)
+      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 
     @Override
@@ -119,9 +119,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Project project) {
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job) {
       FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
-        project)
+        job)
     }
   }
 }
