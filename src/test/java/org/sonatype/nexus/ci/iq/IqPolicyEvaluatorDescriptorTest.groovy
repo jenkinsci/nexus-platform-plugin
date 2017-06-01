@@ -181,22 +181,9 @@ public abstract class IqPolicyEvaluatorDescriptorTest
       1 * FormUtil.newCredentialsItemsListBoxModel("http://server/path", 'credentialsId', project)
   }
 
-  def 'it sets job specific credentials to null when global pki authentication'() {
+  def 'it sets job specific credentials'() {
     setup:
       GroovyMock(NxiqConfiguration, global: true)
-      NxiqConfiguration.isPkiAuthentication >> true
-
-    when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, 'jobSpecificCredentialsId')
-
-    then:
-      !buildStep.jobCredentialsId
-  }
-
-  def 'it sets job specific credentials when no global pki authentication'() {
-    setup:
-      GroovyMock(NxiqConfiguration, global: true)
-      NxiqConfiguration.isPkiAuthentication >> false
 
     when:
       def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, 'jobSpecificCredentialsId')

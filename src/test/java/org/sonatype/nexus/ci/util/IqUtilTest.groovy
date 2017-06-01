@@ -39,7 +39,7 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -87,7 +87,7 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -115,7 +115,7 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()

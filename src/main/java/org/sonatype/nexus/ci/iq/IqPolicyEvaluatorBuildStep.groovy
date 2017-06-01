@@ -57,7 +57,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId)
   {
-    this.jobCredentialsId = NxiqConfiguration.isPkiAuthentication ? null : jobCredentialsId
+    this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication

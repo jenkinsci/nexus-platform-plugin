@@ -126,22 +126,4 @@ class NxiqConfigurationTest
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
   }
-
-  def 'it clears credentials when pki authentication is true'() {
-    when:
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', true, 'credentialsId')
-
-    then:
-      nxiqConfiguration.@isPkiAuthentication
-      !nxiqConfiguration.@credentialsId
-  }
-
-  def 'it keeps credentials when pki authentication is false'() {
-    when:
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', false, 'credentialsId')
-
-    then:
-      !nxiqConfiguration.@isPkiAuthentication
-      nxiqConfiguration.@credentialsId == 'credentialsId'
-  }
 }

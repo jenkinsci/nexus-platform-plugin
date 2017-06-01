@@ -252,21 +252,6 @@ class IqPolicyEvaluatorTest
       jobCredentials << [ null, '' ]
   }
 
-  def 'null credentials are passed to the client builder when pki auth is true'() {
-    setup:
-      NxiqConfiguration.isPkiAuthentication >> true
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, jobCredentials)
-
-    when:
-      buildStep.perform(run, workspace, launcher, Mock(TaskListener))
-
-    then:
-      1 * IqClientFactory.getIqClient(_ as Logger, context, null) >> iqClient
-
-    where:
-      jobCredentials << [ null, '', '131-cred' ]
-  }
-
   def 'evaluation result outcome determines build status'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')

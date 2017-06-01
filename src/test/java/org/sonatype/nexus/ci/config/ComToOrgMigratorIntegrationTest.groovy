@@ -71,7 +71,6 @@ class ComToOrgMigratorIntegrationTest
 
       def nxiqConfiguration = globalNexusConfiguration.iqConfigs[0]
       nxiqConfiguration.serverUrl.toString() == 'http://localhost:8080'
-      !nxiqConfiguration.isPkiAuthentication
       nxiqConfiguration.credentialsId == 'user'
   }
 

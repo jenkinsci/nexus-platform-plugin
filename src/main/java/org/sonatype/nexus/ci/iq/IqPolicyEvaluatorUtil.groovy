@@ -89,9 +89,7 @@ class IqPolicyEvaluatorUtil
   }
 
   private static String getCredentials(final String jobCredentialsId) {
-    NxiqConfiguration.isPkiAuthentication ?
-        null :
-        (jobCredentialsId ?: NxiqConfiguration.credentialsId)
+    jobCredentialsId ?: NxiqConfiguration.credentialsId
   }
 
   @SuppressWarnings('CatchException')
