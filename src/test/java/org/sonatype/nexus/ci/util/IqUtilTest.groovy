@@ -46,7 +46,7 @@ public class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('', project) >> iqClient
+      IqClientFactory.getIqClient(credentialsId, context: project) >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
@@ -54,7 +54,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems('', project)
+      def applicationItems = IqUtil.doFillIqApplicationItems(credentialsId, project)
 
     then:
       applicationItems.size() == 3
@@ -94,7 +94,7 @@ public class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('jobCredentialsId', project) >> iqClient
+      IqClientFactory.getIqClient('jobCredentialsId', context: project) >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
@@ -122,7 +122,7 @@ public class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('', project) >> iqClient
+      IqClientFactory.getIqClient(credentialsId, context: project) >> iqClient
 
       iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
@@ -130,7 +130,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('', project)
+      def stageItems = IqUtil.doFillIqStageItems(credentialsId, project)
 
     then:
       stageItems.size() == 3
@@ -165,7 +165,7 @@ public class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('jobCredentialsId', project) >> iqClient
+      IqClientFactory.getIqClient('jobCredentialsId', context: project) >> iqClient
 
       iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),

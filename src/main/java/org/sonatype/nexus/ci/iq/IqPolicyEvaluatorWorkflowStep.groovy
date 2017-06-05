@@ -93,7 +93,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job project) {
+    ListBoxModel doFillIqApplicationItems(
+        @QueryParameter @Nullable String jobCredentialsId,
+        @AncestorInPath Job project) {
       IqUtil.doFillIqApplicationItems(jobCredentialsId, project)
     }
 

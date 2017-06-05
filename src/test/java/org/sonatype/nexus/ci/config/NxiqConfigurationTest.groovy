@@ -75,7 +75,7 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> applications
-      IqClientFactory.getIqClient(URI.create(serverUrl), credentialsId, jenkins.instance) >> client
+      IqClientFactory.getIqClient(credentialsId, serverUrl: serverUrl, context: jenkins.instance) >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 
@@ -110,7 +110,7 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> { throw new IqClientException("something went wrong") }
-      IqClientFactory.getIqClient(new URI(serverUrl), credentialsId, jenkins.instance) >> client
+      IqClientFactory.getIqClient(credentialsId, serverUrl: serverUrl, context: jenkins.instance) >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 

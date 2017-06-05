@@ -63,18 +63,18 @@ class FormUtil
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
                                                       final Item context) {
-    return createCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
+    return getCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
   }
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
                                                       final ItemGroup context) {
-    return createCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
+    return getCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
   }
 
-  private static ListBoxModel createCredentialsItemsListBoxModel(final String serverUrl,
-                                                                 final String credentialsId,
-                                                                 final context)
+  private static ListBoxModel getCredentialsItemsListBoxModel(final String serverUrl,
+                                                              final String credentialsId,
+                                                              final context)
   {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
       return new StandardListBoxModel().includeCurrentValue(credentialsId)

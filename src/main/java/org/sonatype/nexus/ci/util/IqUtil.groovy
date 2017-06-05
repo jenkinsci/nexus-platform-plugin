@@ -32,13 +32,13 @@ class IqUtil
   static List<ApplicationSummary> getApplicableApplications(final String serverUrl,
                                                             final String credentialsId,
                                                             final ItemGroup context) {
-    def client = IqClientFactory.getIqClient(new URI(serverUrl), credentialsId, context)
+    def client = IqClientFactory.getIqClient(credentialsId, context: context, serverUrl: serverUrl)
     return client.getApplicationsForApplicationEvaluation()
   }
 
   static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Job project) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient(credentialsId, project)
+      def client = IqClientFactory.getIqClient(credentialsId ?: NxiqConfiguration.credentialsId, context: project)
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
     } else {
       FormUtil.newListBoxModelWithEmptyOption()
@@ -47,7 +47,7 @@ class IqUtil
 
   static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Job project) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient(credentialsId, project)
+      def client = IqClientFactory.getIqClient(credentialsId ?: NxiqConfiguration.credentialsId, context: project)
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     } else {
       FormUtil.newListBoxModelWithEmptyOption()

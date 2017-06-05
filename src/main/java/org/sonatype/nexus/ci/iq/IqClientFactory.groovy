@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import javax.annotation.Nullable
-
 import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.PkiAuthentication
 import com.sonatype.nexus.api.common.ProxyConfig
@@ -24,46 +22,31 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.ProxyUtil
 
-import com.cloudbees.plugins.credentials.Credentials
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
-import hudson.model.Item
-import hudson.model.ItemGroup
 import hudson.security.ACL
 import jenkins.model.Jenkins
 import org.slf4j.Logger
 
+import static com.google.common.base.Preconditions.checkArgument
+import static com.google.common.base.Preconditions.checkNotNull
+
 class IqClientFactory
 {
-  static InternalIqClient getIqClient(String credentialsId, Item context) {
-    // credentialsId can be an empty String if unset. Empty strings are falsy in Groovy
-    def credentials = credentialsId ? findCredentials(NxiqConfiguration.serverUrl, credentialsId, context)
-      : findCredentials(NxiqConfiguration.serverUrl, NxiqConfiguration.credentialsId, Jenkins.instance)
-
-    return createIqClient(NxiqConfiguration.serverUrl, credentials)
-  }
-
-  static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId, ItemGroup context) {
+  static InternalIqClient getIqClient(Map conf, String credentialsId) {
+    def serverUrl = conf.serverUrl ? URI.create(conf.serverUrl.toString()) : NxiqConfiguration.serverUrl
+    def context = conf.context ?: Jenkins.instance
     def credentials = findCredentials(serverUrl, credentialsId, context)
-    return createIqClient(serverUrl, credentials)
-  }
-
-  static InternalIqClient getIqClient(@Nullable Logger log, ItemGroup context, String credentialsId) {
-    def credentials = findCredentials(NxiqConfiguration.serverUrl, credentialsId, context)
-    return createIqClient(NxiqConfiguration.serverUrl, credentials, log)
-  }
-
-  private static InternalIqClient createIqClient(URI serverUrl, Credentials credentials, Logger log = null) {
-    def serverConfig = createServerConfig(serverUrl, credentials)
+    def serverConfig = getServerConfig(serverUrl, credentials)
     def proxyConfig = getProxyConfig(serverUrl)
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
         .withProxyConfig(proxyConfig)
-        .withLogger(log)
+        .withLogger(conf.log as Logger)
         .build()
   }
 
@@ -85,6 +68,10 @@ class IqClientFactory
   }
 
   static private StandardCredentials findCredentials(final URI url, final String credentialsId, final context) {
+    checkNotNull(credentialsId)
+    checkNotNull(context)
+    checkArgument(!credentialsId.isEmpty())
+
     //noinspection GroovyAssignabilityCheck
     List<StandardCredentials> lookupCredentials = CredentialsProvider.lookupCredentials(
         StandardCredentials,
@@ -97,11 +84,13 @@ class IqClientFactory
         .orElseThrow({ new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId)) })
   }
 
-  static private ServerConfig createServerConfig(final URI url, final credentials) {
-    if (credentials instanceof StandardUsernamePasswordCredentials) {
-      return new ServerConfig(url, new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText()))
-    } else if (credentials instanceof StandardCertificateCredentials) {
-      return new ServerConfig(url, new PkiAuthentication(credentials.getKeyStore(), credentials.password.plainText.toCharArray()))
+  static private ServerConfig getServerConfig(final URI url, final credentials) {
+    if (credentials in StandardUsernamePasswordCredentials) {
+      return new ServerConfig(url, new Authentication(credentials.getUsername(),
+          credentials.getPassword().getPlainText()))
+    } else if (credentials in StandardCertificateCredentials) {
+      return new ServerConfig(url, new PkiAuthentication(credentials.getKeyStore(),
+          credentials.password.plainText.toCharArray()))
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class))
     }

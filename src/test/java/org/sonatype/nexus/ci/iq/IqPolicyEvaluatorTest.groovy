@@ -19,6 +19,7 @@ import com.sonatype.nexus.api.iq.PolicyAlert
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.scan.ScanResult
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
@@ -26,9 +27,9 @@ import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.ItemGroup
+import hudson.model.Job
 import hudson.model.Result
 import hudson.model.Run
-import hudson.model.Job
 import hudson.model.TaskListener
 import hudson.remoting.Channel
 import org.slf4j.Logger
@@ -235,7 +236,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, context, '131-cred') >> iqClient
+      1 * IqClientFactory.getIqClient(_, '131-cred') >> iqClient
   }
 
   def 'global credentials are passed to the client builder when no job credentials provided'() {
@@ -246,7 +247,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, context, '123-cred-456') >> iqClient
+      1 * IqClientFactory.getIqClient(_, '123-cred-456') >> iqClient
 
     where:
       jobCredentials << [ null, '' ]
