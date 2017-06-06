@@ -24,9 +24,8 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import hudson.ProxyConfiguration
-import hudson.model.Project
+import hudson.model.Job
 import hudson.util.Secret
-import jenkins.model.Jenkins
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
@@ -38,7 +37,7 @@ class IqClientFactoryTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  StandardUsernamePasswordCredentials credentials = Mock()
+  StandardUsernamePasswordCredentials credentials = Mock(StandardUsernamePasswordCredentials)
   Secret secret = new Secret("password")
 
   def setup() {
@@ -54,7 +53,8 @@ class IqClientFactoryTest
       def credentialsId = '42'
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      IqClientFactory.getIqClient(credentialsId, serverUrl: url, context: Jenkins.instance)
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentials 42/
@@ -66,7 +66,8 @@ class IqClientFactoryTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      IqClient client = IqClientFactory.getIqClient(credentialsId, serverUrl: URI.create(url), context: Jenkins.instance)
+      IqClient client = IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       client != null
   }
@@ -86,7 +87,8 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient('jobSpecificCredentialsId', context: Mock(Project))
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: 'jobSpecificCredentialsId', context: Mock(Job)))
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create('http://localhost/')
@@ -111,10 +113,15 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient('', context: Mock(Project))
+      IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: ''))
 
     then:
-      thrown(IllegalArgumentException)
+      1 * iqClientBuilder.withServerConfig { ServerConfig config ->
+        config.address == URI.create('http://localhost/')
+      } >> iqClientBuilder
+      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+    iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * CredentialsMatchers.withId('credentialsId')
   }
 
   def 'it uses logger and job specific credentialsId when provided'() {
@@ -137,7 +144,7 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient('job-specific-creds', context: Jenkins.instance)
+      IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: 'job-specific-creds'))
     then:
       1 * CredentialsMatchers.withId('job-specific-creds')
   }
@@ -176,10 +183,13 @@ class IqClientFactoryTest
 
     where:
       clientGetter << [
-          { -> IqClientFactory.getIqClient('123-cred-456', serverUrl: URI.create('http://127.0.0.1/'), context: Jenkins.instance) },
-          { -> IqClientFactory.getIqClient('123-cred-456', context: Jenkins.instance) }
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConf()) },
+          { -> IqClientFactory.getIqClient(
+              new IqClientFactoryConf(credentialsId: '123-cred-456', serverUrl: URI.create('http://127.0.0.1/'))) },
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: '123-cred-456')) }
       ]
       expectedServerUrl << [
+        'http://localhost/',
         'http://127.0.0.1/',
         'http://localhost/'
       ]
@@ -207,7 +217,7 @@ class IqClientFactoryTest
       iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient(credentialsId, serverUrl: serverUrl, context: jenkinsRule.instance)
+      IqClientFactory.getIqClient()
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create(serverUrl)

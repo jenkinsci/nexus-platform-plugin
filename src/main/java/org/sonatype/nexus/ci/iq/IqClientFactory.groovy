@@ -37,16 +37,17 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 class IqClientFactory
 {
-  static InternalIqClient getIqClient(Map conf, String credentialsId) {
-    def serverUrl = conf.serverUrl ? URI.create(conf.serverUrl.toString()) : NxiqConfiguration.serverUrl
+  static InternalIqClient getIqClient(IqClientFactoryConf conf = new IqClientFactoryConf()) {
+    def serverUrl = conf.serverUrl ? conf.serverUrl : NxiqConfiguration.serverUrl
     def context = conf.context ?: Jenkins.instance
+    def credentialsId = conf.credentialsId ?: NxiqConfiguration.credentialsId
     def credentials = findCredentials(serverUrl, credentialsId, context)
     def serverConfig = getServerConfig(serverUrl, credentials)
     def proxyConfig = getProxyConfig(serverUrl)
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
         .withProxyConfig(proxyConfig)
-        .withLogger(conf.log as Logger)
+        .withLogger(conf.log)
         .build()
   }
 
@@ -80,8 +81,8 @@ class IqClientFactory
         URIRequirementBuilder.fromUri(url.toString()).build())
 
     def credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
-    Optional.ofNullable(credentials)
-        .orElseThrow({ new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId)) })
+    checkArgument(credentials != null, Messages.IqClientFactory_NoCredentials(credentialsId))
+    return credentials
   }
 
   static private ServerConfig getServerConfig(final URI url, final credentials) {

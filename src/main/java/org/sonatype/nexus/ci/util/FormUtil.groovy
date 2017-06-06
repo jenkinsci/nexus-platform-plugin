@@ -16,8 +16,7 @@ import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
-import hudson.model.Item
-import hudson.model.ItemGroup
+import hudson.model.ModelObject
 import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
@@ -62,19 +61,7 @@ class FormUtil
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
-                                                      final Item context) {
-    return getCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
-  }
-
-  static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
-                                                      final String credentialsId,
-                                                      final ItemGroup context) {
-    return getCredentialsItemsListBoxModel(serverUrl, credentialsId, context)
-  }
-
-  private static ListBoxModel getCredentialsItemsListBoxModel(final String serverUrl,
-                                                              final String credentialsId,
-                                                              final context)
+                                                      final ModelObject context)
   {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
       return new StandardListBoxModel().includeCurrentValue(credentialsId)

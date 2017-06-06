@@ -35,6 +35,9 @@ class NxiqConfiguration
 {
   String serverUrl
 
+  @Deprecated
+  boolean isPkiAuthentication
+
   String credentialsId
 
   @DataBoundConstructor

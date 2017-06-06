@@ -26,7 +26,6 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
-import hudson.model.ItemGroup
 import hudson.model.Job
 import hudson.model.Result
 import hudson.model.Run
@@ -65,8 +64,6 @@ class IqPolicyEvaluatorTest
 
   def job = Mock(Job)
 
-  def context = Mock(ItemGroup)
-
   def reportUrl = 'http://server/report'
 
   def setup() {
@@ -83,7 +80,6 @@ class IqPolicyEvaluatorTest
     remoteScanResult.copyToLocalScanResult() >> scanResult
     run.getEnvironment(_) >> envVars
     run.parent >> job
-    job.parent >> context
   }
 
   def 'it retrieves proprietary config followed by remote scan followed by evaluation in correct order (happy path)'() {
@@ -236,7 +232,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_, '131-cred') >> iqClient
+      1 * IqClientFactory.getIqClient { it.credentialsId == '131-cred' } >> iqClient
   }
 
   def 'global credentials are passed to the client builder when no job credentials provided'() {
@@ -247,7 +243,7 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_, '123-cred-456') >> iqClient
+      1 * IqClientFactory.getIqClient { it.credentialsId == '123-cred-456' } >> iqClient
 
     where:
       jobCredentials << [ null, '' ]

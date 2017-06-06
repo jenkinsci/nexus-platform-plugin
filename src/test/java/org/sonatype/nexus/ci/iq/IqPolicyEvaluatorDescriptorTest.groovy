@@ -16,13 +16,13 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
-import hudson.model.Project
+import hudson.model.Job
 import hudson.util.FormValidation.Kind
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
-public abstract class IqPolicyEvaluatorDescriptorTest
+abstract class IqPolicyEvaluatorDescriptorTest
     extends Specification
 {
   @Rule
@@ -117,52 +117,52 @@ public abstract class IqPolicyEvaluatorDescriptorTest
     setup:
       def descriptor = getDescriptor()
       GroovyMock(IqUtil, global: true)
-      def project = Mock(Project)
+      def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('', project)
+      descriptor.doFillIqApplicationItems('', job)
 
     then:
-      1 * IqUtil.doFillIqApplicationItems('', project)
+      1 * IqUtil.doFillIqApplicationItems('', job)
   }
 
   def 'it uses custom credentials for application items'() {
     setup:
       def descriptor = getDescriptor()
       GroovyMock(IqUtil, global: true)
-      def project = Mock(Project)
+      def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('credentialsId', project)
+      descriptor.doFillIqApplicationItems('credentialsId', job)
 
     then:
-      1 * IqUtil.doFillIqApplicationItems('credentialsId', project)
+      1 * IqUtil.doFillIqApplicationItems('credentialsId', job)
   }
 
   def 'it validates that stage items are filled'() {
     setup:
       def descriptor = getDescriptor()
       GroovyMock(IqUtil, global: true)
-      def project = Mock(Project)
+      def job = Mock(Job)
 
     when:
-      descriptor.doFillIqStageItems('', project)
+      descriptor.doFillIqStageItems('', job)
 
     then:
-      1 * IqUtil.doFillIqStageItems('', project)
+      1 * IqUtil.doFillIqStageItems('', job)
   }
 
   def 'it uses custom credentials for stage items'() {
     setup:
       def descriptor = getDescriptor()
       GroovyMock(IqUtil, global: true)
-      def project = Mock(Project)
+      def job = Mock(Job)
 
     when:
-      descriptor.doFillIqStageItems('credentialsId', project)
+      descriptor.doFillIqStageItems('credentialsId', job)
 
     then:
-      1 * IqUtil.doFillIqStageItems('credentialsId', project)
+      1 * IqUtil.doFillIqStageItems('credentialsId', job)
   }
 
   def 'it validates that credentials items are filled'() {
@@ -172,13 +172,13 @@ public abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
       NxiqConfiguration.serverUrl >> URI.create("http://server/path")
       NxiqConfiguration.credentialsId >> 'credentialsId'
-      def project = Mock(Project)
+      def job = Mock(Job)
 
     when:
-      descriptor.doFillJobCredentialsIdItems(project)
+      descriptor.doFillJobCredentialsIdItems(job)
 
     then:
-      1 * FormUtil.newCredentialsItemsListBoxModel("http://server/path", 'credentialsId', project)
+      1 * FormUtil.newCredentialsItemsListBoxModel("http://server/path", 'credentialsId', job)
   }
 
   def 'it sets job specific credentials'() {

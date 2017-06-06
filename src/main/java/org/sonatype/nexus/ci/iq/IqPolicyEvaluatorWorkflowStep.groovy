@@ -83,8 +83,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job project) {
-      IqUtil.doFillIqStageItems(jobCredentialsId, project)
+    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+      IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
     @Override
@@ -93,10 +93,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(
-        @QueryParameter @Nullable String jobCredentialsId,
-        @AncestorInPath Job project) {
-      IqUtil.doFillIqApplicationItems(jobCredentialsId, project)
+    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 
     @Override

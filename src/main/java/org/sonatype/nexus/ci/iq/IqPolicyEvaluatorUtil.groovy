@@ -46,7 +46,9 @@ class IqPolicyEvaluatorUtil
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def credentialsId = getCredentials(iqPolicyEvaluator.jobCredentialsId)
-      def iqClient = IqClientFactory.getIqClient(credentialsId, context: run.parent.parent, log: loggerBridge)
+      def iqClient = IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: credentialsId, context: run.parent, log: loggerBridge))
+
       def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)
 
       def proprietaryConfig =
