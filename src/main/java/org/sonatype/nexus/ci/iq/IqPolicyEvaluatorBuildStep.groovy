@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import javax.annotation.Nonnull
+import javax.annotation.Nullable
 import javax.annotation.ParametersAreNonnullByDefault
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -122,6 +123,12 @@ class IqPolicyEvaluatorBuildStep
     ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job) {
       FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
         job)
+    }
+
+    @Override
+    FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
+    {
+      FormUtil.validateJobCredentials(jobCredentialsId, job)
     }
   }
 }
