@@ -13,7 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import com.sonatype.nexus.api.common.Authentication
-import com.sonatype.nexus.api.common.PkiAuthentication
+import com.sonatype.nexus.api.common.CertificateAuthentication
 import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
@@ -90,7 +90,7 @@ class IqClientFactory
       return new ServerConfig(url, new Authentication(credentials.getUsername(),
           credentials.getPassword().getPlainText()))
     } else if (credentials in StandardCertificateCredentials) {
-      return new ServerConfig(url, new PkiAuthentication(credentials.getKeyStore(),
+      return new ServerConfig(url, new CertificateAuthentication(credentials.getKeyStore(),
           credentials.password.plainText.toCharArray()))
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class))
