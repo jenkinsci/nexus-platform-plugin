@@ -12,20 +12,26 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.security.KeyStore
+
 import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
+import com.sonatype.nexus.api.iq.impl.DefaultIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
+import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import hudson.ProxyConfiguration
 import hudson.model.Job
 import hudson.util.Secret
+import org.jenkinsci.plugins.plaincredentials.StringCredentials
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
@@ -37,7 +43,7 @@ class IqClientFactoryTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  StandardUsernamePasswordCredentials credentials = Mock(StandardUsernamePasswordCredentials)
+  StandardCredentials credentials = Mock(StandardUsernamePasswordCredentials)
   Secret secret = new Secret("password")
 
   def setup() {
@@ -70,6 +76,61 @@ class IqClientFactoryTest
           new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       client != null
+  }
+
+  def 'it creates a client with certificate credentials'() {
+    setup:
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      def cert = Mock(StandardCertificateCredentials)
+      cert.keyStore >> Mock(KeyStore)
+      cert.password >> secret
+      CredentialsMatchers.firstOrNull(_, _) >> cert
+
+    when:
+      DefaultIqClient client = (DefaultIqClient) IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      client != null
+  }
+
+  def 'it throws exception for unsupported credential types'() {
+    setup:
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      def unsupportedCreds = Mock(StringCredentials)
+      CredentialsMatchers.firstOrNull(_, _) >> unsupportedCreds
+
+    when:
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      Throwable exception = thrown()
+      exception.message == 'Credentials of type ' + unsupportedCreds.class.simpleName + ' are not supported'
+  }
+
+  def 'it uses configured serverUrl and credentialsId'() {
+    setup:
+      GroovyMock(NxiqConfiguration, global: true)
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
+      NxiqConfiguration.credentialsId >> "123-cred-456"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+    when:
+      IqClientFactory.getIqClient()
+
+    then:
+      1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
+      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
+
+    and:
+      1 * CredentialsMatchers.withId("123-cred-456")
   }
 
   def 'it uses job specific credentials when provided'() {
@@ -124,7 +185,7 @@ class IqClientFactoryTest
       1 * CredentialsMatchers.withId('credentialsId')
   }
 
-  def 'it uses logger and job specific credentialsId when provided'() {
+  def 'it uses job specific credentialsId when provided'() {
     setup:
       final String serverUrl = 'http://localhost/'
       final String credentialsId = '123-cred-456'
@@ -145,6 +206,7 @@ class IqClientFactoryTest
 
     when:
       IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: 'job-specific-creds'))
+
     then:
       1 * CredentialsMatchers.withId('job-specific-creds')
   }

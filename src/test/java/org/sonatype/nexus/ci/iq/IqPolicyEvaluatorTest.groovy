@@ -224,18 +224,7 @@ class IqPolicyEvaluatorTest
       noExceptionThrown()
   }
 
-  def 'job specific credentials are passed to the client builder'() {
-    setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, '131-cred')
-
-    when:
-      buildStep.perform(run, workspace, launcher, Mock(TaskListener))
-
-    then:
-      1 * IqClientFactory.getIqClient { it.credentialsId == '131-cred' } >> iqClient
-  }
-
-  def 'global credentials are passed to the client builder when no job credentials provided'() {
+  def 'global no credentials are passed to the client builder when no job credentials provided'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, jobCredentials)
 
@@ -243,10 +232,10 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient { it.credentialsId == '123-cred-456' } >> iqClient
+      1 * IqClientFactory.getIqClient { it.credentialsId == jobCredentials } >> iqClient
 
     where:
-      jobCredentials << [ null, '' ]
+      jobCredentials << [ null, '', '131-cred']
   }
 
   def 'evaluation result outcome determines build status'() {

@@ -71,6 +71,7 @@ class IqClientFactory
   static private StandardCredentials findCredentials(final URI url, final String credentialsId, final context) {
     checkNotNull(credentialsId)
     checkNotNull(context)
+    checkNotNull(url)
     checkArgument(!credentialsId.isEmpty())
 
     //noinspection GroovyAssignabilityCheck
@@ -93,7 +94,7 @@ class IqClientFactory
       return new ServerConfig(url, new CertificateAuthentication(credentials.getKeyStore(),
           credentials.password.plainText.toCharArray()))
     } else {
-      throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class))
+      throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class.simpleName))
     }
   }
 }

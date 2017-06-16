@@ -15,7 +15,6 @@ package org.sonatype.nexus.ci.iq
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
 import hudson.FilePath
@@ -45,9 +44,8 @@ class IqPolicyEvaluatorUtil
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def credentialsId = getCredentials(iqPolicyEvaluator.jobCredentialsId)
-      def iqClient = IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: credentialsId, context: run.parent, log: loggerBridge))
+      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConf(
+          credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
 
       def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)
 
@@ -88,10 +86,6 @@ class IqPolicyEvaluatorUtil
       run.result = Result.UNSTABLE
       return null
     }
-  }
-
-  private static String getCredentials(final String jobCredentialsId) {
-    jobCredentialsId ?: NxiqConfiguration.credentialsId
   }
 
   @SuppressWarnings('CatchException')
