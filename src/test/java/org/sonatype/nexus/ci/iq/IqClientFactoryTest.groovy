@@ -18,7 +18,6 @@ import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
-import com.sonatype.nexus.api.iq.impl.DefaultIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
@@ -60,7 +59,7 @@ class IqClientFactoryTest
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
       IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentials 42/
@@ -73,7 +72,7 @@ class IqClientFactoryTest
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
       IqClient client = IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       client != null
   }
@@ -83,15 +82,15 @@ class IqClientFactoryTest
       def url = 'http://foo.com'
       def credentialsId = "42"
       def cert = Mock(StandardCertificateCredentials)
-      cert.keyStore >> Mock(KeyStore)
-      cert.password >> secret
       CredentialsMatchers.firstOrNull(_, _) >> cert
 
     when:
-      DefaultIqClient client = (DefaultIqClient) IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+      def client = IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
 
     then:
+      1 * cert.getKeyStore() >> Mock(KeyStore)
+      1 * cert.getPassword() >> secret
       client != null
   }
 
@@ -104,7 +103,7 @@ class IqClientFactoryTest
 
     when:
       IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: credentialsId, serverUrl: URI.create(url)))
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
 
     then:
       Throwable exception = thrown()
@@ -149,7 +148,7 @@ class IqClientFactoryTest
 
     when:
       IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: 'jobSpecificCredentialsId', context: Mock(Job)))
+          new IqClientFactoryConfiguration(credentialsId: 'jobSpecificCredentialsId', context: Mock(Job)))
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create('http://localhost/')
@@ -174,14 +173,14 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: ''))
+      IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: ''))
 
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-    iqClientBuilder.withLogger(_) >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('credentialsId')
   }
 
@@ -205,7 +204,7 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: 'job-specific-creds'))
+      IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: 'job-specific-creds'))
 
     then:
       1 * CredentialsMatchers.withId('job-specific-creds')
@@ -245,10 +244,10 @@ class IqClientFactoryTest
 
     where:
       clientGetter << [
-          { -> IqClientFactory.getIqClient(new IqClientFactoryConf()) },
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConfiguration()) },
           { -> IqClientFactory.getIqClient(
-              new IqClientFactoryConf(credentialsId: '123-cred-456', serverUrl: URI.create('http://127.0.0.1/'))) },
-          { -> IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: '123-cred-456')) }
+              new IqClientFactoryConfiguration(credentialsId: '123-cred-456', serverUrl: URI.create('http://127.0.0.1/'))) },
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: '123-cred-456')) }
       ]
       expectedServerUrl << [
         'http://localhost/',

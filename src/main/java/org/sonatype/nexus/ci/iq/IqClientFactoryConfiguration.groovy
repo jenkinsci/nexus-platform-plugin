@@ -15,7 +15,7 @@ package org.sonatype.nexus.ci.iq
 import hudson.model.ModelObject
 import org.slf4j.Logger
 
-class IqClientFactoryConf
+class IqClientFactoryConfiguration
 {
   URI serverUrl
 

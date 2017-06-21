@@ -49,7 +49,7 @@ class NxiqConfiguration
 
   @Override
   Descriptor<NxiqConfiguration> getDescriptor() {
-    return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass())
+    return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
   static @Nullable URI getServerUrl() {

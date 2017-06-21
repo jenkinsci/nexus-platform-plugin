@@ -16,7 +16,6 @@ import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 
 import org.sonatype.nexus.ci.iq.IqClientFactory
-import org.sonatype.nexus.ci.iq.IqClientFactoryConf
 
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind

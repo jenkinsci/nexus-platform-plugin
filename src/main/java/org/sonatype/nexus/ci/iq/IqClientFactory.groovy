@@ -37,8 +37,8 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 class IqClientFactory
 {
-  static InternalIqClient getIqClient(IqClientFactoryConf conf = new IqClientFactoryConf()) {
-    def serverUrl = conf.serverUrl ? conf.serverUrl : NxiqConfiguration.serverUrl
+  static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration()) {
+    def serverUrl = conf.serverUrl ?: NxiqConfiguration.serverUrl
     def context = conf.context ?: Jenkins.instance
     def credentialsId = conf.credentialsId ?: NxiqConfiguration.credentialsId
     def credentials = findCredentials(serverUrl, credentialsId, context)
@@ -88,10 +88,10 @@ class IqClientFactory
 
   static private ServerConfig getServerConfig(final URI url, final credentials) {
     if (credentials in StandardUsernamePasswordCredentials) {
-      return new ServerConfig(url, new Authentication(credentials.getUsername(),
-          credentials.getPassword().getPlainText()))
+      return new ServerConfig(url, new Authentication(credentials.username,
+          credentials.password.plainText))
     } else if (credentials in StandardCertificateCredentials) {
-      return new ServerConfig(url, new CertificateAuthentication(credentials.getKeyStore(),
+      return new ServerConfig(url, new CertificateAuthentication(credentials.keyStore,
           credentials.password.plainText.toCharArray()))
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class.simpleName))

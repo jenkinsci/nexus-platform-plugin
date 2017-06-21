@@ -44,7 +44,7 @@ class IqPolicyEvaluatorUtil
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConf(
+      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
           credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
 
       def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)

@@ -19,7 +19,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
-import org.sonatype.nexus.ci.iq.IqClientFactoryConf
+import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
 import hudson.model.Job
 import org.junit.Rule
@@ -168,7 +168,7 @@ class IqUtilTest
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient(
-          new IqClientFactoryConf(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
+          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
 
       iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),

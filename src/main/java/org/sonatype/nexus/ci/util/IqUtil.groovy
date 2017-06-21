@@ -19,7 +19,7 @@ import com.sonatype.nexus.api.iq.Context
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
-import org.sonatype.nexus.ci.iq.IqClientFactoryConf
+import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
 import hudson.model.Job
 import hudson.model.ModelObject
@@ -34,24 +34,29 @@ class IqUtil
                                                             final String credentialsId,
                                                             final ModelObject context) {
     def client = IqClientFactory.getIqClient(
-        new IqClientFactoryConf(credentialsId: credentialsId, context: context, serverUrl: URI.create(serverUrl)))
+        new IqClientFactoryConfiguration(credentialsId: credentialsId, context: context,
+            serverUrl: URI.create(serverUrl)))
     return client.getApplicationsForApplicationEvaluation()
   }
 
   static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient( new IqClientFactoryConf(credentialsId: credentialsId, context: job))
+      def client = IqClientFactory.
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
-    } else {
+    }
+    else {
       FormUtil.newListBoxModelWithEmptyOption()
     }
   }
 
   static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient(new IqClientFactoryConf(credentialsId: credentialsId, context: job))
+      def client = IqClientFactory.
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
-    } else {
+    }
+    else {
       FormUtil.newListBoxModelWithEmptyOption()
     }
   }
