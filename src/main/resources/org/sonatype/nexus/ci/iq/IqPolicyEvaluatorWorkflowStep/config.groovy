@@ -67,6 +67,15 @@ f.section(title: descriptor.displayName) {
       f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
         c.select(context:app, includeUser:false, expressionAllowed:false)
       }
+
+      f.block() {
+        f.validateButton(
+            title: _(org.sonatype.nexus.ci.config.Messages.Configuration_TestConnection()),
+            progress: _('Testing...'),
+            method: 'verifyCredentials',
+            with: 'jobCredentialsId'
+        )
+      }
     }
   }
 }

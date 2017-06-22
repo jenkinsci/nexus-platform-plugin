@@ -15,6 +15,8 @@ package org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.Messages
 
+import jenkins.model.Jenkins
+
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
 def l = namespace(lib.LayoutTagLib)
@@ -36,7 +38,7 @@ f.section(title: descriptor.displayName) {
         h3(Messages.IqPolicyEvaluation_NoIqServersConfigured())
         div {
           yield Messages.IqPolicyEvaluation_AddIqServers()
-          a(href: jenkins.model.Jenkins.instance.rootUrl + "/configure", "Configure System")
+          a(href: Jenkins.instance.rootUrl + "/configure", "Configure System")
         }
       }
     }
@@ -66,6 +68,15 @@ f.section(title: descriptor.displayName) {
 
       f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
         c.select(context:app, includeUser:false, expressionAllowed:false)
+      }
+
+      f.block() {
+        f.validateButton(
+            title: _(org.sonatype.nexus.ci.config.Messages.Configuration_TestConnection()),
+            progress: _('Testing...'),
+            method: 'verifyCredentials',
+            with: 'jobCredentialsId'
+        )
       }
     }
   }

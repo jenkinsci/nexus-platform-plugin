@@ -112,5 +112,11 @@ class IqPolicyEvaluatorWorkflowStep
       FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
           job)
     }
+
+    @Override
+    FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
+    {
+      IqUtil.verifyJobCredentials(jobCredentialsId, job)
+    }
   }
 }

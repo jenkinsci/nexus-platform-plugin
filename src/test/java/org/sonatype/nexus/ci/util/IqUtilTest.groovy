@@ -22,6 +22,7 @@ import org.sonatype.nexus.ci.iq.IqClientFactory
 import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
 import hudson.model.Job
+import hudson.util.FormValidation.Kind
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
@@ -182,5 +183,34 @@ class IqUtilTest
       stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'calls IqUtil with the correct arguments'() {
+    setup:
+      GroovyMock(IqClientFactory, global: true)
+      final String serverUrl = 'http://localhost/'
+      final String globalCredentialsId = 'globalCredentialsId'
+
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, globalCredentialsId)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      iqClient.getApplicationsForApplicationEvaluation() >> []
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
+
+    when:
+      def validation = IqUtil.verifyJobCredentials(creds, job)
+
+    then:
+      validation.kind == Kind.OK
+
+    where:
+      creds       | credentialsId
+      'creds-123' | 'creds-123'
   }
 }
