@@ -74,7 +74,6 @@ class FormUtil
           StandardCredentials,
           fromUri(serverUrl).build(),
           anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
-
   }
 
   static ListBoxModel newListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items)
