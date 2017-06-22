@@ -12,11 +12,6 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.exception.IqClientException
-
-import org.sonatype.nexus.ci.config.Messages
-import org.sonatype.nexus.ci.config.NxiqConfiguration
-
 import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
@@ -62,19 +57,6 @@ class FormUtil
       return FormValidation.error(error)
     }
     return FormValidation.ok()
-  }
-  static FormValidation validateJobCredentials(final String jobCredentialsId, final ModelObject context) {
-    try {
-      def applications = IqUtil.getApplicableApplications(
-          NxiqConfiguration.serverUrl.toString(),
-          jobCredentialsId ?: NxiqConfiguration.credentialsId,
-          context)
-
-      return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
-    }
-    catch (IqClientException e) {
-      return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed())
-    }
   }
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,

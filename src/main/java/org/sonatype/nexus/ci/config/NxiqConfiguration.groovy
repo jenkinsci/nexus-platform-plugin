@@ -94,13 +94,7 @@ class NxiqConfiguration
         @QueryParameter String serverUrl,
         @QueryParameter @Nullable String credentialsId) throws IOException
     {
-      try {
-        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId, Jenkins.instance)
-        return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
-      }
-      catch (IqClientException e) {
-        return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed())
-      }
+      return IqUtil.verifyJobCredentials(serverUrl, credentialsId, Jenkins.instance)
     }
   }
 }

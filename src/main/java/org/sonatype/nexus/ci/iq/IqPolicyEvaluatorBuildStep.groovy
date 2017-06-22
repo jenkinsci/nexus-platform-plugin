@@ -128,7 +128,7 @@ class IqPolicyEvaluatorBuildStep
     @Override
     FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
     {
-      FormUtil.validateJobCredentials(jobCredentialsId, job)
+      IqUtil.verifyJobCredentials(jobCredentialsId, job)
     }
   }
 }

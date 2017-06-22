@@ -181,6 +181,19 @@ abstract class IqPolicyEvaluatorDescriptorTest
       1 * FormUtil.newCredentialsItemsListBoxModel("http://server/path", 'credentialsId', job)
   }
 
+  def 'it validates that credentials items are verified'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+      def job = Mock(Job)
+
+    when:
+      descriptor.doVerifyCredentials('credentialsId', job)
+
+    then:
+      1 * IqUtil.verifyJobCredentials('credentialsId', job)
+  }
+
   def 'it sets job specific credentials'() {
     setup:
       GroovyMock(NxiqConfiguration, global: true)

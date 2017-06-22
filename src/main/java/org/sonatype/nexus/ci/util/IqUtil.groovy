@@ -14,15 +14,18 @@ package org.sonatype.nexus.ci.util
 
 import javax.annotation.Nullable
 
+import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
 
+import org.sonatype.nexus.ci.config.Messages
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
 import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
 import hudson.model.Job
 import hudson.model.ModelObject
+import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
 class IqUtil
@@ -58,6 +61,26 @@ class IqUtil
     }
     else {
       FormUtil.newListBoxModelWithEmptyOption()
+    }
+  }
+
+  static FormValidation verifyJobCredentials(final String jobCredentialsId, final ModelObject context) {
+    return verifyJobCredentials(NxiqConfiguration.serverUrl.toString(), jobCredentialsId, context)
+  }
+
+  static FormValidation verifyJobCredentials(final String serverUrl,
+                                             final String jobCredentialsId,
+                                             final ModelObject context) {
+    try {
+      def applications = getApplicableApplications(
+          serverUrl,
+          jobCredentialsId ?: NxiqConfiguration.credentialsId,
+          context)
+
+      return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
+    }
+    catch (IqClientException e) {
+      return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed())
     }
   }
 }
