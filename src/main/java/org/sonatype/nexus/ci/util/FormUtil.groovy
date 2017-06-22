@@ -12,14 +12,18 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.cloudbees.plugins.credentials.CredentialsMatchers
+import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
+import hudson.model.ModelObject
 import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.anyOf
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.instanceOf
 import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri
 
 class FormUtil
@@ -55,16 +59,21 @@ class FormUtil
     return FormValidation.ok()
   }
 
-  static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl, final String credentialsId) {
+  static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
+                                                      final String credentialsId,
+                                                      final ModelObject context)
+  {
     if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
       return new StandardListBoxModel().includeCurrentValue(credentialsId)
     }
+    //noinspection GroovyAssignabilityCheck
     return new StandardListBoxModel()
         .includeEmptyValue()
         .includeMatchingAs(ACL.SYSTEM,
-          Jenkins.getInstance(),
-          StandardUsernamePasswordCredentials,
-          fromUri(serverUrl).build(), CredentialsMatchers.always())
+          context,
+          StandardCredentials,
+          fromUri(serverUrl).build(),
+          anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
   }
 
   static ListBoxModel newListBoxModel(Closure<String> nameSelector, Closure<String> valueSelector, List items)

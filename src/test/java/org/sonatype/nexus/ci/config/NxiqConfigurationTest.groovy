@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
+
 import org.sonatype.nexus.ci.iq.IqClientFactory
 
 import hudson.util.FormValidation
@@ -74,7 +75,8 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> applications
-      IqClientFactory.getIqClient(URI.create(serverUrl), credentialsId) >> client
+      IqClientFactory.getIqClient
+          { it.credentialsId == credentialsId && it.serverUrl == URI.create(serverUrl) } >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 
@@ -109,7 +111,8 @@ class NxiqConfigurationTest
       GroovyMock(IqClientFactory.class, global: true)
       def client = Mock(InternalIqClient.class)
       client.getApplicationsForApplicationEvaluation() >> { throw new IqClientException("something went wrong") }
-      IqClientFactory.getIqClient(new URI(serverUrl), credentialsId) >> client
+      IqClientFactory.getIqClient
+          { it.credentialsId == credentialsId && it.serverUrl == URI.create(serverUrl) } >> client
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(NxiqConfiguration.class)
 
@@ -124,23 +127,5 @@ class NxiqConfigurationTest
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
-  }
-
-  def 'it clears credentials when pki authentication is true'() {
-    when:
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', true, 'credentialsId')
-
-    then:
-      nxiqConfiguration.@isPkiAuthentication
-      !nxiqConfiguration.@credentialsId
-  }
-
-  def 'it keeps credentials when pki authentication is false'() {
-    when:
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', false, 'credentialsId')
-
-    then:
-      !nxiqConfiguration.@isPkiAuthentication
-      nxiqConfiguration.@credentialsId == 'credentialsId'
   }
 }

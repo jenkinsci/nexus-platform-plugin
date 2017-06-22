@@ -20,10 +20,12 @@ import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.Extension
+import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
+import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -49,7 +51,7 @@ class IqPolicyEvaluatorWorkflowStep
                                 final Boolean failBuildOnNetworkError,
                                 final String jobCredentialsId)
   {
-    this.jobCredentialsId = NxiqConfiguration.isPkiAuthentication ? null : jobCredentialsId
+    this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
@@ -81,8 +83,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId) {
-      IqUtil.doFillIqStageItems(jobCredentialsId)
+    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+      IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
     @Override
@@ -91,8 +93,8 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId) {
-      IqUtil.doFillIqApplicationItems(jobCredentialsId)
+    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 
     @Override
@@ -106,8 +108,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId)
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job) {
+      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
+          job)
     }
   }
 }

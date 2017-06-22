@@ -23,6 +23,7 @@ import hudson.Extension
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.AbstractProject
+import hudson.model.Job
 import hudson.model.Run
 import hudson.model.TaskListener
 import hudson.tasks.BuildStepDescriptor
@@ -30,6 +31,7 @@ import hudson.tasks.Builder
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.tasks.SimpleBuildStep
+import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -55,7 +57,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId)
   {
-    this.jobCredentialsId = NxiqConfiguration.isPkiAuthentication ? null : jobCredentialsId
+    this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
@@ -90,9 +92,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqStageItems(jobCredentialsId)
+      IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
     @Override
@@ -101,9 +103,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId) {
+    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqApplicationItems(jobCredentialsId)
+      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 
     @Override
@@ -117,8 +119,9 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems() {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId)
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job) {
+      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
+        job)
     }
   }
 }

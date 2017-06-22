@@ -24,6 +24,7 @@ import hudson.model.Descriptor
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
+import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -34,35 +35,26 @@ class NxiqConfiguration
 {
   String serverUrl
 
+  @Deprecated
   boolean isPkiAuthentication
 
   String credentialsId
 
   @DataBoundConstructor
-  NxiqConfiguration(final String serverUrl,
-                    final boolean isPkiAuthentication,
-                    final String credentialsId)
+  NxiqConfiguration(final String serverUrl, final String credentialsId)
   {
     this.serverUrl = serverUrl
-    this.isPkiAuthentication = isPkiAuthentication
-    this.credentialsId = isPkiAuthentication ? null : credentialsId
+    this.credentialsId = credentialsId
   }
 
   @Override
   Descriptor<NxiqConfiguration> getDescriptor() {
-    return jenkins.model.Jenkins.getInstance().getDescriptorOrDie(this.getClass())
+    return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
   static @Nullable URI getServerUrl() {
     def serverUrl = getIqConfig()?.@serverUrl
     serverUrl ? new URI(serverUrl) : null
-  }
-
-  /**
-   * Always false. Enforced at the UI level until nexus-java-api supports PKI
-   */
-  static boolean getIsPkiAuthentication() {
-    return getIqConfig()?.@isPkiAuthentication
   }
 
   static @Nullable String getCredentialsId() {
@@ -94,7 +86,7 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
                                           @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
     }
 
     @SuppressWarnings('unused')
@@ -103,8 +95,7 @@ class NxiqConfiguration
         @QueryParameter @Nullable String credentialsId) throws IOException
     {
       try {
-        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId)
-
+        def applications = IqUtil.getApplicableApplications(serverUrl, credentialsId, Jenkins.instance)
         return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
       }
       catch (IqClientException e) {

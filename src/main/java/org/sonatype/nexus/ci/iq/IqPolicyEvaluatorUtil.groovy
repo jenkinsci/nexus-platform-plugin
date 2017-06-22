@@ -15,7 +15,6 @@ package org.sonatype.nexus.ci.iq
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
 import hudson.FilePath
@@ -45,8 +44,9 @@ class IqPolicyEvaluatorUtil
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def credentialsId = getCredentials(iqPolicyEvaluator.jobCredentialsId)
-      def iqClient = IqClientFactory.getIqClient(loggerBridge, credentialsId)
+      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
+          credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
+
       def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)
 
       def proprietaryConfig =
@@ -86,12 +86,6 @@ class IqPolicyEvaluatorUtil
       run.result = Result.UNSTABLE
       return null
     }
-  }
-
-  private static String getCredentials(final String jobCredentialsId) {
-    NxiqConfiguration.isPkiAuthentication ?
-        null :
-        (jobCredentialsId ?: NxiqConfiguration.credentialsId)
   }
 
   @SuppressWarnings('CatchException')

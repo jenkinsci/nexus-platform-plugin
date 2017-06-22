@@ -15,20 +15,24 @@ package org.sonatype.nexus.ci.util
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Stage
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.iq.IqClientFactory
-
 import org.sonatype.nexus.ci.config.NxiqConfiguration
+import org.sonatype.nexus.ci.iq.IqClientFactory
+import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
+import hudson.model.Job
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
-public class IqUtilTest
+class IqUtilTest
     extends Specification
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
+
+  Job job = Mock(Job)
 
   def 'doFillIqApplicationItems populates Iq Application items'() {
     setup:
@@ -36,14 +40,14 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('') >> iqClient
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
@@ -51,7 +55,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems('')
+      def applicationItems = IqUtil.doFillIqApplicationItems(credentialsId, job)
 
     then:
       applicationItems.size() == 3
@@ -70,7 +74,7 @@ public class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems('')
+      def applicationItems = IqUtil.doFillIqApplicationItems('', job)
 
     then:
       applicationItems.size() == 1
@@ -84,19 +88,20 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('jobCredentialsId') >> iqClient
+
+      IqClientFactory.getIqClient { it.credentialsId == 'jobCredentialsId' && it.context == job } >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
-      def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId')
+      def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId', job)
 
     then:
       applicationItems.size() == 2
@@ -112,14 +117,14 @@ public class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('') >> iqClient
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
       iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
@@ -127,7 +132,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('')
+      def stageItems = IqUtil.doFillIqStageItems(credentialsId, job)
 
     then:
       stageItems.size() == 3
@@ -146,7 +151,7 @@ public class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('')
+      def stageItems = IqUtil.doFillIqStageItems('', job)
 
     then:
       stageItems.size() == 1
@@ -162,7 +167,8 @@ public class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient('jobCredentialsId') >> iqClient
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
 
       iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
@@ -170,7 +176,7 @@ public class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('jobCredentialsId')
+      def stageItems = IqUtil.doFillIqStageItems('jobCredentialsId', job)
 
     then:
       stageItems.size() == 1

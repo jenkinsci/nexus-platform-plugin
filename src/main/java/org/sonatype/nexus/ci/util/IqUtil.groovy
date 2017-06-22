@@ -16,9 +16,13 @@ import javax.annotation.Nullable
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
+
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
+import org.sonatype.nexus.ci.iq.IqClientFactoryConfiguration
 
+import hudson.model.Job
+import hudson.model.ModelObject
 import hudson.util.ListBoxModel
 
 class IqUtil
@@ -26,25 +30,33 @@ class IqUtil
   /**
    * Return Nexus IQ Server applications which are applicable for evaluation.
    */
-  static List<ApplicationSummary> getApplicableApplications(final String serverUrl, final String credentialsId) {
-    def client = IqClientFactory.getIqClient(new URI(serverUrl), credentialsId)
+  static List<ApplicationSummary> getApplicableApplications(final String serverUrl,
+                                                            final String credentialsId,
+                                                            final ModelObject context) {
+    def client = IqClientFactory.getIqClient(
+        new IqClientFactoryConfiguration(credentialsId: credentialsId, context: context,
+            serverUrl: URI.create(serverUrl)))
     return client.getApplicationsForApplicationEvaluation()
   }
 
-  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId) {
+  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient(credentialsId)
+      def client = IqClientFactory.
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
-    } else {
+    }
+    else {
       FormUtil.newListBoxModelWithEmptyOption()
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId) {
+  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
-      def client = IqClientFactory.getIqClient(credentialsId)
+      def client = IqClientFactory.
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
-    } else {
+    }
+    else {
       FormUtil.newListBoxModelWithEmptyOption()
     }
   }

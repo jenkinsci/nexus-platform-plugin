@@ -38,6 +38,7 @@ class ComToOrgMigrator
 
   @SuppressWarnings('AbcMetric')
   static void migrateGlobalConfiguration() {
+    //noinspection GrDeprecatedAPIUsage
     def oldGlobalConfiguration = new com.sonatype.nexus.ci.config.GlobalNexusConfiguration()
     if (oldGlobalConfiguration.exists()) {
       LOGGER.debug(Messages.ComToOrgMigrator_MigratingPackages())
@@ -49,15 +50,16 @@ class ComToOrgMigrator
       newGlobalConfiguration.nxrmConfigs = []
       newGlobalConfiguration.iqConfigs = []
 
+      //noinspection GrDeprecatedAPIUsage
       oldGlobalConfiguration.nxrmConfigs.each { com.sonatype.nexus.ci.config.NxrmConfiguration nxrmConfiguration ->
         def newNxrmConfiguration = new Nxrm2Configuration(nxrmConfiguration.id,
             nxrmConfiguration.internalId, nxrmConfiguration.displayName, nxrmConfiguration.serverUrl,
             nxrmConfiguration.credentialsId)
         newGlobalConfiguration.nxrmConfigs.add(newNxrmConfiguration)
       }
+      //noinspection GrDeprecatedAPIUsage
       oldGlobalConfiguration.iqConfigs.each { com.sonatype.nexus.ci.config.NxiqConfiguration iqConfiguration ->
-        def newIqConfiguration = new NxiqConfiguration(iqConfiguration.serverUrl,
-            iqConfiguration.isPkiAuthentication, iqConfiguration.credentialsId)
+        def newIqConfiguration = new NxiqConfiguration(iqConfiguration.serverUrl, iqConfiguration.credentialsId)
         newGlobalConfiguration.iqConfigs.add(newIqConfiguration)
       }
 

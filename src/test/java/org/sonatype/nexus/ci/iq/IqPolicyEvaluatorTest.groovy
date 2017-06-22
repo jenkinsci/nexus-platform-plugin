@@ -19,12 +19,14 @@ import com.sonatype.nexus.api.iq.PolicyAlert
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.scan.ScanResult
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
+import hudson.model.Job
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
@@ -60,6 +62,8 @@ class IqPolicyEvaluatorTest
 
   def run = Mock(Run)
 
+  def job = Mock(Job)
+
   def reportUrl = 'http://server/report'
 
   def setup() {
@@ -75,6 +79,7 @@ class IqPolicyEvaluatorTest
     IqClientFactory.getIqClient(*_) >> iqClient
     remoteScanResult.copyToLocalScanResult() >> scanResult
     run.getEnvironment(_) >> envVars
+    run.parent >> job
   }
 
   def 'it retrieves proprietary config followed by remote scan followed by evaluation in correct order (happy path)'() {
@@ -219,18 +224,7 @@ class IqPolicyEvaluatorTest
       noExceptionThrown()
   }
 
-  def 'job specific credentials are passed to the client builder'() {
-    setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, '131-cred')
-
-    when:
-      buildStep.perform(run, workspace, launcher, Mock(TaskListener))
-
-    then:
-      1 * IqClientFactory.getIqClient(_ as Logger, '131-cred') >> iqClient
-  }
-
-  def 'global credentials are passed to the client builder when no job credentials provided'() {
+  def 'global no credentials are passed to the client builder when no job credentials provided'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, jobCredentials)
 
@@ -238,25 +232,10 @@ class IqPolicyEvaluatorTest
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
 
     then:
-      1 * IqClientFactory.getIqClient(_ as Logger, '123-cred-456') >> iqClient
+      1 * IqClientFactory.getIqClient { it.credentialsId == jobCredentials } >> iqClient
 
     where:
-      jobCredentials << [ null, '' ]
-  }
-
-  def 'null credentials are passed to the client builder when pki auth is true'() {
-    setup:
-      NxiqConfiguration.isPkiAuthentication >> true
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], true, jobCredentials)
-
-    when:
-      buildStep.perform(run, workspace, launcher, Mock(TaskListener))
-
-    then:
-      1 * IqClientFactory.getIqClient(_ as Logger, null) >> iqClient
-
-    where:
-      jobCredentials << [ null, '', '131-cred' ]
+      jobCredentials << [ null, '', '131-cred']
   }
 
   def 'evaluation result outcome determines build status'() {

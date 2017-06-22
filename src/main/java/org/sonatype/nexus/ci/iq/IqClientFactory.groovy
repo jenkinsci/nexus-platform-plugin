@@ -12,9 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import javax.annotation.Nullable
-
 import com.sonatype.nexus.api.common.Authentication
+import com.sonatype.nexus.api.common.CertificateAuthentication
 import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
@@ -25,38 +24,30 @@ import org.sonatype.nexus.ci.util.ProxyUtil
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
+import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
-import hudson.model.ItemGroup
 import hudson.security.ACL
-import org.slf4j.Logger
 import jenkins.model.Jenkins
+import org.slf4j.Logger
+
+import static com.google.common.base.Preconditions.checkArgument
+import static com.google.common.base.Preconditions.checkNotNull
 
 class IqClientFactory
 {
-  static InternalIqClient getIqClient() {
-    return getIqClient(NxiqConfiguration.serverUrl, (String) NxiqConfiguration.credentialsId)
-  }
-
-  static InternalIqClient getIqClient(String credentialsId) {
-    // credentialsId can be an empty String if unset. Empty strings are falsy in Groovy
-    return getIqClient(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId)
-  }
-
-  static InternalIqClient getIqClient(URI serverUrl, @Nullable String credentialsId) {
-    return (InternalIqClient) InternalIqClientBuilder.create()
-        .withServerConfig(getServerConfig(serverUrl, credentialsId))
-        .withProxyConfig(getProxyConfig(serverUrl))
-        .build()
-  }
-
-  static InternalIqClient getIqClient(Logger log, @Nullable String credentialsId) {
-    def serverConfig = getServerConfig(NxiqConfiguration.serverUrl, credentialsId ?: NxiqConfiguration.credentialsId)
-    def proxyConfig = getProxyConfig(NxiqConfiguration.serverUrl)
+  static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration()) {
+    def serverUrl = conf.serverUrl ?: NxiqConfiguration.serverUrl
+    def context = conf.context ?: Jenkins.instance
+    def credentialsId = conf.credentialsId ?: NxiqConfiguration.credentialsId
+    def credentials = findCredentials(serverUrl, credentialsId, context)
+    def serverConfig = getServerConfig(serverUrl, credentials)
+    def proxyConfig = getProxyConfig(serverUrl)
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
         .withProxyConfig(proxyConfig)
-        .withLogger(log)
+        .withLogger(conf.log)
         .build()
   }
 
@@ -65,16 +56,6 @@ class IqClientFactory
         .withInstanceId(instanceId)
         .withLogger(log)
         .build()
-  }
-
-  private static ServerConfig getServerConfig(URI url, @Nullable String credentialsId) {
-    if (credentialsId) {
-      def authentication = loadCredentials(url, credentialsId)
-      return new ServerConfig(url, authentication)
-    }
-    else {
-      return new ServerConfig(url)
-    }
   }
 
   static ProxyConfig getProxyConfig(URI url) {
@@ -87,18 +68,33 @@ class IqClientFactory
     }
   }
 
-  static private Authentication loadCredentials(final URI url, final String credentialsId) {
-    def lookupCredentials = CredentialsProvider.lookupCredentials(
-        StandardUsernamePasswordCredentials,
-        (ItemGroup) Jenkins.getInstance(),
+  static private StandardCredentials findCredentials(final URI url, final String credentialsId, final context) {
+    checkNotNull(credentialsId)
+    checkNotNull(context)
+    checkNotNull(url)
+    checkArgument(!credentialsId.isEmpty())
+
+    //noinspection GroovyAssignabilityCheck
+    List<StandardCredentials> lookupCredentials = CredentialsProvider.lookupCredentials(
+        StandardCredentials,
+        context,
         ACL.SYSTEM,
         URIRequirementBuilder.fromUri(url.toString()).build())
 
     def credentials = CredentialsMatchers.firstOrNull(lookupCredentials, CredentialsMatchers.withId(credentialsId))
-    if (!credentials) {
-      throw new IllegalArgumentException(Messages.IqClientFactory_NoCredentials(credentialsId))
-    }
+    checkArgument(credentials != null, Messages.IqClientFactory_NoCredentials(credentialsId))
+    return credentials
+  }
 
-    return new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText())
+  static private ServerConfig getServerConfig(final URI url, final credentials) {
+    if (credentials in StandardUsernamePasswordCredentials) {
+      return new ServerConfig(url, new Authentication(credentials.username,
+          credentials.password.plainText))
+    } else if (credentials in StandardCertificateCredentials) {
+      return new ServerConfig(url, new CertificateAuthentication(credentials.keyStore,
+          credentials.password.plainText.toCharArray()))
+    } else {
+      throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class.simpleName))
+    }
   }
 }

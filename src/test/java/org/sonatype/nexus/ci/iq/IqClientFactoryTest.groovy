@@ -12,18 +12,25 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.security.KeyStore
+
 import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.iq.IqClient
 import com.sonatype.nexus.api.iq.IqClientBuilder
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
+import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
+import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import hudson.ProxyConfiguration
+import hudson.model.Job
 import hudson.util.Secret
+import org.jenkinsci.plugins.plaincredentials.StringCredentials
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
@@ -35,7 +42,7 @@ class IqClientFactoryTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  StandardUsernamePasswordCredentials credentials = Mock()
+  StandardCredentials credentials = Mock(StandardUsernamePasswordCredentials)
   Secret secret = new Secret("password")
 
   def setup() {
@@ -51,7 +58,8 @@ class IqClientFactoryTest
       def credentialsId = '42'
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      IqClientFactory.getIqClient(URI.create(url), credentialsId)
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentials 42/
@@ -63,9 +71,43 @@ class IqClientFactoryTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      IqClient client = IqClientFactory.getIqClient(URI.create(url), credentialsId)
+      IqClient client = IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
     then:
       client != null
+  }
+
+  def 'it creates a client with certificate credentials'() {
+    setup:
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      def cert = Mock(StandardCertificateCredentials)
+      CredentialsMatchers.firstOrNull(_, _) >> cert
+
+    when:
+      def client = IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      1 * cert.getKeyStore() >> Mock(KeyStore)
+      1 * cert.getPassword() >> secret
+      client != null
+  }
+
+  def 'it throws exception for unsupported credential types'() {
+    setup:
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      def unsupportedCreds = Mock(StringCredentials)
+      CredentialsMatchers.firstOrNull(_, _) >> unsupportedCreds
+
+    when:
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      Throwable exception = thrown()
+      exception.message == 'Credentials of type ' + unsupportedCreds.class.simpleName + ' are not supported'
   }
 
   def 'it uses configured serverUrl and credentialsId'() {
@@ -77,11 +119,15 @@ class IqClientFactoryTest
       NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
       NxiqConfiguration.credentialsId >> "123-cred-456"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
+
     when:
       IqClientFactory.getIqClient()
+
     then:
       1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
+
     and:
       1 * CredentialsMatchers.withId("123-cred-456")
   }
@@ -89,7 +135,7 @@ class IqClientFactoryTest
   def 'it uses job specific credentials when provided'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', false, 'credentialsId')
+      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', 'credentialsId')
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -101,19 +147,21 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient('jobSpecificCredentialsId')
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: 'jobSpecificCredentialsId', context: Mock(Job)))
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('jobSpecificCredentialsId')
   }
 
   def 'it interprets an empty String job credentials as not provided'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', false, 'credentialsId')
+      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', 'credentialsId')
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -125,22 +173,24 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient('')
+      IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: ''))
+
     then:
       1 * iqClientBuilder.withServerConfig { ServerConfig config ->
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('credentialsId')
   }
 
-  def 'it uses logger and job specific credentialsId when provided'() {
+  def 'it uses job specific credentialsId when provided'() {
     setup:
       final String serverUrl = 'http://localhost/'
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -154,7 +204,8 @@ class IqClientFactoryTest
       InternalIqClientBuilder.create() >> iqClientBuilder
 
     when:
-      IqClientFactory.getIqClient((Logger)null, 'job-specific-creds')
+      IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: 'job-specific-creds'))
+
     then:
       1 * CredentialsMatchers.withId('job-specific-creds')
   }
@@ -165,7 +216,7 @@ class IqClientFactoryTest
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -193,9 +244,10 @@ class IqClientFactoryTest
 
     where:
       clientGetter << [
-          { -> IqClientFactory.getIqClient() },
-          { -> IqClientFactory.getIqClient(URI.create('http://127.0.0.1/'), '') },
-          { -> IqClientFactory.getIqClient((Logger) null, '') }
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConfiguration()) },
+          { -> IqClientFactory.getIqClient(
+              new IqClientFactoryConfiguration(credentialsId: '123-cred-456', serverUrl: URI.create('http://127.0.0.1/'))) },
+          { -> IqClientFactory.getIqClient(new IqClientFactoryConfiguration(credentialsId: '123-cred-456')) }
       ]
       expectedServerUrl << [
         'http://localhost/',
@@ -210,7 +262,7 @@ class IqClientFactoryTest
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, false, credentialsId)
+      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -239,49 +291,6 @@ class IqClientFactoryTest
       } >> iqClientBuilder
   }
 
-  def 'it does not populate credentials when pki authentication is true'() {
-    setup:
-      GroovyMock(InternalIqClientBuilder, global: true)
-      def iqClientBuilder = Mock(InternalIqClientBuilder)
-      InternalIqClientBuilder.create() >> iqClientBuilder
-
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.iqConfigs = []
-      globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', true, 'credentialsId'))
-      globalConfiguration.save()
-
-    when:
-      IqClientFactory.getIqClient()
-
-    then:
-      1 * iqClientBuilder.withServerConfig { ServerConfig config ->
-        !config.authentication
-      } >> iqClientBuilder
-      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-  }
-
-  def 'it populates credentials when pki authentication is false'() {
-    setup:
-      GroovyMock(InternalIqClientBuilder, global: true)
-      def iqClientBuilder = Mock(InternalIqClientBuilder)
-      InternalIqClientBuilder.create() >> iqClientBuilder
-      CredentialsMatchers.firstOrNull(_, _) >> credentials
-
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.iqConfigs = []
-      globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', false, 'credentialsId'))
-      globalConfiguration.save()
-
-    when:
-      IqClientFactory.getIqClient()
-
-    then:
-      1 * iqClientBuilder.withServerConfig { ServerConfig config ->
-        config.authentication.username == 'username'
-      } >> iqClientBuilder
-      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-  }
-
   def 'getLocalIqClient uses logger and instanceId but does not populate the server or proxy configuration'() {
     GroovyMock(InternalIqClientBuilder, global: true)
     def iqClientBuilder = Mock(InternalIqClientBuilder)
@@ -289,7 +298,7 @@ class IqClientFactoryTest
 
     def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
     globalConfiguration.iqConfigs = []
-    globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', false, 'credentialsId'))
+    globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', 'credentialsId'))
     globalConfiguration.save()
 
     def logger = Mock(Logger)

@@ -27,8 +27,7 @@ class ComToOrgMigratorTest
       def comGlobalNexusConfiguration = new com.sonatype.nexus.ci.config.GlobalNexusConfiguration()
       comGlobalNexusConfiguration.instanceId = 'instanceId'
       comGlobalNexusConfiguration.iqConfigs = [
-          new com.sonatype.nexus.ci.config.NxiqConfiguration(serverUrl: 'serverUrl', isPkiAuthentication: false,
-              credentialsId: 'credentialsId')
+          new com.sonatype.nexus.ci.config.NxiqConfiguration(serverUrl: 'serverUrl', credentialsId: 'credentialsId')
       ]
       comGlobalNexusConfiguration.nxrmConfigs = [
           new com.sonatype.nexus.ci.config.Nxrm2Configuration(id: 'id', internalId: 'internalId',
@@ -45,7 +44,6 @@ class ComToOrgMigratorTest
 
       orgGlobalNexusConfiguration.iqConfigs.size() == 1
       orgGlobalNexusConfiguration.iqConfigs[0].@serverUrl == 'serverUrl'
-      !orgGlobalNexusConfiguration.iqConfigs[0].isPkiAuthentication
       orgGlobalNexusConfiguration.iqConfigs[0].credentialsId == 'credentialsId'
 
       orgGlobalNexusConfiguration.nxrmConfigs.size() == 1

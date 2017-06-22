@@ -12,23 +12,16 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import hudson.model.Job
-import hudson.util.FormValidation
-import hudson.util.ListBoxModel
+import hudson.model.ModelObject
+import org.slf4j.Logger
 
-interface IqPolicyEvaluatorDescriptor
+class IqClientFactoryConfiguration
 {
-  FormValidation doCheckIqStage(String value)
+  URI serverUrl
 
-  ListBoxModel doFillIqStageItems(String jobCredentialsId, Job job)
+  String credentialsId
 
-  FormValidation doCheckIqApplication(String value)
+  ModelObject context
 
-  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Job job)
-
-  FormValidation doCheckScanPattern(String scanPattern)
-
-  FormValidation doCheckFailBuildOnNetworkError(String value)
-
-  ListBoxModel doFillJobCredentialsIdItems(Job job)
+  Logger log
 }

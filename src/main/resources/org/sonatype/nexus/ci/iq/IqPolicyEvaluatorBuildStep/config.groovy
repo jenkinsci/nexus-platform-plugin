@@ -64,16 +64,8 @@ f.section(title: descriptor.displayName) {
         f.checkbox()
       }
 
-      if (!nxiqConfiguration?.@isPkiAuthentication) {
-        f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
-          c.select(context:app, includeUser:false, expressionAllowed:false)
-        }
-      } else {
-        f.entry() {
-          div(class: 'nexus-jenkins-error') {
-            yield Messages.IqPolicyEvaluation_NoJobSpecificCredentials()
-          }
-        }
+      f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
+        c.select(context:app, includeUser:false, expressionAllowed:false)
       }
     }
   }
