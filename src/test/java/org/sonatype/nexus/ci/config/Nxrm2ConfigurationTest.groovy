@@ -15,8 +15,10 @@ package org.sonatype.nexus.ci.config
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.RepositoryManagerClient
 
+import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
+import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import org.junit.Rule
@@ -184,6 +186,18 @@ class Nxrm2ConfigurationTest
       ''                 | Kind.ERROR   | 'Server Url is required'
       null               | Kind.ERROR   | 'Server Url is required'
       'http://foo.com'   | Kind.OK      | '<div/>'
+  }
+
+  def 'it loads the credential items'() {
+    setup:
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration)
+      GroovyMock(FormUtil, global: true)
+
+    when:
+      configuration.doFillCredentialsIdItems("serverUrl", "credentialsId")
+
+    then:
+      1 * FormUtil.newCredentialsItemsListBoxModel("serverUrl", "credentialsId", jenkins.instance)
   }
 
   def 'it tests valid server credentials'() {

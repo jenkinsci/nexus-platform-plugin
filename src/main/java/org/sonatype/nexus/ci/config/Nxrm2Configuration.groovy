@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
+
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.NxrmUtil
 
@@ -20,6 +21,7 @@ import hudson.Extension
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
+import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -50,7 +52,6 @@ class Nxrm2Configuration
       return 'Nexus Repository Manager 2.x Server'
     }
 
-    @SuppressWarnings('unused')
     FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
@@ -61,7 +62,6 @@ class Nxrm2Configuration
       return FormUtil.validateNotEmpty(value, 'Display Name is required')
     }
 
-    @SuppressWarnings('unused')
     FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
@@ -76,7 +76,6 @@ class Nxrm2Configuration
       return validation
     }
 
-    @SuppressWarnings('unused')
     FormValidation doCheckServerUrl(@QueryParameter String value) {
       def validation = FormUtil.validateUrl(value)
       if (validation.kind == Kind.OK) {
@@ -85,12 +84,10 @@ class Nxrm2Configuration
       return validation
     }
 
-    @SuppressWarnings('unused')
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl, @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
     }
 
-    @SuppressWarnings('unused')
     FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
         @QueryParameter String credentialsId) throws IOException

@@ -85,7 +85,7 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>1.4.20170414-164800.e1f9f41</version>
+        <version>1.4.20170622-165204.f1244bd</version>
         <classifier>internal</classifier>
       </dependency>
 
@@ -333,6 +333,8 @@
                 <ignoreClasses>
                   <ignoreClass>hidden.com.thoughtworks.xstream.mapper.LambdaMapper</ignoreClass>
                   <ignoreClass>hidden.com.thoughtworks.xstream.converters.reflection.LambdaConverter</ignoreClass>
+                  <ignoreClass>hidden.com.thoughtworks.xstream.converters.time.*Converter</ignoreClass>
+                  <ignoreClass>hidden.com.thoughtworks.xstream.core.util.ISO8601JavaTimeConverter</ignoreClass>
                 </ignoreClasses>
                 <ignoredScopes>
                   <ignoredScope>system</ignoredScope>
