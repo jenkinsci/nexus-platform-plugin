@@ -212,7 +212,5 @@ class IqUtilTest
     where:
       creds       | credentialsId
       'creds-123' | 'creds-123'
-      ''          | 'globalCredentialsId'
-      null        | 'globalCredentialsId'
   }
 }

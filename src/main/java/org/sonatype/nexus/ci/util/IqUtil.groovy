@@ -72,10 +72,7 @@ class IqUtil
                                              final String jobCredentialsId,
                                              final ModelObject context) {
     try {
-      def applications = getApplicableApplications(
-          serverUrl,
-          jobCredentialsId ?: NxiqConfiguration.credentialsId,
-          context)
+      def applications = getApplicableApplications(serverUrl, jobCredentialsId, context)
 
       return FormValidation.ok(Messages.NxiqConfiguration_ConnectionSucceeded(applications.size()))
     }
