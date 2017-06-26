@@ -369,9 +369,6 @@
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
-          <configuration>
-            <compatibleSinceVersion>1.642.3</compatibleSinceVersion>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
