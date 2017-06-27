@@ -26,7 +26,9 @@ import hudson.util.FormValidation.Kind
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
+@ConfineMetaClassChanges([IqClientFactory])
 class IqUtilTest
     extends Specification
 {

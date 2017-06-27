@@ -22,7 +22,9 @@ import jenkins.model.Jenkins
 import org.codehaus.plexus.util.DirectoryScanner
 import org.slf4j.Logger
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
+@ConfineMetaClassChanges([IqClientFactory])
 class RemoteScannerTest
     extends Specification
 {

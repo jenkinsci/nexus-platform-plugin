@@ -18,6 +18,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.config.NxrmConfiguration

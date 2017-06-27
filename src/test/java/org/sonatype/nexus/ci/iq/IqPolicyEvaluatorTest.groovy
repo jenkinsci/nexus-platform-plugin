@@ -33,10 +33,12 @@ import hudson.model.TaskListener
 import hudson.remoting.Channel
 import org.slf4j.Logger
 import spock.lang.Specification
+import spock.util.mop.ConfineMetaClassChanges
 
 import static TestDataGenerators.createAlert
 import static java.util.Collections.emptyList
 
+@ConfineMetaClassChanges([IqClientFactory])
 class IqPolicyEvaluatorTest
     extends Specification
 {
