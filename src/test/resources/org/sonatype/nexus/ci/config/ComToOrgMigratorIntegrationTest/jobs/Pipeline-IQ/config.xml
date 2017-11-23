@@ -25,7 +25,7 @@
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.29">
     <script>node {
     writeFile file: &apos;foo.txt&apos;, text: &apos;bar&apos;
-    nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: &apos;sample-app&apos;, iqStage: &apos;build&apos;, jobCredentialsId: &apos;&apos;
+    nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: &apos;sample-app&apos;, iqStage: &apos;build&apos;, jobCredentialsId: &apos;&apos;, doNotUseUnstable: false, doNotFailOnPolicy: false
 }</script>
     <sandbox>true</sandbox>
   </definition>

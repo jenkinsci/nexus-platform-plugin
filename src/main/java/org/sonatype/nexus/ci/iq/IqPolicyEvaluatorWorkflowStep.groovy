@@ -42,6 +42,10 @@ class IqPolicyEvaluatorWorkflowStep
 
   Boolean failBuildOnNetworkError
 
+  Boolean doNotUseUnstable
+  
+  Boolean doNotFailOnPolicy
+
   String jobCredentialsId
 
   @DataBoundConstructor
@@ -49,13 +53,17 @@ class IqPolicyEvaluatorWorkflowStep
                                 final String iqApplication,
                                 final List<ScanPattern> iqScanPatterns,
                                 final Boolean failBuildOnNetworkError,
-                                final String jobCredentialsId)
+                                final String jobCredentialsId,
+                                final Boolean doNotUseUnstable,
+				final Boolean doNotFailOnPolicy)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.iqApplication = iqApplication
     this.iqStage = iqStage
+    this.doNotUseUnstable = doNotUseUnstable
+    this.doNotFailOnPolicy = doNotFailOnPolicy
   }
 
   @Extension
@@ -104,6 +112,16 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     FormValidation doCheckFailBuildOnNetworkError(@QueryParameter final String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    FormValidation doCheckDoNotUseUnstable(@QueryParameter final String value) {
+      FormValidation.validateRequired(value)
+    }
+    
+    @Override
+    FormValidation doCheckDoNotFailOnPolicy(@QueryParameter final String value) {
       FormValidation.validateRequired(value)
     }
 

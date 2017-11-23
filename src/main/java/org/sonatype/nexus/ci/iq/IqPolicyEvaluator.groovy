@@ -22,5 +22,9 @@ interface IqPolicyEvaluator
 
   Boolean getFailBuildOnNetworkError()
 
+  Boolean getDoNotUseUnstable()
+  
+  Boolean getDoNotFailOnPolicy()
+
   String getJobCredentialsId()
 }
