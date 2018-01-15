@@ -141,6 +141,13 @@
         <version>3.2.4</version>
         <scope>test</scope>
       </dependency>
+
+      <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock-standalone</artifactId>
+        <version>2.14.0</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -237,6 +244,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -413,6 +425,12 @@
       <id>jenkins-1.642.3</id>
       <properties>
         <jenkins.version>1.642.3</jenkins.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>jenkins-2.102</id>
+      <properties>
+        <jenkins.version>2.102</jenkins.version>
       </properties>
     </profile>
 
