@@ -30,6 +30,10 @@ interface IqPolicyEvaluatorDescriptor
 
   FormValidation doCheckFailBuildOnNetworkError(String value)
 
+  FormValidation doCheckDoNotUseUnstable(String value)
+  
+  FormValidation doCheckDoNotFailOnPolicy(String value)
+
   ListBoxModel doFillJobCredentialsIdItems(Job job)
 
   FormValidation doVerifyCredentials(String jobCredentialsId, Job job)

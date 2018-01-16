@@ -62,7 +62,8 @@ class IqPolicyEvaluatorUtil
         iqClient.evaluateApplication(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanResult)
       }
 
-      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication)
+      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication, 
+                          iqPolicyEvaluator.doNotUseUnstable, iqPolicyEvaluator.doNotFailOnPolicy)
       run.setResult(result)
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
@@ -117,18 +118,21 @@ class IqPolicyEvaluatorUtil
 
   private static Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,
                                                final TaskListener listener,
-                                               final String appId)
+                                               final String appId,
+					       final Boolean doNotUseUnstable,
+					       final Boolean doNotFailOnPolicy)
   {
     def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
     listener.logger.println(policyFailureMessageFormatter.message)
 
     if (policyFailureMessageFormatter.hasFailures()) {
       listener.fatalError(Messages.IqPolicyEvaluation_EvaluationFailed(appId))
-      return Result.FAILURE
+      return doNotFailOnPolicy ? (doNotUseUnstable ? Result.SUCCESS : Result.UNSTABLE) : Result.FAILURE
     }
     else if (policyFailureMessageFormatter.hasWarnings()) {
       listener.logger.println(Messages.IqPolicyEvaluation_EvaluationWarning(appId))
-      return Result.UNSTABLE
+
+      return doNotUseUnstable ? Result.SUCCESS : Result.UNSTABLE
     }
     else {
       return Result.SUCCESS

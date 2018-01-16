@@ -66,6 +66,14 @@ f.section(title: descriptor.displayName) {
         f.checkbox()
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_DoNotUseUnstable()), field: 'doNotUseUnstable') {
+        f.checkbox()
+      }
+      
+      f.entry(title: _(Messages.IqPolicyEvaluation_DoNotFailOnPolicy()), field: 'doNotFailOnPolicy') {
+        f.checkbox()
+      }
+
       f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
         c.select(context:app, includeUser:false, expressionAllowed:false)
       }
