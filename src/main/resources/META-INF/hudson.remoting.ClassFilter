@@ -1,0 +1,8 @@
+com.sonatype.insight.scan.model.Application
+com.sonatype.insight.scan.model.ArtifactId
+com.sonatype.insight.scan.model.ExpandedCoverage
+com.sonatype.insight.scan.model.Repository
+com.sonatype.insight.scan.model.Scan
+com.sonatype.insight.scan.model.ScanConfiguration
+com.sonatype.insight.scan.model.ScanItem
+com.sonatype.insight.scan.model.ScanSummary
