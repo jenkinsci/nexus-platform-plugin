@@ -57,8 +57,9 @@ class RemoteScanner
   @Override
   RemoteScanResult call() throws RuntimeException {
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
-    def targets = getTargets(new File(workspace.getRemote()), patterns)
-    def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets)
+    def workDir = new File(workspace.getRemote())
+    def targets = getTargets(workDir, patterns)
+    def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets, [], workDir)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 

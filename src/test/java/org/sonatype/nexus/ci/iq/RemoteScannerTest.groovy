@@ -21,15 +21,19 @@ import hudson.FilePath
 import jenkins.model.Jenkins
 import org.codehaus.plexus.util.DirectoryScanner
 import org.slf4j.Logger
+import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 @ConfineMetaClassChanges([IqClientFactory])
 class RemoteScannerTest
     extends Specification
 {
+  @Shared
+  ProprietaryConfig proprietaryConfig = new ProprietaryConfig([], [])
+
   Logger log
-  ProprietaryConfig proprietaryConfig
   InternalIqClient iqClient
   DirectoryScanner directoryScanner
 
@@ -38,7 +42,6 @@ class RemoteScannerTest
     Jenkins.instance >> Mock(Jenkins)
 
     log = Stub()
-    proprietaryConfig = new ProprietaryConfig([], [])
     GroovyMock(InternalIqClientBuilder, global: true)
     GroovyMock(RemoteScannerFactory, global: true)
     directoryScanner = Mock()
@@ -62,7 +65,11 @@ class RemoteScannerTest
       remoteScanner.call()
 
     then:
-      iqClient.scan('appId', proprietaryConfig, _, expectedFiles) >> new ScanResult(null, new File('file'))
+      iqClient.scan(*_) >> { arguments ->
+        assert arguments[3] == expectedFiles
+
+        new ScanResult(null, new File('file'))
+      }
 
     where:
       matchedFiles          | matchedDirs
@@ -72,7 +79,8 @@ class RemoteScannerTest
       expectedFiles = (matchedFiles + matchedDirs).collect { new File(workspace.getRemote(), it) }
   }
 
-  def 'RemoteScanner passes arguments to IqClient'() {
+  @Unroll
+  def 'RemoteScanner passes #argument to IqClient'() {
     setup:
       GroovyMock(IqClientFactory, global: true)
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], new FilePath(new File('/file/path')),
@@ -84,7 +92,17 @@ class RemoteScannerTest
       remoteScanner.call()
 
     then:
-      1 * iqClient.scan('appId', proprietaryConfig, _, []) >> new ScanResult(null, new File('file'))
+      1 * iqClient.scan(*_) >> { arguments ->
+        assert arguments[argumentIndex] == value
+
+        new ScanResult(null, new File('file'))
+      }
       1 * IqClientFactory.getIqLocalClient(log, 'instance-id') >> iqClient
+
+    where:
+      argument              | argumentIndex | value
+      'Application ID'      | 0             | 'appId'
+      'Proprietary Config'  | 1             | proprietaryConfig
+      'Base Directory'      | 5             | new File('/file/path')
   }
 }
