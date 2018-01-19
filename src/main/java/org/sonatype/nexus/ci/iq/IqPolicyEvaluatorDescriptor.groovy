@@ -28,6 +28,8 @@ interface IqPolicyEvaluatorDescriptor
 
   FormValidation doCheckScanPattern(String scanPattern)
 
+  FormValidation doCheckModuleExclude(String moduleExclude)
+
   FormValidation doCheckFailBuildOnNetworkError(String value)
 
   ListBoxModel doFillJobCredentialsIdItems(Job job)

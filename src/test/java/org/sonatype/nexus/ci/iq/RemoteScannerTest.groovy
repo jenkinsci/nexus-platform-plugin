@@ -56,7 +56,7 @@ class RemoteScannerTest
 
   def "creates a list of targets from the result of a directory scan"() {
     setup:
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], workspace, proprietaryConfig, log,
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
           "instance-id")
       directoryScanner.getIncludedDirectories() >> matchedDirs.toArray(new String[matchedDirs.size()])
       directoryScanner.getIncludedFiles() >> matchedFiles.toArray(new String[matchedFiles.size()])
@@ -79,11 +79,33 @@ class RemoteScannerTest
       expectedFiles = (matchedFiles + matchedDirs).collect { new File(workspace.getRemote(), it) }
   }
 
+  def 'creates a list of module indices from the results of a directory scan'() {
+    setup:
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
+          "instance-id")
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> matchedModuleIndices.toArray(new String[matchedModuleIndices.size()])
+
+    when:
+      remoteScanner.call()
+
+    then:
+      iqClient.scan(*_) >> { arguments ->
+        assert arguments[4] == expectedModuleIndices
+        new ScanResult(null, new File('file'))
+      }
+
+    where:
+      matchedModuleIndices = ["ddd", "eee", "fff"]
+      workspace = new FilePath(new File('/file/path'))
+      expectedModuleIndices = matchedModuleIndices.collect { new File(workspace.getRemote(), it) }
+  }
+
   @Unroll
-  def 'RemoteScanner passes #argument to IqClient'() {
+  def 'RemoteScanner passes arguments to IqClient'() {
     setup:
       GroovyMock(IqClientFactory, global: true)
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], new FilePath(new File('/file/path')),
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], new FilePath(new File('/file/path')),
           proprietaryConfig, log, 'instance-id')
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
@@ -104,5 +126,57 @@ class RemoteScannerTest
       'Application ID'      | 0             | 'appId'
       'Proprietary Config'  | 1             | proprietaryConfig
       'Base Directory'      | 5             | new File('/file/path')
+  }
+
+  def 'Uses default scan patterns when patterns not set'() {
+    setup:
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId')
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getScanTargets(workspaceFile, [])
+
+    then:
+      1 * directoryScanner.setIncludes(*_) >> { arguments ->
+        assert arguments[0] == RemoteScanner.DEFAULT_SCAN_PATTERN
+      }
+  }
+
+  def 'Uses default modules for includes'() {
+    setup:
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId')
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getModuleIndices(workspaceFile, [])
+
+    then:
+      1 * directoryScanner.setIncludes(*_) >> { arguments ->
+        assert arguments[0] == RemoteScanner.DEFAULT_MODULE_INCLUDES
+      }
+  }
+
+  def 'Passes module excludes to scanner'() {
+    setup:
+      def moduleExcludes = ['/file/path/module.xml']
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId')
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getModuleIndices(workspaceFile, moduleExcludes)
+
+    then:
+      1 * directoryScanner.setExcludes(*_) >> { arguments ->
+        assert arguments[0] == moduleExcludes
+      }
   }
 }

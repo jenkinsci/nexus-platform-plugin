@@ -113,6 +113,26 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'file'  | Kind.OK | '<div/>'
   }
 
+  def 'it validates that module exclude is not required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when:
+      "validating instance ID $pattern"
+      def validation = descriptor.doCheckModuleExclude(pattern)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      pattern | kind    | message
+      ''      | Kind.OK | '<div/>'
+      null    | Kind.OK | '<div/>'
+      'file'  | Kind.OK | '<div/>'
+  }
+
   def 'it validates that application items are filled'() {
     setup:
       def descriptor = getDescriptor()
@@ -199,7 +219,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
 
     when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, 'jobSpecificCredentialsId')
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId')
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'

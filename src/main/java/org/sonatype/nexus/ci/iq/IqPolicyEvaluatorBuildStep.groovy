@@ -47,20 +47,25 @@ class IqPolicyEvaluatorBuildStep
 
   List<ScanPattern> iqScanPatterns
 
+  List<ModuleExclude> moduleExcludes
+
   Boolean failBuildOnNetworkError
 
   String jobCredentialsId
 
   @DataBoundConstructor
+  @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
                              final String iqApplication,
                              final List<ScanPattern> iqScanPatterns,
+                             final List<ModuleExclude> moduleExcludes,
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
+    this.moduleExcludes = moduleExcludes
     this.iqApplication = iqApplication
     this.iqStage = iqStage
   }
@@ -111,6 +116,11 @@ class IqPolicyEvaluatorBuildStep
 
     @Override
     FormValidation doCheckScanPattern(@QueryParameter String value) {
+      FormValidation.ok()
+    }
+
+    @Override
+    FormValidation doCheckModuleExclude(@QueryParameter final String value) {
       FormValidation.ok()
     }
 
