@@ -7,7 +7,7 @@
 import com.sonatype.jenkins.pipeline.GitHub
 import com.sonatype.jenkins.pipeline.OsTools
 
-node {
+node('ubuntu-zion') {
   def commitId, commitDate, pom, version
   GitHub gitHub
 
@@ -86,7 +86,7 @@ node {
     return
   }
   stage('Deploy to Sonatype') {
-    withGpg 'gnupg_home', {
+    withGpgCredentials('gnupg') {
       withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml') {
         OsTools.runSafe(this, "mvn -Psonatype -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
       }
