@@ -7,7 +7,7 @@
 import com.sonatype.jenkins.pipeline.GitHub
 import com.sonatype.jenkins.pipeline.OsTools
 
-node {
+node('ubuntu-zion') {
   def commitId, commitDate, pom, version
   GitHub gitHub
 
