@@ -81,16 +81,16 @@ node('ubuntu-zion') {
   if (currentBuild.result == 'FAILURE') {
     return
   }
+  if (scm.branches[0].name != '*/master')
+  {
+    return
+  }
   stage('Deploy to Sonatype') {
     withGpgCredentials('gnupg') {
       withMaven(jdk: 'JDK8u121', maven: 'M3', mavenSettingsConfig: 'public-settings.xml') {
         OsTools.runSafe(this, "mvn -Psonatype -Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} -DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B")
       }
     }
-  }
-  if (scm.branches[0].name != '*/master')
-  {
-    return
   }
   input 'Push tags and deploy to Jenkins Update Center?'
   stage('Push tags') {
