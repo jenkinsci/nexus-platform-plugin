@@ -27,6 +27,8 @@ import hudson.model.Run
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
+
 class ComToOrgMigrator
 {
   private static final Logger LOGGER = LoggerFactory.getLogger(ComToOrgMigrator)
@@ -52,9 +54,9 @@ class ComToOrgMigrator
 
       //noinspection GrDeprecatedAPIUsage
       oldGlobalConfiguration.nxrmConfigs.each { com.sonatype.nexus.ci.config.NxrmConfiguration nxrmConfiguration ->
-        def newNxrmConfiguration = new Nxrm2Configuration(nxrmConfiguration.id,
+        def newNxrmConfiguration = new NxrmConfiguration(nxrmConfiguration.id,
             nxrmConfiguration.internalId, nxrmConfiguration.displayName, nxrmConfiguration.serverUrl,
-            nxrmConfiguration.credentialsId)
+            nxrmConfiguration.credentialsId, NEXUS2)
         newGlobalConfiguration.nxrmConfigs.add(newNxrmConfiguration)
       }
       //noinspection GrDeprecatedAPIUsage

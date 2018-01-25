@@ -25,10 +25,15 @@ import hudson.model.TaskListener
 import hudson.tasks.BuildStepDescriptor
 import hudson.tasks.Builder
 import hudson.util.FormValidation
+import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
 import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
+
+import static hudson.model.Result.FAILURE
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS3
+import static org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory.getComponentUploader
 
 class NexusPublisherBuildStep
     extends Builder
@@ -40,19 +45,31 @@ class NexusPublisherBuildStep
 
   List<Package> packages
 
+  Boolean isNexus3 = null
+
   @DataBoundConstructor
   NexusPublisherBuildStep(final String nexusInstanceId, final String nexusRepositoryId, final List<Package> packages) {
     this.nexusInstanceId = nexusInstanceId
     this.nexusRepositoryId = nexusRepositoryId
     this.packages = packages ?: []
+
+    if (nexusInstanceId?.trim()) {
+      isNexus3 = NxrmUtil.getNexusConfiguration(nexusInstanceId).nexusVersion == NEXUS3
+    }
   }
 
+  @SuppressWarnings('CatchThrowable')
   @Override
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    def componentUploader = ComponentUploaderFactory.getComponentUploader(run, listener)
-    componentUploader.uploadComponents(this, workspace)
+    try {
+      getComponentUploader(nexusInstanceId, run, workspace, listener).uploadComponents(nexusRepositoryId, packages)
+    }
+    catch (Throwable e) {
+      run.setResult(FAILURE)
+      throw e
+    }
   }
 
   @Extension
@@ -60,6 +77,8 @@ class NexusPublisherBuildStep
       extends BuildStepDescriptor<Builder>
       implements NexusPublisherDescriptor
   {
+    Boolean isNexus3 = null
+
     @Override
     String getDisplayName() {
       'Nexus Repository Manager Publisher'
@@ -71,7 +90,13 @@ class NexusPublisherBuildStep
     }
 
     FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
-      NxrmUtil.doCheckNexusInstanceId(value)
+      def validate = NxrmUtil.doCheckNexusInstanceId(value)
+
+      if (validate.kind == Kind.OK) {
+        isNexus3 = NxrmUtil.getNexusConfiguration(value).nexusVersion == NEXUS3
+      }
+
+      return validate
     }
 
     ListBoxModel doFillNexusInstanceIdItems() {
@@ -83,6 +108,7 @@ class NexusPublisherBuildStep
     }
 
     ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
+      // TODO kris: change type based on version
       NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
     }
   }

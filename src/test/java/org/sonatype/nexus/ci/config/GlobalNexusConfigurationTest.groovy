@@ -17,6 +17,8 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.WithoutJenkins
 import spock.lang.Specification
 
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
+
 class GlobalNexusConfigurationTest
     extends Specification
 {
@@ -24,10 +26,12 @@ class GlobalNexusConfigurationTest
   public JenkinsRule jenkins = new JenkinsRule()
 
   List<? extends NxrmConfiguration> nxrmConfiguration
+
   List<NxiqConfiguration> nxiqConfiguration
 
   void setup() {
-    nxrmConfiguration = [new Nxrm2Configuration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id')]
+    nxrmConfiguration = [new NxrmConfiguration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id',
+        NEXUS2)]
     nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'creds-id')]
   }
 

@@ -13,8 +13,8 @@
 package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.common.ProxyConfig
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials

@@ -42,8 +42,15 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
-    f.select()
+  if (it?.isNexus3?.is(false) || descriptor?.isNexus3?.is(false)) {
+    f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
+      f.select()
+    }
+  }
+  else {
+    f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
+      f.textbox(clazz: 'required')
+    }
   }
 
   f.entry(title: _('Packages')) {

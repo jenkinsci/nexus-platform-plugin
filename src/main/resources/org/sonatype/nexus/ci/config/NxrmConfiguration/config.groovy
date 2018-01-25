@@ -10,7 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.config.Nxrm2Configuration
+package org.sonatype.nexus.ci.config.NxrmConfiguration
 
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
@@ -20,6 +20,10 @@ f.section(title: descriptor.displayName) {
     // When instance is null, new server configuration so generate new internalId
     input(type: 'hidden', name: 'internalId',
         value: "${instance != null ? instance.internalId : UUID.randomUUID().toString()}")
+  }
+
+  f.entry(title: _('Version'), field: 'nexusVersion') {
+    f.select(clazz: 'required')
   }
 
   f.entry(title: _('Display Name'), field: 'displayName') {
@@ -43,7 +47,7 @@ f.section(title: descriptor.displayName) {
         title: _('Test connection'),
         progress: _('Testing...'),
         method: 'verifyCredentials',
-        with: 'serverUrl,credentialsId'
+        with: 'serverUrl,credentialsId,nexusVersion'
     )
   }
 }
