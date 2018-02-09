@@ -85,7 +85,7 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
                                           @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, null)
     }
 
     @SuppressWarnings('unused')

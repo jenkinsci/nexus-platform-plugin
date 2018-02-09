@@ -12,11 +12,12 @@
  */
 package org.sonatype.nexus.ci.util
 
+import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
-import hudson.model.ModelObject
+import hudson.model.Item
 import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
@@ -61,16 +62,21 @@ class FormUtil
 
   static ListBoxModel newCredentialsItemsListBoxModel(final String serverUrl,
                                                       final String credentialsId,
-                                                      final ModelObject context)
+                                                      final Item ancestor)
   {
-    if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) || !serverUrl) {
+    // Ref: https://github.com/jenkinsci/credentials-plugin/blob/master/docs/consumer.adoc
+    boolean noContextNotAdmin = ancestor == null && !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)
+    boolean contextNoPerm = ancestor != null && !ancestor.hasPermission(Item.EXTENDED_READ) &&
+        !ancestor.hasPermission(CredentialsProvider.USE_ITEM)
+
+    if (noContextNotAdmin || contextNoPerm || !serverUrl) {
       return new StandardListBoxModel().includeCurrentValue(credentialsId)
     }
     //noinspection GroovyAssignabilityCheck
     return new StandardListBoxModel()
         .includeEmptyValue()
         .includeMatchingAs(ACL.SYSTEM,
-          context,
+          ancestor ?: Jenkins.instance,
           StandardCredentials,
           fromUri(serverUrl).build(),
           anyOf(instanceOf(StandardUsernamePasswordCredentials), instanceOf(StandardCertificateCredentials)))
