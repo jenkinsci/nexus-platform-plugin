@@ -27,6 +27,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
 
 @ParametersAreNonnullByDefault
@@ -46,21 +47,31 @@ class IqPolicyEvaluatorWorkflowStep
 
   String jobCredentialsId
 
-  @DataBoundConstructor
-  @SuppressWarnings('ParameterCount')
-  IqPolicyEvaluatorWorkflowStep(final String iqStage,
-                                final String iqApplication,
-                                final List<ScanPattern> iqScanPatterns,
-                                final List<ModuleExclude> moduleExcludes,
-                                final Boolean failBuildOnNetworkError,
-                                final String jobCredentialsId)
-  {
-    this.jobCredentialsId = jobCredentialsId
-    this.failBuildOnNetworkError = failBuildOnNetworkError
+  @DataBoundSetter
+  public void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
     this.iqScanPatterns = iqScanPatterns
+  }
+
+  @DataBoundSetter
+  public void setModuleExcludes(final List<ModuleExclude> moduleExcludes) {
     this.moduleExcludes = moduleExcludes
-    this.iqApplication = iqApplication
+  }
+
+  @DataBoundSetter
+  public void setFailBuildOnNetworkError(final Boolean failBuildOnNetworkError) {
+    this.failBuildOnNetworkError = failBuildOnNetworkError
+  }
+
+  @DataBoundSetter
+  public void setJobCredentialsId(final String jobCredentialsId) {
+    this.jobCredentialsId = jobCredentialsId
+  }
+
+  @DataBoundConstructor
+  IqPolicyEvaluatorWorkflowStep(final String iqStage,
+                                final String iqApplication) {
     this.iqStage = iqStage
+    this.iqApplication = iqApplication
   }
 
   @Extension
