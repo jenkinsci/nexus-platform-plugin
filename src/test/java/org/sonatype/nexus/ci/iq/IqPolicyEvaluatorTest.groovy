@@ -276,9 +276,27 @@ class IqPolicyEvaluatorTest
     where:
       alerts                                                  || buildResult
       []                                                      || Result.SUCCESS
-      [new PolicyAlert(null, [new Action(Action.ID_FAIL)])]   || Result.FAILURE
       [new PolicyAlert(null, [new Action(Action.ID_WARN)])]   || Result.UNSTABLE
       [new PolicyAlert(null, [new Action(Action.ID_NOTIFY)])] || Result.SUCCESS
+  }
+
+  def 'evaluation throws exception when build results in failure'() {
+    setup:
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0,
+          [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
+
+    when:
+      buildStep.perform(run, workspace, launcher, Mock(TaskListener))
+
+    then:
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >> policyEvaluation
+      1 * run.setResult(Result.FAILURE)
+
+    then:
+      PolicyEvaluationException ex = thrown()
+      ex.message == 'IQ Server evaluation of application appId failed'
+      ex.policyEvaluation == policyEvaluation
   }
 
   def 'prints an error message on failure'() {
@@ -297,6 +315,9 @@ class IqPolicyEvaluatorTest
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])],
               reportUrl)
+
+    then:
+      thrown PolicyEvaluationException
       1 * log.println(
           'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
