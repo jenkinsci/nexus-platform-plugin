@@ -76,7 +76,7 @@ class IqPolicyEvaluatorTest
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
     GlobalNexusConfiguration.instanceId >> 'instance-id'
-    iqClient.evaluateApplication("appId", "stage", _) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false,
+    iqClient.evaluateApplication("appId", "stage", _) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, [],
         reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
     remoteScanResult.copyToLocalScanResult() >> scanResult
@@ -87,7 +87,7 @@ class IqPolicyEvaluatorTest
   def 'it retrieves proprietary config followed by remote scan followed by evaluation in correct order (happy path)'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern("*.jar")], false, null)
-      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, emptyList(), false, reportUrl)
+      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, emptyList(), reportUrl)
       def remoteScanner = Mock(RemoteScanner)
 
     when:
@@ -249,7 +249,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
-          new ApplicationPolicyEvaluation(0, 0, 0, 0, alerts, false, reportUrl)
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, alerts, reportUrl)
       1 * run.setResult(buildResult)
 
     where:
@@ -273,7 +273,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])], false,
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])],
               reportUrl)
       1 * log.println(
           'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +
@@ -295,7 +295,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], false,
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])],
               reportUrl)
       1 * log.println("IQ Server evaluation of application appId detected warnings")
       1 * log.println(
@@ -316,7 +316,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >>
-          new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false,
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, [],
               reportUrl)
       0 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +

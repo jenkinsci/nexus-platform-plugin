@@ -82,14 +82,13 @@ class IqPolicyEvaluatorIntegrationTest
           'echo "severe:" + result.severeComponentCount\n' +
           'echo "moderate:" + result.moderateComponentCount\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
-          'echo "reevaluation:" + result.reevaluation\n' +
           'echo "alerts:" + result.policyAlerts' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [], false,
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
 
     then: 'the expected result is returned'
@@ -100,7 +99,6 @@ class IqPolicyEvaluatorIntegrationTest
         it.contains('critical:1')
         it.contains('severe:2')
         it.contains('moderate:3')
-        it.contains('reevaluation:false')
         it.contains('alerts:[]')
       }
   }
@@ -116,7 +114,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the application is scanned and evaluated'
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [], false,
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -215,7 +213,6 @@ class IqPolicyEvaluatorIntegrationTest
           'echo "severe:" + result.severeComponentCount\n' +
           'echo "moderate:" + result.moderateComponentCount\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
-          'echo "reevaluation:" + result.reevaluation\n' +
           'echo "alerts:" + result.policyAlerts' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
@@ -223,7 +220,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
-          [createAlert(Action.ID_FAIL)], false, 'http://server/link/to/report')
+          [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
     then: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -233,7 +230,6 @@ class IqPolicyEvaluatorIntegrationTest
         it.contains('critical:1')
         it.contains('severe:2')
         it.contains('moderate:3')
-        it.contains('reevaluation:false')
         it =~ /alerts:\[.+]/
       }
   }
@@ -251,7 +247,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
-          [createAlert(Action.ID_FAIL)], false, 'http://server/link/to/report')
+          [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
     then: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)

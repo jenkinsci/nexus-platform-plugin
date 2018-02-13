@@ -98,6 +98,6 @@ class PolicyFailureMessageFormatterTest
   }
 
   ApplicationPolicyEvaluation createFullModel(List<PolicyAlert> alerts) {
-    return new ApplicationPolicyEvaluation(1, 2, 3, 5, alerts, false, 'http://report/url')
+    return new ApplicationPolicyEvaluation(1, 2, 3, 5, alerts, 'http://report/url')
   }
 }

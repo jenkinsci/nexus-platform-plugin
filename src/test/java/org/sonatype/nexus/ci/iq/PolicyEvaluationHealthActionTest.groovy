@@ -25,7 +25,7 @@ class PolicyEvaluationHealthActionTest
   def 'it redirects to the application composition report'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false, reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, [], reportLink)
       def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
