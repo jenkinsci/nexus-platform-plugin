@@ -268,6 +268,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jenkinsci.plugins</groupId>
+      <artifactId>pipeline-model-definition</artifactId>
+      <version>1.2.7</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-standalone</artifactId>
       <scope>test</scope>
