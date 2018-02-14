@@ -62,6 +62,14 @@ f.section(title: descriptor.displayName) {
         }
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_ModuleExcludes()),
+          help: descriptor.getHelpFile('iqModuleExcludes')) {
+        f.repeatable(field: 'iqModuleExcludes', minimum: '0') {
+          f.textbox(field: 'moduleExclude')
+          f.repeatableDeleteButton()
+        }
+      }
+
       f.entry(title: _(Messages.IqPolicyEvaluation_FailOnNetwork()), field: 'failBuildOnNetworkError') {
         f.checkbox()
       }

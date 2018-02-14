@@ -17,16 +17,25 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 
 import hudson.FilePath
 import jenkins.security.MasterToSlaveCallable
+import org.codehaus.plexus.util.DirectoryScanner
 import org.slf4j.Logger
 
 class RemoteScanner
     extends MasterToSlaveCallable<RemoteScanResult, RuntimeException>
 {
+  static final List<String> DEFAULT_SCAN_PATTERN =
+      ['**/*.jar', '**/*.war', '**/*.ear', '**/*.zip', '**/*.tar.gz']
+
+  static final List<String> DEFAULT_MODULE_INCLUDES =
+      ['**/sonatype-clm/module.xml', '**/nexus-iq/module.xml']
+
   private final String appId
 
   private final String stageId
 
-  private final List<String> patterns
+  private final List<String> scanPatterns
+
+  private final List<String> moduleExcludes
 
   private final FilePath workspace
 
@@ -39,7 +48,8 @@ class RemoteScanner
   @SuppressWarnings('ParameterCount')
   RemoteScanner(final String appId,
                 final String stageId,
-                final List<String> patterns,
+                final List<String> scanPatterns,
+                final List<String> moduleExcludes,
                 final FilePath workspace,
                 final ProprietaryConfig proprietaryConfig,
                 final Logger log,
@@ -47,7 +57,8 @@ class RemoteScanner
   {
     this.appId = appId
     this.stageId = stageId
-    this.patterns = patterns
+    this.scanPatterns = scanPatterns
+    this.moduleExcludes = moduleExcludes
     this.workspace = workspace
     this.proprietaryConfig = proprietaryConfig
     this.log = log
@@ -57,20 +68,37 @@ class RemoteScanner
   @Override
   RemoteScanResult call() throws RuntimeException {
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
-    def workDir = new File(workspace.getRemote())
-    def targets = getTargets(workDir, patterns)
-    def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets, [], workDir)
+    def workDirectory = new File(workspace.getRemote())
+    def targets = getScanTargets(workDirectory, scanPatterns)
+    def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
+    def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets, moduleIndices, workDirectory)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 
-  private List<File> getTargets(final File workDir, final List<String> patterns) {
+  List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
     def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
+    def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
     directoryScanner.setBasedir(workDir)
-    directoryScanner.setIncludes(patterns.toArray(new String[patterns.size()]))
+    directoryScanner.setIncludes(normalizedScanPatterns.toArray(new String[normalizedScanPatterns.size()]))
     directoryScanner.addDefaultExcludes()
     directoryScanner.scan()
     return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
         .collect { f -> new File(workDir, f) }
+        .sort()
+        .asImmutable()
+  }
+
+  List<File> getModuleIndices(final File workDirectory, final List<String> moduleExcludes) {
+    final DirectoryScanner directoryScanner = RemoteScannerFactory.getDirectoryScanner()
+    directoryScanner.setBasedir(workDirectory)
+    directoryScanner.setIncludes(DEFAULT_MODULE_INCLUDES.toArray(new String[DEFAULT_MODULE_INCLUDES.size()]))
+    if (moduleExcludes) {
+      directoryScanner.setExcludes(moduleExcludes.toArray(new String[moduleExcludes.size()]))
+    }
+    directoryScanner.addDefaultExcludes()
+    directoryScanner.scan()
+    return directoryScanner.getIncludedFiles()
+        .collect { f -> new File(workDirectory, f) }
         .sort()
         .asImmutable()
   }

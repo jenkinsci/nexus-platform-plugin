@@ -12,27 +12,28 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import hudson.model.Job
-import hudson.util.FormValidation
-import hudson.util.ListBoxModel
+import hudson.Extension
+import hudson.model.AbstractDescribableImpl
+import hudson.model.Descriptor
+import org.kohsuke.stapler.DataBoundConstructor
 
-interface IqPolicyEvaluatorDescriptor
+class ModuleExclude
+    extends AbstractDescribableImpl<ModuleExclude>
 {
-  FormValidation doCheckIqStage(String value)
+  String moduleExclude
 
-  ListBoxModel doFillIqStageItems(String jobCredentialsId, Job job)
+  @DataBoundConstructor
+  ModuleExclude(String moduleExclude) {
+    this.moduleExclude = moduleExclude
+  }
 
-  FormValidation doCheckIqApplication(String value)
-
-  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Job job)
-
-  FormValidation doCheckScanPattern(String scanPattern)
-
-  FormValidation doCheckModuleExclude(String moduleExclude)
-
-  FormValidation doCheckFailBuildOnNetworkError(String value)
-
-  ListBoxModel doFillJobCredentialsIdItems(Job job)
-
-  FormValidation doVerifyCredentials(String jobCredentialsId, Job job)
+  @Extension
+  static class DescriptorImpl
+      extends Descriptor<ModuleExclude>
+  {
+    @Override
+    String getDisplayName() {
+      return Messages.ModuleExclude_DisplayName()
+    }
+  }
 }

@@ -14,7 +14,6 @@ package org.sonatype.nexus.ci.config
 
 import javax.annotation.Nullable
 
-import com.sonatype.nexus.api.exception.IqClientException
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 

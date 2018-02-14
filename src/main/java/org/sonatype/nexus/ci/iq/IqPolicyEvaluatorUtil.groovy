@@ -17,6 +17,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
+import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Result
@@ -28,9 +29,6 @@ import static com.google.common.base.Preconditions.checkArgument
 
 class IqPolicyEvaluatorUtil
 {
-  private static final List<String> DEFAULT_SCAN_PATTERN =
-      ['**/*.jar', '**/*.war', '**/*.ear', '**/*.zip', '**/*.tar.gz']
-
   @SuppressWarnings('AbcMetric')
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
@@ -47,15 +45,17 @@ class IqPolicyEvaluatorUtil
       def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
           credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
 
-      def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)
+      def envVars = run.getEnvironment(listener)
+      def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
+      def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.moduleExcludes, envVars)
 
       def proprietaryConfig =
           rethrowNetworkErrors {
             iqClient.getProprietaryConfigForApplicationEvaluation(iqPolicyEvaluator.iqApplication)
           }
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanPatterns, workspace,
-              proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+          getRemoteScanner(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, expandedScanPatterns,
+              expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = rethrowNetworkErrors {
@@ -108,11 +108,15 @@ class IqPolicyEvaluatorUtil
     ExceptionUtils.indexOfType(throwable, IOException) >= 0
   }
 
-  private static List<String> getPatterns(final List<ScanPattern> iqScanPatterns, final TaskListener listener,
-                                          final Run run)
+  private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)
   {
-    def envVars = run.getEnvironment(listener)
-    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - '' ?: DEFAULT_SCAN_PATTERN
+    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ''
+  }
+
+  private static List<String> getExpandedModuleExcludes(final List<ModuleExclude> moduleExcludes,
+                                                        final EnvVars envVars)
+  {
+    moduleExcludes.collect { envVars.expand(it.moduleExclude) } - null - ''
   }
 
   private static Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,

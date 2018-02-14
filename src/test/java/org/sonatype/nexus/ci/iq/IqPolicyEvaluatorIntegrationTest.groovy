@@ -36,7 +36,7 @@ import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
-import static TestDataGenerators.createAlert
+import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 
 class IqPolicyEvaluatorIntegrationTest
     extends Specification
@@ -106,7 +106,7 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Freestyle build (happy path)'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], false, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -147,7 +147,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -184,7 +184,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -238,7 +238,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'

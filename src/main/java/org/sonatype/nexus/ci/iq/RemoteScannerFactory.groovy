@@ -23,13 +23,14 @@ class RemoteScannerFactory
   @SuppressWarnings('ParameterCount')
   static RemoteScanner getRemoteScanner(final String appId,
                                         final String stageId,
-                                        final List<String> patterns,
+                                        final List<String> scanPatterns,
+                                        final List<String> moduleExcludes,
                                         final FilePath workspace,
                                         final ProprietaryConfig proprietaryConfig,
                                         final Logger log,
                                         final String instanceId)
   {
-    new RemoteScanner(appId, stageId, patterns, workspace, proprietaryConfig, log, instanceId)
+    new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId)
   }
 
   static DirectoryScanner getDirectoryScanner() {

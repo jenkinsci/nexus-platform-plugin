@@ -40,20 +40,25 @@ class IqPolicyEvaluatorWorkflowStep
 
   List<ScanPattern> iqScanPatterns
 
+  List<ModuleExclude> moduleExcludes
+
   Boolean failBuildOnNetworkError
 
   String jobCredentialsId
 
   @DataBoundConstructor
+  @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorWorkflowStep(final String iqStage,
                                 final String iqApplication,
                                 final List<ScanPattern> iqScanPatterns,
+                                final List<ModuleExclude> moduleExcludes,
                                 final Boolean failBuildOnNetworkError,
                                 final String jobCredentialsId)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
+    this.moduleExcludes = moduleExcludes
     this.iqApplication = iqApplication
     this.iqStage = iqStage
   }
@@ -99,6 +104,11 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     FormValidation doCheckScanPattern(@QueryParameter final String scanPattern) {
+      FormValidation.ok()
+    }
+
+    @Override
+    FormValidation doCheckModuleExclude(@QueryParameter final String value) {
       FormValidation.ok()
     }
 

@@ -20,6 +20,8 @@ interface IqPolicyEvaluator
 
   List<ScanPattern> getIqScanPatterns()
 
+  List<ModuleExclude> getModuleExcludes()
+
   Boolean getFailBuildOnNetworkError()
 
   String getJobCredentialsId()
