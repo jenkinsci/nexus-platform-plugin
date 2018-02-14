@@ -36,6 +36,8 @@ import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
+import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
+
 class IqPolicyEvaluatorIntegrationTest
     extends Specification
 {
