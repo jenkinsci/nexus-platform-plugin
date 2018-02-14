@@ -79,7 +79,7 @@ class IqPolicyEvaluatorIntegrationTest
                 'stage("Example") { \n' +
                 'steps { \n' +
                   'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-                  'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', iqStage: \'stage\'\n' +
+                  'nexusPolicyEvaluation iqApplication: \'app\', iqStage: \'stage\'\n' +
                 '} \n' +
               '} \n' +
             '} \n' +
