@@ -197,7 +197,7 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatus(Result.FAILURE, build)
   }
 
-  def 'Pipeline build should fail when policy violations are present'() {
+  def 'Pipeline build should fail and stop execution when policy violations are present'() {
     setup: 'global server URL and globally configured credentials'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -207,13 +207,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
           'iqStage: \'stage\'\n' +
-          'echo "url:" + result.applicationCompositionReportUrl\n' +
-          'echo "affected:" + result.affectedComponentCount\n' +
-          'echo "critical:" + result.criticalComponentCount\n' +
-          'echo "severe:" + result.severeComponentCount\n' +
-          'echo "moderate:" + result.moderateComponentCount\n' +
-          'echo "url:" + result.applicationCompositionReportUrl\n' +
-          'echo "alerts:" + result.policyAlerts' +
+          'echo "next" \n' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
 
@@ -222,7 +216,44 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
-    then: 'the build fails'
+    and: 'the build fails'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      with(build.getLog(100)) {
+        !it.contains('next')
+      }
+  }
+
+  def 'Pipeline build should failure should container policy evaluation results'() {
+    setup: 'global server URL and globally configured credentials'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('' +
+          'node { \n' +
+            'writeFile file: \'dummy.txt\', text: \'dummy\' \n' +
+            'try { \n' +
+              'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
+                'iqStage: \'stage\' \n' +
+            '} catch (error) { \n' +
+              'def result = error.policyEvaluation \n' +
+              'echo "url:" + result.applicationCompositionReportUrl\n' +
+              'echo "affected:" + result.affectedComponentCount\n' +
+              'echo "critical:" + result.criticalComponentCount\n' +
+              'echo "severe:" + result.severeComponentCount\n' +
+              'echo "moderate:" + result.moderateComponentCount\n' +
+              'echo "url:" + result.applicationCompositionReportUrl\n' +
+              'echo "alerts:" + result.policyAlerts' +
+            '} \n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
+          [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
+
+    and: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
       with(build.getLog(100)) {
         it.contains('url:http://server/link/to/report')

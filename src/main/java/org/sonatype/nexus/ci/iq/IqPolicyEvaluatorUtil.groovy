@@ -62,11 +62,15 @@ class IqPolicyEvaluatorUtil
         iqClient.evaluateApplication(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanResult)
       }
 
-      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication)
-      run.setResult(result)
-
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
+
+      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication)
+      run.setResult(result)
+      if (result == Result.FAILURE) {
+        throw new PolicyEvaluationException(
+            Messages.IqPolicyEvaluation_EvaluationFailed(iqPolicyEvaluator.iqApplication), evaluationResult)
+      }
 
       return evaluationResult
     }
