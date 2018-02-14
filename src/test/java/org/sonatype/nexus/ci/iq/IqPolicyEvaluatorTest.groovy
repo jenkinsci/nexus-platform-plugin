@@ -282,7 +282,8 @@ class IqPolicyEvaluatorTest
 
   def 'evaluation throws exception when build results in failure'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], false, '131-cred')
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+          '131-cred')
       def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0,
           [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
 
