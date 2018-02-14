@@ -21,7 +21,6 @@ import hudson.Extension
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
-import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
@@ -85,7 +84,7 @@ class Nxrm2Configuration
     }
 
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl, @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, null)
     }
 
     FormValidation doVerifyCredentials(

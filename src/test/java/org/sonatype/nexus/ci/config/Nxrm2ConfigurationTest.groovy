@@ -18,7 +18,6 @@ import com.sonatype.nexus.api.repository.RepositoryManagerClient
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
-import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 import org.junit.Rule
@@ -197,7 +196,7 @@ class Nxrm2ConfigurationTest
       configuration.doFillCredentialsIdItems("serverUrl", "credentialsId")
 
     then:
-      1 * FormUtil.newCredentialsItemsListBoxModel("serverUrl", "credentialsId", jenkins.instance)
+      1 * FormUtil.newCredentialsItemsListBoxModel("serverUrl", "credentialsId", null)
   }
 
   def 'it tests valid server credentials'() {
