@@ -102,7 +102,7 @@ class RemoteScannerTest
   }
 
   @Unroll
-  def 'RemoteScanner passes arguments to IqClient'() {
+  def 'RemoteScanner passes #arguments to IqClient'() {
     setup:
       GroovyMock(IqClientFactory, global: true)
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], new FilePath(new File('/file/path')),
