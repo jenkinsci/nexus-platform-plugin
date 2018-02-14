@@ -294,7 +294,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult) >> policyEvaluation
       1 * run.setResult(Result.FAILURE)
 
-    then:
+    and:
       PolicyEvaluationException ex = thrown()
       ex.message == 'IQ Server evaluation of application appId failed'
       ex.policyEvaluation == policyEvaluation
@@ -317,7 +317,7 @@ class IqPolicyEvaluatorTest
           new ApplicationPolicyEvaluation(0, 1, 2, 3, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])],
               reportUrl)
 
-    then:
+    and:
       thrown PolicyEvaluationException
       1 * log.println(
           'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +

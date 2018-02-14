@@ -216,7 +216,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
-    then: 'the build fails'
+    and: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
       with(build.getLog(100)) {
         !it.contains('next')
@@ -253,7 +253,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
-    then: 'the build fails'
+    and: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
       with(build.getLog(100)) {
         it.contains('url:http://server/link/to/report')
@@ -264,7 +264,6 @@ class IqPolicyEvaluatorIntegrationTest
         it =~ /alerts:\[.+]/
       }
   }
-
 
   def 'Freestyle build should fail when policy violations are present'() {
     given: 'a jenkins project'
