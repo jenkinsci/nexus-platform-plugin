@@ -13,7 +13,7 @@
 package com.sonatype.nexus.ci.config
 
 /**
- * @deprecated Replaced by {@link org.sonatype.nexus.ci.config.NxrmConfiguration}
+ * @deprecated Replaced by {@link org.sonatype.nexus.ci.config.Nxrm2Configuration}
  */
 @Deprecated
 class Nxrm2Configuration

@@ -14,10 +14,7 @@ package org.sonatype.nexus.ci.nxrm.v2
 
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NexusVersion
-import org.sonatype.nexus.ci.config.NxrmConfiguration
-import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.nxrm.MavenAsset
 import org.sonatype.nexus.ci.nxrm.MavenCoordinate
 import org.sonatype.nexus.ci.nxrm.MavenPackage
@@ -26,10 +23,6 @@ import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.EnvVars
 import hudson.FilePath
-import hudson.model.Result
-import hudson.model.Run
-import hudson.model.TaskListener
-import org.apache.commons.lang.ObjectUtils.Null
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.WithoutJenkins
@@ -56,7 +49,7 @@ class ComponentUploaderImplTest
   def 'it builds a repository client from configuration'() {
     setup:
       def url = 'http://nexus:8081'
-      def nexusConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', url, 'credentialsId',
+      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', url, 'credentialsId',
           NEXUS2)
       def expectedClient = Mock(RepositoryManagerClient)
       componentUploader = new ComponentUploaderImpl(nexusConfiguration, filePath, env, logger)
@@ -75,7 +68,7 @@ class ComponentUploaderImplTest
   @WithoutJenkins
   def 'it fails the build when a client cannot be created'() {
     setup:
-      def nexusConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
+      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
           NEXUS2)
       componentUploader = new ComponentUploaderImpl(nexusConfiguration, filePath, env, logger)
     when:
@@ -93,7 +86,7 @@ class ComponentUploaderImplTest
 
   def 'it fails the build if Nexus server uri is not valid'() {
     setup:
-      def nxrmConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
       componentUploader = new ComponentUploaderImpl(nxrmConfiguration, filePath, env, logger)
 
     when:
@@ -114,7 +107,7 @@ class ComponentUploaderImplTest
   {
     setup:
       def client = Mock(RepositoryManagerClient)
-      def nxrmConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
       def publisher = Mock(NexusPublisher)
       def tempFile = File.createTempFile("temp", ".tmp")
       tempFile.deleteOnExit()

@@ -15,7 +15,7 @@ package org.sonatype.nexus.ci.nxrm
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
@@ -110,9 +110,9 @@ abstract class NexusPublisherDescriptorTest
       listBoxModel.get(1).value == repositories.get(0).id
   }
 
-  protected NxrmConfiguration saveGlobalConfigurationWithNxrm2Configuration() {
-    def configurationList = new ArrayList<NxrmConfiguration>()
-    def nxrm2Configuration = new NxrmConfiguration('id', 'internalId', 'displayName', 'http://foo.com', 'credentialsId',
+  protected Nxrm2Configuration saveGlobalConfigurationWithNxrm2Configuration() {
+    def configurationList = new ArrayList<Nxrm2Configuration>()
+    def nxrm2Configuration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credentialsId',
         NEXUS2)
     configurationList.push(nxrm2Configuration)
 

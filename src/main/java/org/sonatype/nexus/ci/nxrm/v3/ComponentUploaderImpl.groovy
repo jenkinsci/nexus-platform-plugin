@@ -3,9 +3,9 @@ package org.sonatype.nexus.ci.nxrm.v3
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 import com.sonatype.nexus.api.repository.v3.formats.maven.MavenAsset
-import com.sonatype.nexus.api.repository.v3.formats.maven.MavenUploadBuilder
+import com.sonatype.nexus.api.repository.v3.formats.maven.MavenComponentBuilder
 
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.nxrm.BaseComponentUploader
 import org.sonatype.nexus.ci.nxrm.MavenCoordinate
 
@@ -19,7 +19,7 @@ import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus3Clien
 class ComponentUploaderImpl
     extends BaseComponentUploader
 {
-  ComponentUploaderImpl(final NxrmConfiguration nexusConfig, final FilePath baseDir,
+  ComponentUploaderImpl(final Nxrm2Configuration nexusConfig, final FilePath baseDir,
                         final EnvVars environment, final PrintStream logger)
   {
     super(nexusConfig, baseDir, environment, logger)
@@ -51,7 +51,7 @@ class ComponentUploaderImpl
     def artifactId = coordinate.artifactId?.trim() ? environment.expand(coordinate.artifactId) : null
     def version = coordinate.version?.trim() ? environment.expand(coordinate.version) : null
     def localFiles = []
-    def uploadBuilder = MavenUploadBuilder.create()
+    def uploadBuilder = MavenComponentBuilder.create()
 
     uploadBuilder.withGroupId(groupId)
     uploadBuilder.withArtifactId(artifactId)

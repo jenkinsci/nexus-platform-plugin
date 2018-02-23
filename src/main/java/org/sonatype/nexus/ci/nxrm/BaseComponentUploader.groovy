@@ -2,7 +2,7 @@ package org.sonatype.nexus.ci.nxrm
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 
 import hudson.EnvVars
 import hudson.FilePath
@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull
 abstract class BaseComponentUploader
     implements ComponentUploader
 {
-  protected final NxrmConfiguration nexusConfig
+  protected final Nxrm2Configuration nexusConfig
 
   protected final FilePath baseDir
 
@@ -20,7 +20,7 @@ abstract class BaseComponentUploader
 
   protected final PrintStream logger
 
-  protected BaseComponentUploader(final NxrmConfiguration nexusConfig,
+  protected BaseComponentUploader(final Nxrm2Configuration nexusConfig,
                                   final FilePath baseDir,
                                   final EnvVars environment,
                                   final PrintStream logger)

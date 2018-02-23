@@ -14,7 +14,7 @@ package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.repository.v2.RepositoryInfo
 
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
@@ -27,7 +27,7 @@ class NxrmUtil
     globalNexusConfiguration.nxrmConfigs.size() > 0
   }
 
-  static NxrmConfiguration getNexusConfiguration(final String nexusInstanceId) {
+  static Nxrm2Configuration getNexusConfiguration(final String nexusInstanceId) {
     globalNexusConfiguration.nxrmConfigs.find { return it.id == nexusInstanceId }
   }
 
@@ -37,7 +37,7 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusInstanceIdItems() {
     return FormUtil.
-        newListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
+        newListBoxModel({ Nxrm2Configuration it -> it.displayName }, { Nxrm2Configuration it -> it.id },
             globalNexusConfiguration.nxrmConfigs)
   }
 
@@ -58,7 +58,7 @@ class NxrmUtil
    */
   static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
     def configuration = globalNexusConfiguration.nxrmConfigs.find {
-      NxrmConfiguration config -> config.id == nexusInstanceId
+      Nxrm2Configuration config -> config.id == nexusInstanceId
     }
     return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)
   }

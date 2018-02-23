@@ -26,7 +26,7 @@ import spock.lang.Specification
 
 import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
 
-class NxrmConfigurationTest
+class Nxrm2ConfigurationTest
     extends Specification
 {
   @Rule
@@ -35,14 +35,14 @@ class NxrmConfigurationTest
   def 'it validates that display name is unique'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
           NEXUS2)
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
       globalConfiguration.save()
 
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $displayName"
@@ -61,8 +61,8 @@ class NxrmConfigurationTest
 
   def 'it validates that display name is required'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $displayName"
@@ -83,14 +83,14 @@ class NxrmConfigurationTest
   def 'it validates that id is unique'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new NxrmConfiguration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
           NEXUS2)
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
       globalConfiguration.save()
 
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $id"
@@ -109,8 +109,8 @@ class NxrmConfigurationTest
 
   def 'it validates that id is required'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $id"
@@ -130,8 +130,8 @@ class NxrmConfigurationTest
 
   def 'it validates that id is contains no whitespace'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $id"
@@ -152,8 +152,8 @@ class NxrmConfigurationTest
 
   def 'it validates the server url is a valid url'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $url"
@@ -172,8 +172,8 @@ class NxrmConfigurationTest
 
   def 'it validates the server url is required'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     when:
       "validating $url"
@@ -193,7 +193,7 @@ class NxrmConfigurationTest
 
   def 'it loads the credential items'() {
     setup:
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().getDescriptor(NxrmConfiguration)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration)
       GroovyMock(FormUtil, global: true)
 
     when:
@@ -210,8 +210,8 @@ class NxrmConfigurationTest
       client.getRepositoryList() >> repositories
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
       RepositoryManagerClientUtil.nexus2Client(serverUrl, credentialsId) >> client
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     and:
       FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId, NEXUS2.name())
@@ -264,8 +264,8 @@ class NxrmConfigurationTest
       client.getRepositoryList() >> { throw new RepositoryManagerException("something went wrong") }
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
       RepositoryManagerClientUtil.nexus2Client(serverUrl, credentialsId) >> client
-      def configuration = (NxrmConfiguration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(NxrmConfiguration.class)
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     and:
       FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId, NEXUS2.name())

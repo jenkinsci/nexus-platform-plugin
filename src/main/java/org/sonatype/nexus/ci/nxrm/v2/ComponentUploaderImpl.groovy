@@ -17,7 +17,7 @@ import com.sonatype.nexus.api.repository.v2.GAV
 import com.sonatype.nexus.api.repository.v2.MavenAsset
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.nxrm.BaseComponentUploader
 import org.sonatype.nexus.ci.nxrm.MavenCoordinate
 
@@ -32,7 +32,7 @@ import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus2Clien
 class ComponentUploaderImpl
     extends BaseComponentUploader
 {
-  ComponentUploaderImpl(final NxrmConfiguration nexusConfig,
+  ComponentUploaderImpl(final Nxrm2Configuration nexusConfig,
                         final FilePath baseDir,
                         final EnvVars environment,
                         final PrintStream logger)
@@ -85,7 +85,7 @@ class ComponentUploaderImpl
     logger.println('Successfully Uploaded Maven Assets')
   }
 
-  RepositoryManagerClient getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration) {
+  RepositoryManagerClient getRepositoryManagerClient(final Nxrm2Configuration nexusConfiguration) {
     def nexusServerUrl = nexusConfiguration.serverUrl
 
     if (validateUrl(nexusServerUrl).kind == ERROR) {

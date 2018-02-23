@@ -25,12 +25,12 @@ class GlobalNexusConfigurationTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  List<? extends NxrmConfiguration> nxrmConfiguration
+  List<? extends Nxrm2Configuration> nxrmConfiguration
 
   List<NxiqConfiguration> nxiqConfiguration
 
   void setup() {
-    nxrmConfiguration = [new NxrmConfiguration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id',
+    nxrmConfiguration = [new Nxrm2Configuration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id',
         NEXUS2)]
     nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'creds-id')]
   }
