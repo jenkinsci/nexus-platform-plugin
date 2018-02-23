@@ -21,7 +21,7 @@ import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.Nxrm2Configuration
 
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.CredentialsScope
@@ -44,7 +44,7 @@ class IqPolicyEvaluatorIntegrationTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  List<? extends NxrmConfiguration> nxrmConfiguration
+  List<? extends Nxrm2Configuration> nxrmConfiguration
 
   List<NxiqConfiguration> nxiqConfiguration
 

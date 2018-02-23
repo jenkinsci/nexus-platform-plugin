@@ -19,7 +19,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
-import org.sonatype.nexus.ci.nxrm.ComponentUploader
+import org.sonatype.nexus.ci.nxrm.v2.ComponentUploaderImpl
 import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
 import org.sonatype.nexus.ci.nxrm.MavenPackage
 import org.sonatype.nexus.ci.nxrm.NexusPublisher
@@ -38,11 +38,11 @@ class ComToOrgMigratorIntegrationTest
   public JenkinsRule jenkins
 
   private InternalIqClient iqClient
-  private ComponentUploader componentUploader
+  private ComponentUploaderImpl componentUploader
 
   def setup() {
     def classLoader = getClass().getClassLoader();
-    def file = new File(classLoader.getResource('org/sonatype/nexus/ci/config/ComToOrgMigratorIntegrationTest').getFile());
+    def file = new File(classLoader.getResource('org/sonatype/nexus/ci/config/ComToOrgMigratorIntegrationTest').getFile())
     jenkins = new JenkinsRule().withExistingHome(file)
 
     GroovyMock(InternalIqClientBuilder, global: true)
@@ -58,7 +58,7 @@ class ComToOrgMigratorIntegrationTest
     iqClientBuilder.build() >> iqClient
 
     GroovyMock(ComponentUploaderFactory.class, global: true)
-    componentUploader = Mock(ComponentUploader)
+    componentUploader = Mock(ComponentUploaderImpl)
     ComponentUploaderFactory.getComponentUploader(*_) >> componentUploader
   }
 
@@ -153,11 +153,9 @@ class ComToOrgMigratorIntegrationTest
 
     then: 'the package is uploaded'
       1 * componentUploader.uploadComponents(*_) >> { arguments ->
-        def nxrmPublisher = (NexusPublisher)arguments[0]
-        assert nxrmPublisher.nexusInstanceId == 'nexus-rm'
-        assert nxrmPublisher.nexusRepositoryId == 'repo'
-        assert nxrmPublisher.packages.size() == 1
-        def mavenPackage = (MavenPackage)nxrmPublisher.packages[0]
+        assert arguments[0] == 'repo'
+        assert arguments[1].size() == 1
+        def mavenPackage = (MavenPackage)arguments[1][0]
         assert mavenPackage.coordinate.groupId == 'g'
         assert mavenPackage.coordinate.artifactId == 'a'
         assert mavenPackage.coordinate.version == 'v'
@@ -180,11 +178,9 @@ class ComToOrgMigratorIntegrationTest
 
     then: 'the package is uploaded'
       1 * componentUploader.uploadComponents(*_) >> { arguments ->
-        def nxrmPublisher = (NexusPublisher)arguments[0]
-        assert nxrmPublisher.nexusInstanceId == 'nexus-rm'
-        assert nxrmPublisher.nexusRepositoryId == 'repo'
-        assert nxrmPublisher.packages.size() == 1
-        def mavenPackage = (MavenPackage)nxrmPublisher.packages[0]
+        assert arguments[0] == 'repo'
+        assert arguments[1].size() == 1
+        def mavenPackage = (MavenPackage)arguments[1][0]
         assert mavenPackage.coordinate.groupId == 'g'
         assert mavenPackage.coordinate.artifactId == 'a'
         assert mavenPackage.coordinate.version == 'v'

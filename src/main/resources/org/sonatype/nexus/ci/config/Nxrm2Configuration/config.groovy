@@ -22,6 +22,10 @@ f.section(title: descriptor.displayName) {
         value: "${instance != null ? instance.internalId : UUID.randomUUID().toString()}")
   }
 
+  f.entry(title: _('Version'), field: 'nexusVersion') {
+    f.select(clazz: 'required')
+  }
+
   f.entry(title: _('Display Name'), field: 'displayName') {
     f.textbox(clazz: 'required')
   }
@@ -43,7 +47,7 @@ f.section(title: descriptor.displayName) {
         title: _('Test connection'),
         progress: _('Testing...'),
         method: 'verifyCredentials',
-        with: 'serverUrl,credentialsId'
+        with: 'serverUrl,credentialsId,nexusVersion'
     )
   }
 }

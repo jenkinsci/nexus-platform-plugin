@@ -20,6 +20,8 @@ import hudson.model.TaskListener
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter
 
+import static org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory.getComponentUploader
+
 @SuppressWarnings('UnnecessaryTransientModifier')
 class PackagePublisherExecution
     extends AbstractSynchronousNonBlockingStepExecution<Void>
@@ -39,8 +41,8 @@ class PackagePublisherExecution
   @Override
   @SuppressWarnings('ConfusingMethodName')
   protected Void run() throws Exception {
-    def componentUploader = ComponentUploaderFactory.getComponentUploader(run, taskListener)
-    componentUploader.uploadComponents(nxrmPublisher, filePath)
+    def componentUploader = getComponentUploader(nxrmPublisher.nexusInstanceId, run, filePath, taskListener)
+    componentUploader.uploadComponents(nxrmPublisher.nexusRepositoryId, nxrmPublisher.packages)
 
     return null
   }

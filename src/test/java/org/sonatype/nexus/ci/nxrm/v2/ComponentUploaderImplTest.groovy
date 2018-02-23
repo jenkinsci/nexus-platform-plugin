@@ -10,49 +10,53 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.nxrm
+package org.sonatype.nexus.ci.nxrm.v2
 
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
+import org.sonatype.nexus.ci.nxrm.MavenAsset
+import org.sonatype.nexus.ci.nxrm.MavenCoordinate
+import org.sonatype.nexus.ci.nxrm.MavenPackage
+import org.sonatype.nexus.ci.nxrm.NexusPublisher
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.EnvVars
 import hudson.FilePath
-import hudson.model.Result
-import hudson.model.Run
-import hudson.model.TaskListener
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.WithoutJenkins
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ComponentUploaderTest
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
+
+class ComponentUploaderImplTest
     extends Specification
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  def run = Mock(Run)
+  def env = Mock(EnvVars)
 
-  def taskListener = Mock(TaskListener)
+  def filePath = GroovyMock(FilePath)
 
-  ComponentUploader componentUploader
+  def logger = Mock(PrintStream)
 
-  def setup() {
-    componentUploader = new ComponentUploader(run, taskListener)
-  }
+  ComponentUploaderImpl componentUploader
 
   @WithoutJenkins
   def 'it builds a repository client from configuration'() {
     setup:
-      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
+      def url = 'http://nexus:8081'
+      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', url, 'credentialsId',
+          NEXUS2)
       def expectedClient = Mock(RepositoryManagerClient)
+      componentUploader = new ComponentUploaderImpl(nexusConfiguration, filePath, env, logger)
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> expectedClient
+      RepositoryManagerClientUtil.newRepositoryManagerClient(url, 'credentialsId') >> expectedClient
+      RepositoryManagerClientUtil.nexus2Client(url, 'credentialsId') >> expectedClient
 
     when:
       def actualClient = componentUploader.getRepositoryManagerClient(nexusConfiguration)
@@ -64,82 +68,32 @@ class ComponentUploaderTest
   @WithoutJenkins
   def 'it fails the build when a client cannot be created'() {
     setup:
-      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
-
-      GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> {
-        throw new URISyntaxException('foo', 'bar')
-      }
-
+      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
+          NEXUS2)
+      componentUploader = new ComponentUploaderImpl(nexusConfiguration, filePath, env, logger)
     when:
-      try {
-        componentUploader.getRepositoryManagerClient(nexusConfiguration)
-      }
-      catch (Exception ex) {
-        // no op
-      }
-
+      componentUploader.getRepositoryManagerClient(nexusConfiguration)
     then:
-      1 * run.setResult(Result.FAILURE)
-  }
-
-  def 'it gets the Nexus configuration'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-
-    when:
-      def configuration = componentUploader.getNexusConfiguration('id')
-
-    then:
-      configuration == nxrmConfiguration
+      thrown(IllegalArgumentException)
   }
 
   def 'it fails the build if Nexus configuration not available'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-      def errorMessage = ''
-
     when:
-      try {
-        componentUploader.getNexusConfiguration('other')
-      }
-      catch (Exception ex) {
-        errorMessage = ex.message
-      }
-
+      componentUploader = new ComponentUploaderImpl(null, filePath, env, logger)
     then:
-      1 * run.setResult(Result.FAILURE)
-      errorMessage == 'Nexus Configuration other not found.'
+      thrown(NullPointerException)
   }
 
   def 'it fails the build if Nexus server uri is not valid'() {
     setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-      def errorMessage = ''
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
+      componentUploader = new ComponentUploaderImpl(nxrmConfiguration, filePath, env, logger)
 
     when:
-      try {
-        componentUploader.getNexusConfiguration('id')
-      }
-      catch (Exception ex) {
-        errorMessage = ex.message
-      }
-
+        componentUploader.uploadComponents('foo', [])
     then:
-      1 * run.setResult(Result.FAILURE)
-      errorMessage == 'Nexus Server URL foo is invalid.'
+      Exception e = thrown()
+      e.message == 'Nexus Server URL foo is invalid.'
   }
 
   @WithoutJenkins
@@ -153,19 +107,15 @@ class ComponentUploaderTest
   {
     setup:
       def client = Mock(RepositoryManagerClient)
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
-      run.getEnvironment(_) >> envVar
-
-      def mockComponentUploader = Spy(ComponentUploader, constructorArgs: [run, taskListener]) {
-        getNexusConfiguration(_) >> nxrmConfiguration
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId', NEXUS2)
+      def publisher = Mock(NexusPublisher)
+      def tempFile = File.createTempFile("temp", ".tmp")
+      tempFile.deleteOnExit()
+      def filePath = new FilePath(tempFile.getParentFile())
+      def mockComponentUploader = Spy(ComponentUploaderImpl, constructorArgs: [nxrmConfiguration, filePath, envVar, logger]) {
         getRepositoryManagerClient(nxrmConfiguration) >> client
       }
-      def publisher = Mock(NexusPublisher)
-      def tempFile = File.createTempFile("temp", ".tmp");
-      tempFile.deleteOnExit()
 
-      def filePath = new FilePath(tempFile.getParentFile())
-    
       publisher.packages >> [
           new MavenPackage(coordinate, [new MavenAsset(tempFile.name, asset.classifier, asset.extension)])
       ]
@@ -174,7 +124,7 @@ class ComponentUploaderTest
       def assets = null
 
     when:
-      mockComponentUploader.uploadComponents(publisher, filePath)
+      mockComponentUploader.uploadComponents('repoId', publisher.packages)
       tempFile.delete()
 
     then:
@@ -203,7 +153,7 @@ class ComponentUploaderTest
       coordinate <<
           [new MavenCoordinate('some-group', 'some-artifact', '1.0.0-SNAPSHOT', 'jar'),
            new MavenCoordinate('$GROUPID', '$ARTIFACTID', '$VERSION', '$PACKAGING')]
-      asset << [ new MavenAsset(null, 'classifier', 'extension'), new MavenAsset(null, '$CLASSIFIER', '$EXTENSION') ]
+      asset << [new MavenAsset(null, 'classifier', 'extension'), new MavenAsset(null, '$CLASSIFIER', '$EXTENSION')]
       expectedCoordinate <<
           [new MavenCoordinate('some-group', 'some-artifact', '1.0.0-SNAPSHOT', 'jar'),
            new MavenCoordinate('some-env-group', 'some-env-artifact', '1.0.0-01', 'jar')]

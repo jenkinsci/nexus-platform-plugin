@@ -12,10 +12,12 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import groovy.transform.ToString
 import hudson.Extension
 import org.jenkinsci.Symbol
 import org.kohsuke.stapler.DataBoundConstructor
 
+@ToString(includeNames = true, includePackage = false)
 @Symbol('mavenAsset')
 class MavenAsset
     extends Asset

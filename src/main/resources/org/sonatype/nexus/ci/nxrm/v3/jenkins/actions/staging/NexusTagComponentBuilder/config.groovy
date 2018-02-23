@@ -10,7 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.nxrm.NexusPublisherBuildStep
+package org.sonatype.nexus.ci.nxrm.v3.jenkins.actions.staging.NexusTagComponentBuilder
 
 import org.sonatype.nexus.ci.util.NxrmUtil
 
@@ -42,22 +42,19 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  if (it?.isNexus3?.is(false) || descriptor?.isNexus3?.is(false)) {
-    f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
-      f.select()
-    }
-  }
-  else {
-    f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
-      f.textbox(clazz: 'required')
-    }
+  f.entry(title: _('Tag Name'), field: 'tagName') {
+    f.textbox()
   }
 
-  f.entry(title: _('Packages')) {
-    f.repeatableHeteroProperty(
-        field: 'packages',
-        addCaption: _('Add Package')
-    )
+  f.entry(title: _('Component Group'), field: 'group') {
+    f.textbox()
   }
 
+  f.entry(title: _('Component Name'), field: 'name') {
+    f.textbox()
+  }
+
+  f.entry(title: _('Component Version'), field: 'version') {
+    f.textbox()
+  }
 }

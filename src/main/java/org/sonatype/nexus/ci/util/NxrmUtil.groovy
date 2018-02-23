@@ -12,18 +12,23 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.repository.RepositoryInfo
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+import com.sonatype.nexus.api.repository.v2.RepositoryInfo
+
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
-import org.sonatype.nexus.ci.config.NxrmConfiguration
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
+import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.globalNexusConfiguration
+
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.size() > 0
+    globalNexusConfiguration.nxrmConfigs.size() > 0
+  }
+
+  static Nxrm2Configuration getNexusConfiguration(final String nexusInstanceId) {
+    globalNexusConfiguration.nxrmConfigs.find { return it.id == nexusInstanceId }
   }
 
   static FormValidation doCheckNexusInstanceId(final String value) {
@@ -32,8 +37,8 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusInstanceIdItems() {
     return FormUtil.
-        newListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
-            GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
+        newListBoxModel({ Nxrm2Configuration it -> it.displayName }, { Nxrm2Configuration it -> it.id },
+            globalNexusConfiguration.nxrmConfigs)
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {
@@ -52,7 +57,7 @@ class NxrmUtil
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
-    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
+    def configuration = globalNexusConfiguration.nxrmConfigs.find {
       Nxrm2Configuration config -> config.id == nexusInstanceId
     }
     return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)

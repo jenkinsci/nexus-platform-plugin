@@ -12,16 +12,18 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
-import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
 
 abstract class NexusPublisherDescriptorTest
     extends Specification
@@ -88,7 +90,9 @@ abstract class NexusPublisherDescriptorTest
           ]
       ]
       client.getRepositoryList() >> repositories
-      RepositoryManagerClientUtil.newRepositoryManagerClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
+      RepositoryManagerClientUtil.
+          newRepositoryManagerClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
+      RepositoryManagerClientUtil.nexus2Client(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
 
     when: 'nexus repository items are filled'
       def descriptor = getDescriptor()
@@ -107,8 +111,9 @@ abstract class NexusPublisherDescriptorTest
   }
 
   protected Nxrm2Configuration saveGlobalConfigurationWithNxrm2Configuration() {
-    def configurationList = new ArrayList<NxrmConfiguration>()
-    def nxrm2Configuration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credentialsId')
+    def configurationList = new ArrayList<Nxrm2Configuration>()
+    def nxrm2Configuration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credentialsId',
+        NEXUS2)
     configurationList.push(nxrm2Configuration)
 
     def globalConfiguration = jenkins.getInstance().getDescriptorByType(GlobalNexusConfiguration.class)

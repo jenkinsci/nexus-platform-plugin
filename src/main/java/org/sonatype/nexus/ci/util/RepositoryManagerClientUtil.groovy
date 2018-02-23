@@ -14,8 +14,8 @@ package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.ServerConfig
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
-import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
@@ -24,10 +24,22 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
 import hudson.security.ACL
 import jenkins.model.Jenkins
 
+import static com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder.create
+
 @SuppressWarnings(value = ['AbcMetric'])
 class RepositoryManagerClientUtil
 {
+  /**
+   * @deprecated for version specific calls {@link org.sonatype.nexus.ci.util.RepositoryManagerClientUtil#nexus2Client}
+   */
+  @Deprecated
   static RepositoryManagerClient newRepositoryManagerClient(String url, String credentialsId)
+      throws URISyntaxException
+  {
+    nexus2Client(url, credentialsId)
+  }
+
+  static RepositoryManagerClient nexus2Client(String url, String credentialsId)
       throws URISyntaxException
   {
     def uri = new URI(url)
@@ -47,7 +59,7 @@ class RepositoryManagerClientUtil
 
     def serverConfig = authentication != null ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
 
-    def clientBuilder = RepositoryManagerClientBuilder.create().withServerConfig(serverConfig)
+    def clientBuilder = create().withServerConfig(serverConfig)
 
     def jenkinsProxy = Jenkins.instance.proxy
 
@@ -55,6 +67,38 @@ class RepositoryManagerClientUtil
       clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
     }
 
-    return clientBuilder.build()
+    return clientBuilder.buildNexus2Client()
+  }
+
+  static RepositoryManagerV3Client nexus3Client(String url, String credentialsId)
+      throws URISyntaxException
+  {
+    def uri = new URI(url)
+
+    def credentials = CredentialsMatchers.firstOrNull(CredentialsProvider
+        .lookupCredentials(StandardUsernamePasswordCredentials, Jenkins.getInstance(), ACL.SYSTEM,
+        URIRequirementBuilder.fromUri(url).build()), CredentialsMatchers.withId(credentialsId))
+
+    Authentication authentication = null
+
+    if (credentialsId) {
+      if (!credentials) {
+        throw new IllegalArgumentException("No credentials were found for credentialsId: ${credentialsId}")
+      }
+      authentication = new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText())
+    }
+
+    def serverConfig = authentication != null ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
+
+    def clientBuilder = create().withServerConfig(serverConfig)
+
+    def jenkinsProxy = Jenkins.instance.proxy
+
+    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
+      clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
+    }
+
+    // TODO: this assumes preemptive authentication, but should likely be configurable
+    return clientBuilder.buildNexus3Client(true)
   }
 }

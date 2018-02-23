@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import org.sonatype.nexus.ci.nxrm.v2.ComponentUploaderImpl
+
 import hudson.FilePath
 import hudson.model.Run
 import hudson.model.TaskListener
@@ -41,7 +43,7 @@ class PackagePublisherExecutionTest
       PrintStream logger = new PrintStream(os);
 
       taskListener.getLogger() >> logger
-      Run run = null
+      Run run = Mock()
       FilePath filePath = new FilePath(temp.newFile())
       NexusPublisherWorkflowStep nxrmPublisher = nexusPublisher
 
@@ -52,14 +54,14 @@ class PackagePublisherExecutionTest
       underTest.filePath = filePath
 
       GroovyMock(ComponentUploaderFactory.class, global: true)
-      def componentUploader = Mock(ComponentUploader)
-      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+      def componentUploader = Mock(ComponentUploaderImpl)
+      ComponentUploaderFactory.getComponentUploader(nxrmPublisher.nexusInstanceId, run, filePath, taskListener) >> componentUploader
 
     when:
       underTest.run()
 
     then:
-      1 * componentUploader.uploadComponents(nxrmPublisher, filePath)
+      1 * componentUploader.uploadComponents(nxrmPublisher.nexusRepositoryId, packageList)
   }
 
   def 'it bubbles up IOException when things go wrong'() {
@@ -70,11 +72,11 @@ class PackagePublisherExecutionTest
       def nexusPublisher = new NexusPublisherWorkflowStep(nxrm2Configuration.id, repositoryId, packageList)
 
       TaskListener taskListener = Mock()
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      PrintStream logger = new PrintStream(os);
+      ByteArrayOutputStream os = new ByteArrayOutputStream()
+      PrintStream logger = new PrintStream(os)
 
       taskListener.getLogger() >> logger
-      Run run = null
+      Run run = Mock()
       FilePath filePath = new FilePath(temp.newFile())
       NexusPublisherWorkflowStep nxrmPublisher = nexusPublisher
 
@@ -85,10 +87,10 @@ class PackagePublisherExecutionTest
       underTest.filePath = filePath
 
       GroovyMock(ComponentUploaderFactory.class, global: true)
-      def componentUploader = Mock(ComponentUploader)
-      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+      def componentUploader = Mock(ComponentUploaderImpl)
+      ComponentUploaderFactory.getComponentUploader(nxrmPublisher.nexusInstanceId, run, filePath, taskListener) >> componentUploader
 
-      componentUploader.uploadComponents(nexusPublisher, filePath) >> { throw new IOException("oops") }
+      componentUploader.uploadComponents(nexusPublisher.nexusRepositoryId, packageList) >> { throw new IOException("oops") }
 
     when:
       underTest.run()

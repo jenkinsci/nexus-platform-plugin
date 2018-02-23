@@ -13,7 +13,7 @@
 package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerClient
 
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
@@ -24,6 +24,8 @@ import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
+import static org.sonatype.nexus.ci.config.NexusVersion.NEXUS2
+
 class Nxrm2ConfigurationTest
     extends Specification
 {
@@ -33,7 +35,8 @@ class Nxrm2ConfigurationTest
   def 'it validates that display name is unique'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
+          NEXUS2)
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
       globalConfiguration.save()
@@ -80,7 +83,8 @@ class Nxrm2ConfigurationTest
   def 'it validates that id is unique'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId',
+          NEXUS2)
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
       globalConfiguration.save()
@@ -205,11 +209,12 @@ class Nxrm2ConfigurationTest
       def client = Mock(RepositoryManagerClient.class)
       client.getRepositoryList() >> repositories
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
+      RepositoryManagerClientUtil.nexus2Client(serverUrl, credentialsId) >> client
       def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
           getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
+      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId, NEXUS2.name())
 
     then:
       validation.kind == Kind.OK
@@ -219,36 +224,36 @@ class Nxrm2ConfigurationTest
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
       repositories << [
-        [
-            [
-                id: 'maven-releases',
-                name: 'Maven Releases',
-                format: 'maven2',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Release'
-            ],
-            [
-                id: 'maven1-releases',
-                name: 'Maven 1 Releases',
-                format: 'maven1',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Release'
-            ],
-            [
-                id: 'maven-snapshots',
-                name: 'Maven Snapshots',
-                format: 'maven2',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Snapshot'
-            ],
-            [
-                id: 'maven-proxy',
-                name: 'Maven Proxy',
-                format: 'maven2',
-                repositoryType: 'proxy',
-                repositoryPolicy: 'Release'
-            ]
-        ]
+          [
+              [
+                  id: 'maven-releases',
+                  name: 'Maven Releases',
+                  format: 'maven2',
+                  repositoryType: 'hosted',
+                  repositoryPolicy: 'Release'
+              ],
+              [
+                  id: 'maven1-releases',
+                  name: 'Maven 1 Releases',
+                  format: 'maven1',
+                  repositoryType: 'hosted',
+                  repositoryPolicy: 'Release'
+              ],
+              [
+                  id: 'maven-snapshots',
+                  name: 'Maven Snapshots',
+                  format: 'maven2',
+                  repositoryType: 'hosted',
+                  repositoryPolicy: 'Snapshot'
+              ],
+              [
+                  id: 'maven-proxy',
+                  name: 'Maven Proxy',
+                  format: 'maven2',
+                  repositoryType: 'proxy',
+                  repositoryPolicy: 'Release'
+              ]
+          ]
       ]
   }
 
@@ -258,10 +263,12 @@ class Nxrm2ConfigurationTest
       def client = Mock(RepositoryManagerClient.class)
       client.getRepositoryList() >> { throw new RepositoryManagerException("something went wrong") }
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration.class)
+      RepositoryManagerClientUtil.nexus2Client(serverUrl, credentialsId) >> client
+      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
+          getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
+      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId, NEXUS2.name())
 
 
     then:
