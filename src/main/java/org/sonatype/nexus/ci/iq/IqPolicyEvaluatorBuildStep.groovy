@@ -41,9 +41,13 @@ class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, SimpleBuildStep
 {
+  // Must keep this for backward compatibility (XStream de-serializes directly to member variables)
+  @Deprecated
+  private transient String billOfMaterialsToken
+
   String iqStage
 
-  String iqApplication
+  ApplicationSelectType applicationSelectType
 
   List<ScanPattern> iqScanPatterns
 
@@ -56,7 +60,9 @@ class IqPolicyEvaluatorBuildStep
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
-                             final String iqApplication,
+                             final ApplicationSelectType applicationSelectType,
+                             final String listAppId,
+                             final String manualAppId,
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> moduleExcludes,
                              final Boolean failBuildOnNetworkError,
@@ -66,8 +72,17 @@ class IqPolicyEvaluatorBuildStep
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.moduleExcludes = moduleExcludes
-    this.iqApplication = iqApplication
+    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectType, listAppId,
+        manualAppId)
     this.iqStage = iqStage
+  }
+
+  public ApplicationSelectType getApplicationSelectType() {
+    // If applicationSelectType is null that means we have a older version of config.xml
+    // and list/billOfMaterialsToken should be used so we may need to create a new one here
+    applicationSelectType =
+        ApplicationSelectType.applicationSelectTypeIfNullFactory(applicationSelectType, billOfMaterialsToken)
+    return applicationSelectType
   }
 
   @Override
@@ -104,12 +119,17 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    FormValidation doCheckIqApplication(@QueryParameter String value) {
+    FormValidation doCheckListAppId(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    FormValidation doCheckManualAppId(@QueryParameter String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    ListBoxModel doFillListAppIdItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
       IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }

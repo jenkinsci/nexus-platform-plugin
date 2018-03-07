@@ -37,7 +37,7 @@ class IqPolicyEvaluatorWorkflowStep
 {
   String iqStage
 
-  String iqApplication
+  ApplicationSelectType applicationSelectType
 
   List<ScanPattern> iqScanPatterns
 
@@ -69,9 +69,13 @@ class IqPolicyEvaluatorWorkflowStep
 
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage,
-                                final String iqApplication) {
+                                final ApplicationSelectType applicationSelectType,
+                                final String listAppId,
+                                final String manualAppId
+                                ) {
     this.iqStage = iqStage
-    this.iqApplication = iqApplication
+    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectType, listAppId,
+        manualAppId)
   }
 
   @Extension
@@ -104,12 +108,17 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doCheckIqApplication(@QueryParameter String value) {
+    FormValidation doCheckListAppId(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+    FormValidation doCheckManualAppId(@QueryParameter String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    ListBoxModel doFillListAppIdItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
       IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 

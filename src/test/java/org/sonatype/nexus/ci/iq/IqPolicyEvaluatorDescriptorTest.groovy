@@ -79,7 +79,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
     when:
       "validating application ID $applicationId"
-      def validation = descriptor.doCheckIqApplication(applicationId)
+      def validation = descriptor.doCheckListAppId(applicationId)
 
     then:
       "it returns $kind with message $message"
@@ -140,7 +140,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('', job)
+      descriptor.doFillListAppIdItems('', job)
 
     then:
       1 * IqUtil.doFillIqApplicationItems('', job)
@@ -153,7 +153,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('credentialsId', job)
+      descriptor.doFillListAppIdItems('credentialsId', job)
 
     then:
       1 * IqUtil.doFillIqApplicationItems('credentialsId', job)
@@ -219,7 +219,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
 
     when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId')
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, null, null, 'jobSpecificCredentialsId')
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'

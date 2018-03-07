@@ -32,7 +32,13 @@
           <scanPattern>target/*.jar</scanPattern>
         </com.sonatype.nexus.ci.iq.ScanPattern>
       </com__sonatype__nexus__ci__iq__IqPolicyEvaluator____iqScanPatterns>
-      <com__sonatype__nexus__ci__iq__IqPolicyEvaluator____iqApplication>sample-app</com__sonatype__nexus__ci__iq__IqPolicyEvaluator____iqApplication>
+      <com__sonatype__nexus__ci__iq__IqPolicyEvaluator____applicationSelectType>
+        <org.sonatype.nexus.ci.iq.ApplicationSelectType>
+          <value>value</value>
+          <manualAppId>value1</manualAppId>
+          <listAppId>value2</listAppId>
+        </org.sonatype.nexus.ci.iq.ApplicationSelectType>
+      </com__sonatype__nexus__ci__iq__IqPolicyEvaluator____applicationSelectType>
       <com__sonatype__nexus__ci__iq__IqPolicyEvaluator____failBuildOnNetworkError>true</com__sonatype__nexus__ci__iq__IqPolicyEvaluator____failBuildOnNetworkError>
       <com__sonatype__nexus__ci__iq__IqPolicyEvaluator____iqStage>build</com__sonatype__nexus__ci__iq__IqPolicyEvaluator____iqStage>
       <com__sonatype__nexus__ci__iq__IqPolicyEvaluator____jobCredentialsId>user2</com__sonatype__nexus__ci__iq__IqPolicyEvaluator____jobCredentialsId>

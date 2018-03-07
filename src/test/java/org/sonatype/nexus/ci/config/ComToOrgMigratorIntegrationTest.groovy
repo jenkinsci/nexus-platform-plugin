@@ -18,6 +18,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
+import org.sonatype.nexus.ci.iq.ApplicationSelectType
 import org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 import org.sonatype.nexus.ci.nxrm.ComponentUploader
 import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
@@ -93,10 +94,11 @@ class ComToOrgMigratorIntegrationTest
     when:
       def project = (FreeStyleProject)jenkins.jenkins.getItem('Freestyle-IQ')
       def buildStep = (IqPolicyEvaluatorBuildStep)project.builders[0]
+      buildStep.applicationSelectType = ApplicationSelectType.applicationSelectTypeIfNullFactory(null, 'sample-app') //JIMBO
 
     then: 'the fields are properly migrated'
       buildStep.iqStage == 'build'
-      buildStep.iqApplication == 'sample-app'
+      //JIMBO:buildStep.applicationSelectType.applicationId == 'sample-app'
       buildStep.failBuildOnNetworkError
       buildStep.jobCredentialsId == 'user2'
       buildStep.iqScanPatterns.size() == 1

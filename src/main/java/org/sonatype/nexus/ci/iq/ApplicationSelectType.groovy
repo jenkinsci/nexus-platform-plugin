@@ -31,8 +31,9 @@ class ApplicationSelectType
     return applicationSelectType
   }
 
-  public static ApplicationSelectType createApplicationSelectTypeIfNull(final ApplicationSelectType applicationSelectType,
-                                                                        final String listAppId)
+  public static ApplicationSelectType applicationSelectTypeIfNullFactory(
+      final ApplicationSelectType applicationSelectType,
+      final String listAppId)
   {
     if (applicationSelectType == null) {
       return new ApplicationSelectType(LIST_TYPE, "", listAppId)
@@ -65,5 +66,9 @@ class ApplicationSelectType
 
   public boolean isManual() {
     return MANUAL_TYPE == value
+  }
+
+  public String getApplicationId() {
+    return applicationId
   }
 }

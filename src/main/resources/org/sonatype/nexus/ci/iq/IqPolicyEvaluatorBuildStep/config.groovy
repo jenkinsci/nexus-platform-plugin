@@ -48,8 +48,25 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'iqApplication') {
+  /*f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'iqApplication') {
     f.select()
+  }*/
+  f.radioBlock(name: 'applicationSelectTypePost', value: 'select', checked: '${!instance.applicationSelectType.manual}', title: _(Messages.IqPolicyEvaluation_SelectApplication()),
+      inline: 'true') {
+    f.nested {
+      f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'listAppId') {
+        f.select()
+      }
+    }
+  }
+
+  f.radioBlock(name: 'applicationSelectTypePost', value: 'manual', checked: '${instance.applicationSelectType.manual}', title: _(Messages.IqPolicyEvaluation_ManualApplication()),
+      inline: 'true') {
+    f.nested {
+      f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'manualAppId') {
+        f.textbox()
+      }
+    }
   }
 
   f.advanced() {

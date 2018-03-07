@@ -77,7 +77,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', ApplicationSelectType.applicationSelectTypeIfNullFactory(null, 'app'), 'app', '', [], [], false, 'cred-id'))
       configureJenkins()
 
     and: 'a mock IQ server stub'
