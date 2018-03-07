@@ -60,7 +60,7 @@ class IqPolicyEvaluatorBuildStep
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
-                             final ApplicationSelectType applicationSelectType,
+                             final ApplicationSelectType applicationSelectTypePost,
                              final String listAppId,
                              final String manualAppId,
                              final List<ScanPattern> iqScanPatterns,
@@ -72,7 +72,7 @@ class IqPolicyEvaluatorBuildStep
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.moduleExcludes = moduleExcludes
-    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectType, listAppId,
+    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
         manualAppId)
     this.iqStage = iqStage
   }
