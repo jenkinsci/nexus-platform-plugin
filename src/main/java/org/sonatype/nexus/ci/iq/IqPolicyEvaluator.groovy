@@ -16,7 +16,7 @@ interface IqPolicyEvaluator
 {
   String getIqStage()
 
-  ApplicationSelectType getApplicationSelectType()
+  ApplicationSelectType getApplicationSelectTypePost()
 
   List<ScanPattern> getIqScanPatterns()
 

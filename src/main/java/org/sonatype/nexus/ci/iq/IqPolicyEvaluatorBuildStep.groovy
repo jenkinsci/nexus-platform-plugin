@@ -47,7 +47,7 @@ class IqPolicyEvaluatorBuildStep
 
   String iqStage
 
-  ApplicationSelectType applicationSelectType
+  ApplicationSelectType applicationSelectTypePost
 
   List<ScanPattern> iqScanPatterns
 
@@ -72,7 +72,7 @@ class IqPolicyEvaluatorBuildStep
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.moduleExcludes = moduleExcludes
-    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
+    this.applicationSelectTypePost = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
         manualAppId)
     this.iqStage = iqStage
   }
@@ -135,7 +135,17 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
+    ApplicationSelectType doFillApplicationSelectTypePost(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+      ApplicationSelectType.applicationSelectTypeIfNullFactory(null,"bob")
+    }
+
+    @Override
     FormValidation doCheckScanPattern(@QueryParameter String value) {
+      FormValidation.ok()
+    }
+
+    @Override
+    FormValidation doCheckApplicationSelectTypePost(@QueryParameter ApplicationSelectType value) {
       FormValidation.ok()
     }
 

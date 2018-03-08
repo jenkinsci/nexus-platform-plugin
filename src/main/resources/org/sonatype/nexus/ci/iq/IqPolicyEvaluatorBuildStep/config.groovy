@@ -51,8 +51,8 @@ f.section(title: descriptor.displayName) {
   /*f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'iqApplication') {
     f.select()
   }*/
-  f.radioBlock(name: 'applicationSelectTypePost', value: 'select', checked: '${!instance.applicationSelectType.manual}', title: _(Messages.IqPolicyEvaluation_SelectApplication()),
-      inline: 'true') {
+  f.radioBlock(name: 'applicationSelectTypePost', value: 'select', title: _(Messages.IqPolicyEvaluation_SelectApplication()),
+      inline: 'false') {
     f.nested {
       f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'listAppId') {
         f.select()
@@ -60,8 +60,8 @@ f.section(title: descriptor.displayName) {
     }
   }
 
-  f.radioBlock(name: 'applicationSelectTypePost', value: 'manual', checked: '${instance.applicationSelectType.manual}', title: _(Messages.IqPolicyEvaluation_ManualApplication()),
-      inline: 'true') {
+  f.radioBlock(name: 'applicationSelectTypePost', value: 'manual', title: _(Messages.IqPolicyEvaluation_ManualApplication()),
+      inline: 'false') {
     f.nested {
       f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'manualAppId') {
         f.textbox()

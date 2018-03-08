@@ -1,17 +1,24 @@
 package org.sonatype.nexus.ci.iq
 
+import hudson.util.FormValidation
 import org.apache.commons.lang.StringUtils
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.QueryParameter
 
 class ApplicationSelectType
 {
   public static final String MANUAL_TYPE = "manual"
 
-  public static final String LIST_TYPE = "list"
+  public static final String LIST_TYPE = "select"
 
-  private String value
+  String value = LIST_TYPE
+
+  String listAppId
+
+  String manualAppId
 
   private String applicationId
+
 
   // Older versions of Hudson and Jenkins do not post the listAppId and manualAppId in the
   // ApplicationSelectType object.
@@ -44,6 +51,9 @@ class ApplicationSelectType
   @DataBoundConstructor
   public ApplicationSelectType(final String value, final String manualAppId, final String listAppId) {
     this.value = value
+    this.manualAppId = manualAppId
+    this.listAppId = listAppId
+
     if (LIST_TYPE == value) {
       this.applicationId = listAppId
     }

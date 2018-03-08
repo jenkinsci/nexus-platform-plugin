@@ -37,7 +37,7 @@ class IqPolicyEvaluatorWorkflowStep
 {
   String iqStage
 
-  ApplicationSelectType applicationSelectType
+  ApplicationSelectType applicationSelectTypePost
 
   List<ScanPattern> iqScanPatterns
 
@@ -67,14 +67,15 @@ class IqPolicyEvaluatorWorkflowStep
     this.jobCredentialsId = jobCredentialsId
   }
 
+
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage,
-                                final ApplicationSelectType applicationSelectType,
+                                final ApplicationSelectType applicationSelectTypePost,
                                 final String listAppId,
                                 final String manualAppId
                                 ) {
     this.iqStage = iqStage
-    this.applicationSelectType = ApplicationSelectType.backfillApplicationSelectType(applicationSelectType, listAppId,
+    this.applicationSelectTypePost = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
         manualAppId)
   }
 
@@ -133,6 +134,11 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
+    FormValidation doCheckApplicationSelectTypePost(@QueryParameter ApplicationSelectType value) {
+      FormValidation.ok()
+    }
+
+    @Override
     FormValidation doCheckFailBuildOnNetworkError(@QueryParameter final String value) {
       FormValidation.validateRequired(value)
     }
@@ -147,6 +153,11 @@ class IqPolicyEvaluatorWorkflowStep
     FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
+    }
+
+    @Override
+    ApplicationSelectType doFillApplicationSelectTypePost(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+      ApplicationSelectType.applicationSelectTypeIfNullFactory(null,"bob")
     }
   }
 }
