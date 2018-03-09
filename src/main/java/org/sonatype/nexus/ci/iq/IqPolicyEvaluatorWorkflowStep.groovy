@@ -37,7 +37,11 @@ class IqPolicyEvaluatorWorkflowStep
 {
   String iqStage
 
-  ApplicationSelectType applicationSelectTypePost
+  String applicationSelectTypePost
+
+  String listAppId
+
+  String manualAppId
 
   List<ScanPattern> iqScanPatterns
 
@@ -67,16 +71,28 @@ class IqPolicyEvaluatorWorkflowStep
     this.jobCredentialsId = jobCredentialsId
   }
 
+  @DataBoundSetter
+  public void setApplicationSelectTypePost(final String applicationSelectTypePost) {
+    this.applicationSelectTypePost = applicationSelectTypePost
+  }
+
 
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage,
-                                final ApplicationSelectType applicationSelectTypePost,
+                                final String applicationSelectTypePost,
                                 final String listAppId,
                                 final String manualAppId
                                 ) {
     this.iqStage = iqStage
-    this.applicationSelectTypePost = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
-        manualAppId)
+    this.applicationSelectTypePost = applicationSelectTypePost
+    if(applicationSelectTypePost == 'select') {
+      this.listAppId = listAppId
+      this.manualAppId = ''
+    }
+    else {
+      this.listAppId = ''
+      this.manualAppId = manualAppId
+    }
   }
 
   @Extension
@@ -134,7 +150,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doCheckApplicationSelectTypePost(@QueryParameter ApplicationSelectType value) {
+    FormValidation doCheckApplicationSelectTypePost(@QueryParameter String applicationSelectTypePost) {
       FormValidation.ok()
     }
 
@@ -153,11 +169,6 @@ class IqPolicyEvaluatorWorkflowStep
     FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
-    }
-
-    @Override
-    ApplicationSelectType doFillApplicationSelectTypePost(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      ApplicationSelectType.applicationSelectTypeIfNullFactory(null,"bob")
     }
   }
 }

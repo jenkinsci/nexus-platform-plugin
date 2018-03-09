@@ -37,7 +37,8 @@ class IqPolicyEvaluatorUtil
                                                     final TaskListener listener)
   {
     try {
-      checkArgument(iqPolicyEvaluator.iqStage && iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId(),
+      String applicationId = getAppId(iqPolicyEvaluator.applicationSelectTypePost, iqPolicyEvaluator.listAppId, iqPolicyEvaluator.manualAppId)
+      checkArgument(iqPolicyEvaluator.iqStage && applicationId,
           'Arguments iqApplication and iqStage are mandatory')
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
@@ -52,29 +53,28 @@ class IqPolicyEvaluatorUtil
       def proprietaryConfig =
           rethrowNetworkErrors {
             iqClient.getProprietaryConfigForApplicationEvaluation(
-                iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId())
+                applicationId)
           }
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId(), iqPolicyEvaluator.iqStage,
+          getRemoteScanner(applicationId, iqPolicyEvaluator.iqStage,
               expandedScanPatterns,
               expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = rethrowNetworkErrors {
-        iqClient.evaluateApplication(iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId(),
+        iqClient.evaluateApplication(applicationId,
             iqPolicyEvaluator.iqStage, scanResult)
       }
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
 
-      Result result = handleEvaluationResult(evaluationResult, listener,
-          iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId())
+      Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
       run.setResult(result)
       if (result == Result.FAILURE) {
         throw new PolicyEvaluationException(
             Messages.
-                IqPolicyEvaluation_EvaluationFailed(iqPolicyEvaluator.getApplicationSelectTypePost().getApplicationId()),
+                IqPolicyEvaluation_EvaluationFailed(applicationId),
             evaluationResult)
       }
 
@@ -85,6 +85,14 @@ class IqPolicyEvaluatorUtil
     }
   }
 
+  private static String getAppId(String value, String listAppId, String manualAppID){
+    if(value == 'select'){
+      return manualAppID
+    }
+    else{
+      return listAppId
+    }
+  }
   private static handleNetworkException(final boolean failBuildOnNetworkError, final IqNetworkException e,
                                     final TaskListener listener, final Run run)
   {

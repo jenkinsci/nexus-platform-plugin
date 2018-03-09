@@ -41,13 +41,13 @@ class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, SimpleBuildStep
 {
-  // Must keep this for backward compatibility (XStream de-serializes directly to member variables)
-  @Deprecated
-  private transient String billOfMaterialsToken
-
   String iqStage
 
-  ApplicationSelectType applicationSelectTypePost
+  String applicationSelectTypePost
+
+  String listAppId
+
+  String manualAppId
 
   List<ScanPattern> iqScanPatterns
 
@@ -60,7 +60,7 @@ class IqPolicyEvaluatorBuildStep
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
-                             final ApplicationSelectType applicationSelectTypePost,
+                             final String applicationSelectTypePost,
                              final String listAppId,
                              final String manualAppId,
                              final List<ScanPattern> iqScanPatterns,
@@ -72,18 +72,18 @@ class IqPolicyEvaluatorBuildStep
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.moduleExcludes = moduleExcludes
-    this.applicationSelectTypePost = ApplicationSelectType.backfillApplicationSelectType(applicationSelectTypePost, listAppId,
-        manualAppId)
+    this.applicationSelectTypePost = applicationSelectTypePost
     this.iqStage = iqStage
+    if(applicationSelectTypePost == 'select') {
+      this.listAppId = listAppId
+      this.manualAppId = ''
+    }
+    else {
+      this.listAppId = ''
+      this.manualAppId = manualAppId
+    }
   }
 
-  public ApplicationSelectType getApplicationSelectType() {
-    // If applicationSelectType is null that means we have a older version of config.xml
-    // and list/billOfMaterialsToken should be used so we may need to create a new one here
-    applicationSelectType =
-        ApplicationSelectType.applicationSelectTypeIfNullFactory(applicationSelectType, billOfMaterialsToken)
-    return applicationSelectType
-  }
 
   @Override
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
@@ -118,7 +118,7 @@ class IqPolicyEvaluatorBuildStep
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
-    @Override
+   @Override
     FormValidation doCheckListAppId(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
@@ -135,17 +135,12 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ApplicationSelectType doFillApplicationSelectTypePost(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      ApplicationSelectType.applicationSelectTypeIfNullFactory(null,"bob")
-    }
-
-    @Override
-    FormValidation doCheckScanPattern(@QueryParameter String value) {
+    FormValidation doCheckApplicationSelectTypePost(@QueryParameter String applicationSelectTypePost) {
       FormValidation.ok()
     }
 
     @Override
-    FormValidation doCheckApplicationSelectTypePost(@QueryParameter ApplicationSelectType value) {
+    FormValidation doCheckScanPattern(@QueryParameter String value) {
       FormValidation.ok()
     }
 

@@ -18,7 +18,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
-import org.sonatype.nexus.ci.iq.ApplicationSelectType
+
 import org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 import org.sonatype.nexus.ci.nxrm.ComponentUploader
 import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
