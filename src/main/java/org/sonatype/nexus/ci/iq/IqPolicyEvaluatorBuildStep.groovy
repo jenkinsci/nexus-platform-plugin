@@ -43,11 +43,11 @@ class IqPolicyEvaluatorBuildStep
 {
   String iqStage
 
-  String applicationSelectTypePost
+  String applicationSelectTypePost = 'select'
 
-  String listAppId
+  String listAppId = ''
 
-  String manualAppId
+  String manualAppId = ''
 
   List<ScanPattern> iqScanPatterns
 
@@ -56,6 +56,16 @@ class IqPolicyEvaluatorBuildStep
   Boolean failBuildOnNetworkError
 
   String jobCredentialsId
+
+  @Override
+  String getApplicationId(){
+    if (value == 'select') {
+      return manualAppId
+    }
+    else {
+      return listAppId
+    }
+  }
 
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
@@ -74,7 +84,7 @@ class IqPolicyEvaluatorBuildStep
     this.moduleExcludes = moduleExcludes
     this.applicationSelectTypePost = applicationSelectTypePost
     this.iqStage = iqStage
-    if(applicationSelectTypePost == 'select') {
+    if (applicationSelectTypePost == 'select') {
       this.listAppId = listAppId
       this.manualAppId = ''
     }
@@ -83,7 +93,6 @@ class IqPolicyEvaluatorBuildStep
       this.manualAppId = manualAppId
     }
   }
-
 
   @Override
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
@@ -118,7 +127,7 @@ class IqPolicyEvaluatorBuildStep
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
-   @Override
+    @Override
     FormValidation doCheckListAppId(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }

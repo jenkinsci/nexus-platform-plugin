@@ -37,11 +37,11 @@ class IqPolicyEvaluatorWorkflowStep
 {
   String iqStage
 
-  String applicationSelectTypePost
+  String applicationSelectTypePost = 'select'
 
-  String listAppId
+  String listAppId = ''
 
-  String manualAppId
+  String manualAppId = ''
 
   List<ScanPattern> iqScanPatterns
 
@@ -71,21 +71,26 @@ class IqPolicyEvaluatorWorkflowStep
     this.jobCredentialsId = jobCredentialsId
   }
 
-  @DataBoundSetter
-  public void setApplicationSelectTypePost(final String applicationSelectTypePost) {
-    this.applicationSelectTypePost = applicationSelectTypePost
+  @Override
+  String getApplicationId(){
+    if (value == 'select') {
+      return manualAppId
+    }
+    else {
+      return listAppId
+    }
   }
-
 
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage,
                                 final String applicationSelectTypePost,
                                 final String listAppId,
                                 final String manualAppId
-                                ) {
+  )
+  {
     this.iqStage = iqStage
     this.applicationSelectTypePost = applicationSelectTypePost
-    if(applicationSelectTypePost == 'select') {
+    if (applicationSelectTypePost == 'select') {
       this.listAppId = listAppId
       this.manualAppId = ''
     }

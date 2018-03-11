@@ -22,6 +22,8 @@ interface IqPolicyEvaluator
 
   String getManualAppId()
 
+  String getApplicationId()
+
   List<ScanPattern> getIqScanPatterns()
 
   List<ModuleExclude> getModuleExcludes()

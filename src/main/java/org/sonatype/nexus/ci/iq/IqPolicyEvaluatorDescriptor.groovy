@@ -15,7 +15,6 @@ package org.sonatype.nexus.ci.iq
 import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
-import org.kohsuke.stapler.QueryParameter
 
 interface IqPolicyEvaluatorDescriptor
 {

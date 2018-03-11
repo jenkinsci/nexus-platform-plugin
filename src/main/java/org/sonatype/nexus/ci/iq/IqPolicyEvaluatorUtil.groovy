@@ -37,7 +37,7 @@ class IqPolicyEvaluatorUtil
                                                     final TaskListener listener)
   {
     try {
-      String applicationId = getAppId(iqPolicyEvaluator.applicationSelectTypePost, iqPolicyEvaluator.listAppId, iqPolicyEvaluator.manualAppId)
+      String applicationId = iqPolicyEvaluator.getApplicationId()
       checkArgument(iqPolicyEvaluator.iqStage && applicationId,
           'Arguments iqApplication and iqStage are mandatory')
       LoggerBridge loggerBridge = new LoggerBridge(listener)
@@ -85,14 +85,6 @@ class IqPolicyEvaluatorUtil
     }
   }
 
-  private static String getAppId(String value, String listAppId, String manualAppID){
-    if(value == 'select'){
-      return manualAppID
-    }
-    else{
-      return listAppId
-    }
-  }
   private static handleNetworkException(final boolean failBuildOnNetworkError, final IqNetworkException e,
                                     final TaskListener listener, final Run run)
   {
