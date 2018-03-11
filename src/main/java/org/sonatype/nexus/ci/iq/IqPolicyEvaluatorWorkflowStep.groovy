@@ -73,7 +73,7 @@ class IqPolicyEvaluatorWorkflowStep
 
   @Override
   String getApplicationId(){
-    if (applicationSelectTypePost == 'select') {
+    if (applicationSelectTypePost == IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE) {
       return listAppId
     }
     else {
@@ -90,7 +90,7 @@ class IqPolicyEvaluatorWorkflowStep
   {
     this.iqStage = iqStage
     this.applicationSelectTypePost = applicationSelectTypePost
-    if (applicationSelectTypePost == 'select') {
+    if (applicationSelectTypePost == IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE) {
       this.listAppId = listAppId
       this.manualAppId = ''
     }
