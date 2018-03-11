@@ -79,7 +79,9 @@ class IqPolicyEvaluatorIntegrationTest
                 'stage("Example") { \n' +
                 'steps { \n' +
                   'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-                  'nexusPolicyEvaluation iqApplication: \'app\', iqStage: \'stage\'\n' +
+                  'nexusPolicyEvaluation failBuildOnNetworkError: false,  applicationSelectTypePost: \'select\', ' +
+                  'listAppId: \'app\', manualAppId: \'\', ' +
+                  'iqStage: \'stage\'\n'+
                 '} \n' +
               '} \n' +
             '} \n' +
@@ -103,7 +105,8 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false,  applicationSelectTypePost: \'select\', ' +
+          'listAppId: \'app\', manualAppId: \'\', ' +
           'iqStage: \'stage\'\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
           'echo "affected:" + result.affectedComponentCount\n' +
@@ -135,7 +138,7 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Freestyle build (happy path)'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', 'app', '', [], [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', '', [], [], false, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -158,7 +161,8 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, applicationSelectTypePost: \'select\', ' +
+          'listAppId: \'app\', manualAppId: \'\', ' +
           'iqStage: \'stage\'\n' +
           'echo \'result-after-failure:\' + result' +
           '}\n')
@@ -197,7 +201,8 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'nexusPolicyEvaluation failBuildOnNetworkError: false, applicationSelectTypePost: \'select\', ' +
+          'listAppId: \'app\', manualAppId: \'\', ' +
           'iqStage: \'stage\'\n' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
@@ -213,7 +218,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', 'app', '', [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', '', [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -234,7 +239,8 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false,  applicationSelectTypePost: \'select\', ' +
+          'listAppId: \'app\', manualAppId: \'\', ' +
           'iqStage: \'stage\'\n' +
           'echo "next" \n' +
           '}\n')
@@ -262,8 +268,9 @@ class IqPolicyEvaluatorIntegrationTest
           'node { \n' +
             'writeFile file: \'dummy.txt\', text: \'dummy\' \n' +
             'try { \n' +
-              'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
-                'iqStage: \'stage\' \n' +
+              'nexusPolicyEvaluation failBuildOnNetworkError: false, applicationSelectTypePost: \'select\', ' +
+              'listAppId: \'sample-app\', manualAppId: \'\', ' +
+              'iqStage: \'stage\' \n' +
             '} catch (error) { \n' +
               'def result = error.policyEvaluation \n' +
               'echo "url:" + result.applicationCompositionReportUrl\n' +
@@ -298,7 +305,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', 'app', '', [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'select', 'app', '', [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -321,7 +328,8 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed without stage'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false,  applicationSelectTypePost: \'select\', ' +
+          'listAppId: \'app\', manualAppId: \'\'\n' +
           'echo \'result-after-failure:\' + result' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
