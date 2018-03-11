@@ -94,11 +94,12 @@ class ComToOrgMigratorIntegrationTest
     when:
       def project = (FreeStyleProject)jenkins.jenkins.getItem('Freestyle-IQ')
       def buildStep = (IqPolicyEvaluatorBuildStep)project.builders[0]
-      buildStep.applicationSelectType = ApplicationSelectType.applicationSelectTypeIfNullFactory(null, 'sample-app') //JIMBO
 
     then: 'the fields are properly migrated'
       buildStep.iqStage == 'build'
-      //JIMBO:buildStep.applicationSelectType.applicationId == 'sample-app'
+      buildStep.manualAppId == ''
+      buildStep.applicationSelectTypePost == 'select'
+      buildStep.listAppId == 'sample-app'
       buildStep.failBuildOnNetworkError
       buildStep.jobCredentialsId == 'user2'
       buildStep.iqScanPatterns.size() == 1

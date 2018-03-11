@@ -43,11 +43,11 @@ class IqPolicyEvaluatorBuildStep
 {
   String iqStage
 
-  String applicationSelectTypePost = 'select'
+  String applicationSelectTypePost
 
-  String listAppId = ''
+  String listAppId
 
-  String manualAppId = ''
+  String manualAppId
 
   List<ScanPattern> iqScanPatterns
 
@@ -59,11 +59,11 @@ class IqPolicyEvaluatorBuildStep
 
   @Override
   String getApplicationId(){
-    if (value == 'select') {
-      return manualAppId
+    if (applicationSelectTypePost == 'select') {
+      return listAppId
     }
     else {
-      return listAppId
+      return manualAppId
     }
   }
 
