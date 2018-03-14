@@ -142,7 +142,7 @@ class IqPolicyEvaluatorWorkflowStep
       if (FormValidation.ok() == val) {
         if (!IqUtil.
             verifyOrCreateApplication(NxiqConfiguration.serverUrl.toString(), jobCredentialsId, job, value)) {
-          FormValidation.error('Not a valid ID')
+          FormValidation.error(Messages._IqPolicyEvaluation_ManualApplicationVerificationFailed())
         }
       }
       return val
