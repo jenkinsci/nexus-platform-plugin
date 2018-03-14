@@ -93,6 +93,29 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'applicationId' | Kind.OK    | '<div/>'
   }
 
+  def 'it validates that manual application ID is required'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+      def job = Mock(Job)
+
+
+    when:
+      "validating application ID $applicationId"
+      def validation = descriptor.doCheckManualAppId(applicationId, '', job)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      applicationId   | kind       | message
+      ''              | Kind.ERROR | 'Required'
+      null            | Kind.ERROR | 'Required'
+      'applicationId' | Kind.OK    | '<div/>'
+  }
+
   def 'it validates that scan pattern is not required'() {
     setup:
       def descriptor = getDescriptor()
@@ -223,5 +246,24 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'
+  }
+
+  def 'it validates that verifyOrCreateApplication'() {
+    setup:
+
+      def descriptor = getDescriptor()
+      GroovyMock(FormUtil, global: true)
+      GroovyMock(NxiqConfiguration, global: true)
+      NxiqConfiguration.serverUrl >> URI.create("http://server/path")
+      NxiqConfiguration.credentialsId >> ''
+      def job = Mock(Job)
+      GroovyMock(IqUtil, global: true)
+
+    when:
+      "validating application ID test_app"
+      descriptor.doCheckManualAppId('test_app', 'credentialsId', job)
+
+    then:
+      1 * IqUtil.verifyOrCreateApplication('http://server/path', 'credentialsId', job, 'test_app')
   }
 }

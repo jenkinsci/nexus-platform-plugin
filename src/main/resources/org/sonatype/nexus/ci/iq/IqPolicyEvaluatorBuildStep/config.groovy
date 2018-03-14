@@ -48,13 +48,7 @@ f.section(title: descriptor.displayName) {
   f.entry(title: _(Messages.IqPolicyEvaluation_Stage()), field: 'iqStage') {
     f.select()
   }
-
-  //Instance is null if this is a new Item.  We need to set a default.
-  String manualAppId = ''
-  if (instance != null) {
-    manuanlAppId = instance.manualAppId
-  }
-  f.radioBlock(name: 'applicationSelectTypePost', value: IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, checked: manualAppId == '',
+  f.radioBlock(name: 'applicationSelectTypePost', value: IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, checked: instance == null || instance.manualAppId == '',
       title: _(Messages.IqPolicyEvaluation_SelectApplication()),
       inline: 'true') {
     f.nested {
@@ -63,7 +57,7 @@ f.section(title: descriptor.displayName) {
       }
     }
   }
-  f.radioBlock(name: 'applicationSelectTypePost', value: IqPolicyEvaluator.MANUAL_APPLICATION_SELECT_TYPE, checked: manualAppId != '',
+  f.radioBlock(name: 'applicationSelectTypePost', value: IqPolicyEvaluator.MANUAL_APPLICATION_SELECT_TYPE, checked: instance != null && instance.manualAppId != '',
       title: _(Messages.IqPolicyEvaluation_ManualApplication()),
       inline: 'true') {
     f.nested {

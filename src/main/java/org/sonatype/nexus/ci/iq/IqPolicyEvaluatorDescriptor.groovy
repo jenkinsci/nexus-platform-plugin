@@ -24,9 +24,7 @@ interface IqPolicyEvaluatorDescriptor
 
   FormValidation doCheckListAppId(String value)
 
-  FormValidation doCheckManualAppId(String value)
-
-  FormValidation doCheckApplicationSelectTypePost(String applicationSelectTypePost)
+  FormValidation doCheckManualAppId(String value, String jobCredentialsId, Job job)
 
   ListBoxModel doFillListAppIdItems(String jobCredentialsId, Job job)
 

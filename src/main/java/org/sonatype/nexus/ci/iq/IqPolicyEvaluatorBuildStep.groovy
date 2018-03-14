@@ -16,6 +16,8 @@ import javax.annotation.Nonnull
 import javax.annotation.Nullable
 import javax.annotation.ParametersAreNonnullByDefault
 
+import com.sonatype.nexus.api.iq.IqClient
+
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -133,19 +135,23 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    FormValidation doCheckManualAppId(@QueryParameter String value) {
-      FormValidation.validateRequired(value)
+    FormValidation doCheckManualAppId(@QueryParameter String value, @QueryParameter String jobCredentialsId,
+                                      @AncestorInPath Job job)
+    {
+      FormValidation val = FormValidation.validateRequired(value)
+      if (FormValidation.ok() == val) {
+        if (!IqUtil.
+            verifyOrCreateApplication(NxiqConfiguration.serverUrl.toString(), jobCredentialsId, job, value)) {
+          FormValidation.error('Not a valid ID')
+        }
+      }
+      return val
     }
 
     @Override
     ListBoxModel doFillListAppIdItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
       IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
-    }
-
-    @Override
-    FormValidation doCheckApplicationSelectTypePost(@QueryParameter String applicationSelectTypePost) {
-      FormValidation.ok()
     }
 
     @Override

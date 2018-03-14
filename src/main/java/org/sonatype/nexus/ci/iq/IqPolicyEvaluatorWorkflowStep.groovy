@@ -135,8 +135,17 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doCheckManualAppId(@QueryParameter String value) {
-      FormValidation.validateRequired(value)
+    FormValidation doCheckManualAppId(@QueryParameter String value, @QueryParameter String jobCredentialsId,
+                                      @AncestorInPath Job job)
+    {
+      FormValidation val = FormValidation.validateRequired(value)
+      if (FormValidation.ok() == val) {
+        if (!IqUtil.
+            verifyOrCreateApplication(NxiqConfiguration.serverUrl.toString(), jobCredentialsId, job, value)) {
+          FormValidation.error('Not a valid ID')
+        }
+      }
+      return val
     }
 
     @Override
@@ -151,11 +160,6 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     FormValidation doCheckModuleExclude(@QueryParameter final String value) {
-      FormValidation.ok()
-    }
-
-    @Override
-    FormValidation doCheckApplicationSelectTypePost(@QueryParameter String applicationSelectTypePost) {
       FormValidation.ok()
     }
 
