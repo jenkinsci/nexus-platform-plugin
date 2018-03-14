@@ -13,7 +13,7 @@
 package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
@@ -202,7 +202,7 @@ class Nxrm2ConfigurationTest
   def 'it tests valid server credentials'() {
     when:
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
-      def client = Mock(RepositoryManagerClient.class)
+      def client = Mock(RepositoryManagerV2Client.class)
       client.getRepositoryList() >> repositories
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
       def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
@@ -255,7 +255,7 @@ class Nxrm2ConfigurationTest
   def 'it tests invalid server credentials'() {
     when:
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
-      def client = Mock(RepositoryManagerClient.class)
+      def client = Mock(RepositoryManagerV2Client.class)
       client.getRepositoryList() >> { throw new RepositoryManagerException("something went wrong") }
       RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
       def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration.class)

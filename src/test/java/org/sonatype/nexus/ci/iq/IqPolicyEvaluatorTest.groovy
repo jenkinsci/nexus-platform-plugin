@@ -86,7 +86,8 @@ class IqPolicyEvaluatorTest
 
   def 'it retrieves proprietary config followed by remote scan followed by evaluation in correct order (happy path)'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern("*.jar")], [], false, null)
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "select", "appId", "", [new ScanPattern("*.jar")], [],
+          false, null)
       def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, emptyList(), reportUrl)
       def remoteScanner = Mock(RemoteScanner)
 
@@ -108,7 +109,8 @@ class IqPolicyEvaluatorTest
   def 'it expands environment variables for scan pattern'() {
     setup:
       def remoteScanner = Mock(RemoteScanner)
-      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [new ScanPattern('/path1/$SCAN_PATTERN/path2/')],
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "select", "appId", "",
+          [new ScanPattern('/path1/$SCAN_PATTERN/path2/')],
           [], false, "131-cred")
 
     when:
@@ -123,7 +125,7 @@ class IqPolicyEvaluatorTest
   def 'it ignores when no environment variables set for scan pattern'() {
     setup:
       def remoteScanner = Mock(RemoteScanner)
-      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId",
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "select", "appId", "",
           [new ScanPattern('/path1/$NONEXISTENT_SCAN_PATTERN/path2/')], [], false, "131-cred")
 
     when:
@@ -138,7 +140,7 @@ class IqPolicyEvaluatorTest
   def 'it passes module excludes to the remote scanner'() {
     setup:
       def remoteScanner = Mock(RemoteScanner)
-      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [],
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "select", "appId", "", [],
           [new ModuleExclude('/path1/$NONEXISTENT_MODULE_EXCLUDE/path2/')], false, "131-cred")
 
     when:
@@ -154,7 +156,7 @@ class IqPolicyEvaluatorTest
   def 'it expands environment variables for module exclude'() {
     setup:
       def remoteScanner = Mock(RemoteScanner)
-      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "appId", [],
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", "select", "appId", "", [],
           [new ModuleExclude('/path1/$MODULE_EXCLUDE/path2/')], false, "131-cred")
 
     when:
@@ -170,7 +172,7 @@ class IqPolicyEvaluatorTest
   def 'exception handling (part 1)'() {
     setup:
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> { throw exception }
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [],
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')
 
     when:
@@ -192,7 +194,7 @@ class IqPolicyEvaluatorTest
   def 'exception handling (part 2)'() {
     setup:
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> { throw exception }
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [],
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')
       PrintStream logger = Mock()
       TaskListener listener = Mock() {
@@ -216,7 +218,8 @@ class IqPolicyEvaluatorTest
   def 'it throws an exception when remote scanner fails'() {
     setup:
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
       RemoteScanner remoteScanner = Mock()
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
@@ -233,7 +236,7 @@ class IqPolicyEvaluatorTest
   def 'evaluation networking exceptions are suppressed by failBuildOnNetworkError'() {
     setup:
       def failBuildOnNetworkError = false
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [],
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')
 
     when:
@@ -247,7 +250,8 @@ class IqPolicyEvaluatorTest
 
   def 'global no credentials are passed to the client builder when no job credentials provided'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], true,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          true,
           jobCredentials)
 
     when:
@@ -262,7 +266,8 @@ class IqPolicyEvaluatorTest
 
   def 'evaluation result outcome determines build status'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
 
     when:
@@ -282,7 +287,8 @@ class IqPolicyEvaluatorTest
 
   def 'evaluation throws exception when build results in failure'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
       def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0,
           [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
@@ -302,7 +308,8 @@ class IqPolicyEvaluatorTest
 
   def 'prints an error message on failure'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()
@@ -328,7 +335,8 @@ class IqPolicyEvaluatorTest
 
   def 'prints a log message on warnings'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()
@@ -351,7 +359,8 @@ class IqPolicyEvaluatorTest
 
   def 'prints a summary on success'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', 'appId', [new ScanPattern('*.jar')], [], false,
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'appId', '', [new ScanPattern('*.jar')], [],
+          false,
           '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()

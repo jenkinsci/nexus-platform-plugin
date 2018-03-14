@@ -77,7 +77,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', IqPolicyEvaluator.SELECT_APPLICATION_SELECT_TYPE, 'app', '', [], [], false, 'cred-id'))
       configureJenkins()
 
     and: 'a mock IQ server stub'
@@ -102,7 +102,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     when: 'the build is scheduled'
       project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
           "writeFile file: 'dummy.txt', text: 'dummy'\n" +
-          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'\n" +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, applicationSelectTypePost: \'select\' " +
+          ",listAppId: \'app\', manualAppId: \'\', iqStage: 'stage'\n" +
           "}\n")
       def build = project.scheduleBuild2(0).get()
 

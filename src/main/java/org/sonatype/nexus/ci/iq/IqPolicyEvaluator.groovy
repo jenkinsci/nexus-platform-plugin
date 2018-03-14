@@ -14,9 +14,19 @@ package org.sonatype.nexus.ci.iq
 
 interface IqPolicyEvaluator
 {
+  static String MANUAL_APPLICATION_SELECT_TYPE = 'manual'
+
+  static String SELECT_APPLICATION_SELECT_TYPE = 'select'
+
   String getIqStage()
 
-  String getIqApplication()
+  String getApplicationSelectTypePost()
+
+  String getListAppId()
+
+  String getManualAppId()
+
+  String getApplicationId()
 
   List<ScanPattern> getIqScanPatterns()
 
