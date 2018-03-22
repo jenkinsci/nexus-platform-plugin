@@ -14,8 +14,8 @@ package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.ServerConfig
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
-import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2ClientBuilder
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
@@ -27,7 +27,7 @@ import jenkins.model.Jenkins
 @SuppressWarnings(value = ['AbcMetric'])
 class RepositoryManagerClientUtil
 {
-  static RepositoryManagerClient newRepositoryManagerClient(String url, String credentialsId)
+  static RepositoryManagerV2Client newRepositoryManagerClient(String url, String credentialsId)
       throws URISyntaxException
   {
     def uri = new URI(url)
@@ -47,7 +47,7 @@ class RepositoryManagerClientUtil
 
     def serverConfig = authentication != null ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
 
-    def clientBuilder = RepositoryManagerClientBuilder.create().withServerConfig(serverConfig)
+    def clientBuilder = RepositoryManagerV2ClientBuilder.create().withServerConfig(serverConfig)
 
     def jenkinsProxy = Jenkins.instance.proxy
 
