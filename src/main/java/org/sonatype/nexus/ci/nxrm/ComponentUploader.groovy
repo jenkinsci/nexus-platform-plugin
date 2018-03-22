@@ -13,8 +13,8 @@
 package org.sonatype.nexus.ci.nxrm
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
-import com.sonatype.nexus.api.repository.GAV
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.GAV
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxrmConfiguration
@@ -86,7 +86,7 @@ class ComponentUploader
         def mavenCoordinate = new GAV(envVars.expand(component.Coordinate.groupId),
             envVars.expand(component.Coordinate.artifactId), envVars.expand(component.Coordinate.version),
             envVars.expand(component.Coordinate.packaging))
-        def mavenFile = new com.sonatype.nexus.api.repository.MavenAsset(localFile,
+        def mavenFile = new com.sonatype.nexus.api.repository.v2.MavenAsset(localFile,
             envVars.expand(component.Asset.extension), envVars.expand(component.Asset.classifier))
 
         try {
@@ -112,7 +112,7 @@ class ComponentUploader
     logger.println('Successfully Uploaded Maven Assets')
   }
 
-  RepositoryManagerClient getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration)
+  RepositoryManagerV2Client getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration)
   {
     try {
       return RepositoryManagerClientUtil.newRepositoryManagerClient(nexusConfiguration.serverUrl,

@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.repository.RepositoryInfo
+import com.sonatype.nexus.api.repository.v2.RepositoryInfo
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.config.NxrmConfiguration
