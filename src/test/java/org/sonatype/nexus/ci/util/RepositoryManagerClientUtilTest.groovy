@@ -13,8 +13,8 @@
 package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.common.ProxyConfig
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
-import com.sonatype.nexus.api.repository.RepositoryManagerClientBuilder
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2ClientBuilder
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
@@ -58,7 +58,7 @@ class RepositoryManagerClientUtilTest
       def credentialsId = null
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      RepositoryManagerClient client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerV2Client client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
     then:
       client != null
   }
@@ -69,16 +69,16 @@ class RepositoryManagerClientUtilTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      RepositoryManagerClient client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerV2Client client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
     then:
       client != null
   }
 
   def 'it creates a client with proxy when configured'() {
     setup:
-      GroovyMock(RepositoryManagerClientBuilder, global: true)
-      def clientBuilder = Mock(RepositoryManagerClientBuilder)
-      RepositoryManagerClientBuilder.create() >> clientBuilder
+      GroovyMock(RepositoryManagerV2ClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerV2ClientBuilder)
+      RepositoryManagerV2ClientBuilder.create() >> clientBuilder
       def url = 'http://foo.com'
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
@@ -98,9 +98,9 @@ class RepositoryManagerClientUtilTest
 
   def 'it creates a client with proxy with authentication when configured'() {
     setup:
-      GroovyMock(RepositoryManagerClientBuilder, global: true)
-      def clientBuilder = Mock(RepositoryManagerClientBuilder)
-      RepositoryManagerClientBuilder.create() >> clientBuilder
+      GroovyMock(RepositoryManagerV2ClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerV2ClientBuilder)
+      RepositoryManagerV2ClientBuilder.create() >> clientBuilder
       def url = 'http://foo.com'
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
