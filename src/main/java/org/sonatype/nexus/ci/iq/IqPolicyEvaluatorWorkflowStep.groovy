@@ -58,7 +58,7 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @DataBoundSetter
-  public void setFailBuildOnNetworkError(final Boolean failBuildOnNetworkError) {
+  public void setFailBuildOnNetworkError(final boolean failBuildOnNetworkError) {
     this.failBuildOnNetworkError = failBuildOnNetworkError
   }
 
