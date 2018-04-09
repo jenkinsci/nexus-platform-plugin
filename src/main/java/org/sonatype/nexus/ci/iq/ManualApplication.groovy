@@ -12,17 +12,30 @@
  */
 package org.sonatype.nexus.ci.iq
 
-interface IqPolicyEvaluator
+import hudson.Extension
+import org.jenkinsci.Symbol
+import org.kohsuke.stapler.DataBoundConstructor
+
+class ManualApplication
+    extends IqApplication
 {
-  String getIqStage()
+  @DataBoundConstructor
+  ManualApplication(final String applicationId) {
+    super(applicationId)
+  }
 
-  IqApplication getIqApplication()
+  @Symbol('manualApplication')
+  @Extension
+  static class DescriptorImpl
+      extends IqApplication.IqApplicationDescriptor
+  {
+    DescriptorImpl() {
+      super(ManualApplication)
+    }
 
-  List<ScanPattern> getIqScanPatterns()
-
-  List<ModuleExclude> getModuleExcludes()
-
-  Boolean getFailBuildOnNetworkError()
-
-  String getJobCredentialsId()
+    @Override
+    String getDisplayName() {
+      return Messages.IqPolicyEvaluation_ManualApplication()
+    }
+  }
 }

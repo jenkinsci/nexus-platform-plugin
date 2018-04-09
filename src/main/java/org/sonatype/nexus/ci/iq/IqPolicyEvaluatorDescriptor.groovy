@@ -22,10 +22,6 @@ interface IqPolicyEvaluatorDescriptor
 
   ListBoxModel doFillIqStageItems(String jobCredentialsId, Job job)
 
-  FormValidation doCheckIqApplication(String value)
-
-  ListBoxModel doFillIqApplicationItems(String jobCredentialsId, Job job)
-
   FormValidation doCheckScanPattern(String scanPattern)
 
   FormValidation doCheckModuleExclude(String moduleExclude)

@@ -38,6 +38,7 @@ class ComToOrgMigratorIntegrationTest
   public JenkinsRule jenkins
 
   private InternalIqClient iqClient
+
   private ComponentUploader componentUploader
 
   def setup() {
@@ -93,22 +94,20 @@ class ComToOrgMigratorIntegrationTest
     when:
       def project = (FreeStyleProject)jenkins.jenkins.getItem('Freestyle-IQ')
       def buildStep = (IqPolicyEvaluatorBuildStep)project.builders[0]
+      def build = project.scheduleBuild2(0).get()
 
-    then: 'the fields are properly migrated'
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
+          'http://server/link/to/report')
       buildStep.iqStage == 'build'
-      buildStep.iqApplication == 'sample-app'
+      buildStep.iqApplication.applicationId == 'sample-app'
       buildStep.failBuildOnNetworkError
       buildStep.jobCredentialsId == 'user2'
       buildStep.iqScanPatterns.size() == 1
       buildStep.iqScanPatterns[0].scanPattern == 'target/*.jar'
 
-    and: 'a build is run'
-      def build = project.scheduleBuild2(0).get()
-
-    then: 'the application is scanned and evaluated'
-      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
-          'http://server/link/to/report')
 
     then: 'the return code is successful'
       jenkins.assertBuildStatusSuccess(build)
@@ -120,6 +119,7 @@ class ComToOrgMigratorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
