@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.iq.internal.InternalIqClient
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
@@ -51,6 +53,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort())
 
+  def iqClient = Mock(InternalIqClient)
   /**
    * Minimal server mock to allow plugin to succeed
    */
@@ -62,6 +65,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
         .willReturn(okJson('{"scanId":"scanId"}')))
     givenThat(post(urlMatching('/rest/policy/.*'))
         .willReturn(okJson('{}')))
+    givenThat(post(urlMatching('/rest/integration/applications/verifyOrCreate/.*'))
+        .willReturn(okJson('true')))
   }
 
   def configureJenkins() {
@@ -77,7 +82,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
       configureJenkins()
 
     and: 'a mock IQ server stub'
@@ -102,7 +107,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     when: 'the build is scheduled'
       project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
           "writeFile file: 'dummy.txt', text: 'dummy'\n" +
-          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'\n" +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\' " +
+          ", iqStage: 'stage'\n" +
           "}\n")
       def build = project.scheduleBuild2(0).get()
 

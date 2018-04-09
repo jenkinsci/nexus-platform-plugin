@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import com.sonatype.insight.scan.model.Scan
+import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
@@ -35,6 +36,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 
@@ -79,7 +81,8 @@ class IqPolicyEvaluatorIntegrationTest
                 'stage("Example") { \n' +
                 'steps { \n' +
                   'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-                  'nexusPolicyEvaluation iqApplication: \'app\', iqStage: \'stage\'\n' +
+                  'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+                  'iqStage: \'stage\'\n'+
                 '} \n' +
               '} \n' +
             '} \n' +
@@ -87,6 +90,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, [], 'http://server/link/to/report')
@@ -103,7 +107,7 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'select\', ' +
           'iqStage: \'stage\'\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
           'echo "affected:" + result.affectedComponentCount\n' +
@@ -116,6 +120,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
@@ -135,13 +140,14 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Freestyle build (happy path)'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], false, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
@@ -165,31 +171,86 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new IOException("BANG!") }
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
 
     then: 'the build status is unstable and the result is null'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
       build.getLog(100).contains('result-after-failure:null')
+      build.getLog(100).contains('Unable to communicate with IQ Server: ERROR')
+
+    where:
+      description     | failBuildOnNetworkErrorScript
+      'false'         | 'failBuildOnNetworkError: false,'
+      'not supplied'  | ''
+  }
+
+  def 'Pipeline build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'nexusPolicyEvaluation failBuildOnNetworkError: true, iqApplication: \'app\', iqStage: \'stage\'\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'an exception is thrown when getting proprietary config from IQ server'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
+
+    then: 'the build status is failure and the error is logged'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
   }
 
   def 'Freestyle build should set build status to unstable when network error occurs'() {
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new IOException("BANG!") }
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
 
     then: 'the return code is successful'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
   }
 
-  def 'Pipeline build fails when an exception other than IOException occurs'() {
+  def 'Freestyle build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], true, 'cred-id'))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'an exception is thrown when getting proprietary config from IQ server'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
+
+    then: 'the build status is failure and the error is logged'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
+  }
+
+  @Unroll
+  def 'Pipeline build fails when an exception other than IqClientException with IOException occurs with #description'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -203,7 +264,8 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new NullPointerException("CRASH!") }
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the build fails'
      jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -213,14 +275,15 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new NullPointerException("BANG!") }
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the return code is successful'
       jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -234,13 +297,14 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'\n' +
           'echo "next" \n' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -262,8 +326,8 @@ class IqPolicyEvaluatorIntegrationTest
           'node { \n' +
             'writeFile file: \'dummy.txt\', text: \'dummy\' \n' +
             'try { \n' +
-              'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\',' +
-                'iqStage: \'stage\' \n' +
+              'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'sample-app\', ' +
+              'iqStage: \'stage\' \n' +
             '} catch (error) { \n' +
               'def result = error.policyEvaluation \n' +
               'echo "url:" + result.applicationCompositionReportUrl\n' +
@@ -278,6 +342,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -298,13 +363,14 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
       configureJenkins()
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -341,6 +407,47 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the build status is unstable and the result is null'
       jenkins.assertBuildStatus(Result.FAILURE, build)
       build.getLog(99).contains('java.lang.IllegalArgumentException: Arguments iqApplication and iqStage are mandatory')
+  }
+
+  def 'Freestyle build should fail when verify is false'() {
+    given: 'a jenkins project'
+      def failBuildOnNetworkError = false
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> false
+
+    then: 'the build fails'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+  }
+
+  def 'Pipeline build should fail and stop execution when verify is false'() {
+    setup: 'global server URL and globally configured credentials'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'iqStage: \'stage\'\n' +
+          'echo "next" \n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> false
+
+    and: 'the build fails'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      with(build.getLog(100)) {
+        !it.contains('next')
+      }
   }
 
   def configureJenkins() {
