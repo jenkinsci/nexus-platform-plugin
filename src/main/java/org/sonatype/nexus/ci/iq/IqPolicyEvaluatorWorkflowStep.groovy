@@ -37,7 +37,7 @@ class IqPolicyEvaluatorWorkflowStep
 {
   String iqStage
 
-  String iqApplication
+  IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns
 
@@ -67,11 +67,24 @@ class IqPolicyEvaluatorWorkflowStep
     this.jobCredentialsId = jobCredentialsId
   }
 
+  @SuppressWarnings('Instanceof')
+  @DataBoundSetter
+  public void setIqApplication(final Object iqApplication) {
+    if (iqApplication instanceof IqApplication) {
+      this.iqApplication = iqApplication
+    }
+    else if (iqApplication instanceof String) {
+      this.iqApplication = new SelectedApplication(iqApplication)
+    }
+    else {
+      throw new IllegalArgumentException("iqApplication is not a valid format")
+    }
+  }
+
   @DataBoundConstructor
-  IqPolicyEvaluatorWorkflowStep(final String iqStage,
-                                final String iqApplication) {
+  IqPolicyEvaluatorWorkflowStep(final String iqStage)
+  {
     this.iqStage = iqStage
-    this.iqApplication = iqApplication
   }
 
   @Extension
@@ -103,15 +116,6 @@ class IqPolicyEvaluatorWorkflowStep
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
-    @Override
-    FormValidation doCheckIqApplication(@QueryParameter String value) {
-      FormValidation.validateRequired(value)
-    }
-
-    @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
-      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
-    }
 
     @Override
     FormValidation doCheckScanPattern(@QueryParameter final String scanPattern) {
