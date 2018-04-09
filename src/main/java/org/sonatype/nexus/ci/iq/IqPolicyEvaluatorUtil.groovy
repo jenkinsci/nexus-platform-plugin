@@ -88,7 +88,7 @@ class IqPolicyEvaluatorUtil
                                         final TaskListener listener, final Run run)
   {
     def isNetworkError = isNetworkError(e)
-    if (!isNetworkError || isNetworkError && failBuildOnNetworkError) {
+    if (!isNetworkError || failBuildOnNetworkError) {
       throw e
     }
     else {
