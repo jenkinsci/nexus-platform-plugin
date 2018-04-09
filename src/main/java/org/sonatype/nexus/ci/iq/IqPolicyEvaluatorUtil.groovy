@@ -37,39 +37,42 @@ class IqPolicyEvaluatorUtil
                                                     final TaskListener listener)
   {
     try {
-      checkArgument(iqPolicyEvaluator.iqStage && iqPolicyEvaluator.iqApplication,
-          'Arguments iqApplication and iqStage are mandatory')
+      String applicationId = iqPolicyEvaluator.getIqApplication()?.applicationId
+
+      checkArgument(iqPolicyEvaluator.iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
+
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
-          credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
+      def iqClient = IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
+              log: loggerBridge))
+
+      def verified = iqClient.verifyOrCreateApplication(applicationId)
+      checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
       def envVars = run.getEnvironment(listener)
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.moduleExcludes, envVars)
 
-      def proprietaryConfig =
-          rethrowNetworkErrors {
-            iqClient.getProprietaryConfigForApplicationEvaluation(iqPolicyEvaluator.iqApplication)
-          }
+      def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
+
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, expandedScanPatterns,
-              expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+          getRemoteScanner(applicationId, iqPolicyEvaluator.iqStage, expandedScanPatterns, expandedModuleExcludes,
+              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def evaluationResult = rethrowNetworkErrors {
-        iqClient.evaluateApplication(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanResult)
-      }
+      def evaluationResult = iqClient.
+          evaluateApplication(applicationId, iqPolicyEvaluator.iqStage, scanResult)
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
 
-      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication)
+      Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
       run.setResult(result)
       if (result == Result.FAILURE) {
-        throw new PolicyEvaluationException(
-            Messages.IqPolicyEvaluation_EvaluationFailed(iqPolicyEvaluator.iqApplication), evaluationResult)
+        throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
+            evaluationResult)
       }
 
       return evaluationResult

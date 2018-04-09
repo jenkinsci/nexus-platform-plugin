@@ -30,6 +30,16 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
   abstract IqPolicyEvaluatorDescriptor getDescriptor()
 
+  org.sonatype.nexus.ci.iq.SelectedApplication.DescriptorImpl getSelectedApplication()
+  {
+    return (org.sonatype.nexus.ci.iq.SelectedApplication.DescriptorImpl) jenkins.getInstance().getDescriptor(SelectedApplication.class)
+  }
+
+  org.sonatype.nexus.ci.iq.ManualApplication.DescriptorImpl getManualApplication()
+  {
+    return (org.sonatype.nexus.ci.iq.ManualApplication.DescriptorImpl) jenkins.getInstance().getDescriptor(ManualApplication.class)
+  }
+
   def 'it validates that stage is required'() {
     setup:
       def descriptor = getDescriptor()
@@ -75,11 +85,11 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
   def 'it validates that application ID is required'() {
     setup:
-      def descriptor = getDescriptor()
+      def descriptor = getSelectedApplication()
 
     when:
       "validating application ID $applicationId"
-      def validation = descriptor.doCheckIqApplication(applicationId)
+      def validation = descriptor.doCheckApplicationId(applicationId)
 
     then:
       "it returns $kind with message $message"
@@ -135,12 +145,12 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
   def 'it validates that application items are filled'() {
     setup:
-      def descriptor = getDescriptor()
+      def descriptor = getSelectedApplication()
       GroovyMock(IqUtil, global: true)
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('', job)
+      descriptor.doFillApplicationIdItems('', job)
 
     then:
       1 * IqUtil.doFillIqApplicationItems('', job)
@@ -148,12 +158,12 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
   def 'it uses custom credentials for application items'() {
     setup:
-      def descriptor = getDescriptor()
+      def descriptor = getSelectedApplication()
       GroovyMock(IqUtil, global: true)
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqApplicationItems('credentialsId', job)
+      descriptor.doFillApplicationIdItems('credentialsId', job)
 
     then:
       1 * IqUtil.doFillIqApplicationItems('credentialsId', job)
