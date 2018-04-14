@@ -15,201 +15,29 @@ package org.sonatype.nexus.ci.config
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 
-import org.sonatype.nexus.ci.util.FormUtil
+import org.sonatype.nexus.ci.config.Nxrm2Configuration.DescriptorImpl
+import org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
-import org.junit.Rule
-import org.jvnet.hudson.test.JenkinsRule
-import spock.lang.Specification
 
 class Nxrm2ConfigurationTest
-    extends Specification
+    extends NxrmConfigurationDescriptorTest
 {
-  @Rule
-  public JenkinsRule jenkins = new JenkinsRule()
+  def client = Mock(RepositoryManagerV2Client.class)
 
-  def 'it validates that display name is unique'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $displayName"
-      def validation = configuration.doCheckDisplayName(displayName, 'otherId')
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      displayName           | kind       | message
-      'displayName'         | Kind.ERROR | 'Display Name must be unique'
-      'Other Display Name'  | Kind.OK    | '<div/>'
-  }
-
-  def 'it validates that display name is required'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $displayName"
-      def validation = configuration.doCheckDisplayName(displayName, 'id')
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      displayName              | kind       | message
-      ''                       | Kind.ERROR | 'Display Name is required'
-      null                     | Kind.ERROR | 'Display Name is required'
-      'Other Display Name'     | Kind.OK    | '<div/>'
-  }
-
-  def 'it validates that id is unique'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $id"
-      def validation = configuration.doCheckId(id, 'otherId')
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      id          | kind       | message
-      'id'        | Kind.ERROR | 'Server ID must be unique'
-      'other_id'  | Kind.OK    | '<div/>'
-  }
-
-  def 'it validates that id is required'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $id"
-      def validation = configuration.doCheckId(id, 'id')
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      id           | kind       | message
-      ''           | Kind.ERROR | 'Server ID is required'
-      null         | Kind.ERROR | 'Server ID is required'
-      'other_id'   | Kind.OK    | '<div/>'
-  }
-
-  def 'it validates that id is contains no whitespace'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $id"
-      def validation = configuration.doCheckId(id, 'id')
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      id            | kind       | message
-      ' id'         | Kind.ERROR | 'Server ID must not contain whitespace'
-      'i d'         | Kind.ERROR | 'Server ID must not contain whitespace'
-      'id '         | Kind.ERROR | 'Server ID must not contain whitespace'
-      'other_id'    | Kind.OK    | '<div/>'
-  }
-
-  def 'it validates the server url is a valid url'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $url"
-      def validation = configuration.doCheckServerUrl(url)
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      url              | kind         | message
-      'foo'            | Kind.ERROR   | 'Malformed url (no protocol: foo)'
-      'http://foo.com' | Kind.OK      | '<div/>'
-  }
-
-  def 'it validates the server url is required'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
-
-    when:
-      "validating $url"
-      def validation = configuration.doCheckServerUrl(url)
-
-    then:
-      "it returns $kind with message $message"
-      validation.kind == kind
-      validation.renderHtml().startsWith(message)
-
-    where:
-      url                | kind         | message
-      ''                 | Kind.ERROR   | 'Server Url is required'
-      null               | Kind.ERROR   | 'Server Url is required'
-      'http://foo.com'   | Kind.OK      | '<div/>'
-  }
-
-  def 'it loads the credential items'() {
-    setup:
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration)
-      GroovyMock(FormUtil, global: true)
-
-    when:
-      configuration.doFillCredentialsIdItems("serverUrl", "credentialsId")
-
-    then:
-      1 * FormUtil.newCredentialsItemsListBoxModel("serverUrl", "credentialsId", null)
+  def setup() {
+    GroovyMock(RepositoryManagerClientUtil.class, global: true)
+    RepositoryManagerClientUtil.nexus2Client(_, _) >> client
   }
 
   def 'it tests valid server credentials'() {
     when:
-      GroovyMock(RepositoryManagerClientUtil.class, global: true)
-      def client = Mock(RepositoryManagerV2Client.class)
       client.getRepositoryList() >> repositories
-      RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().
-          getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
+      FormValidation validation = getDescriptor().doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       validation.kind == Kind.OK
@@ -219,50 +47,45 @@ class Nxrm2ConfigurationTest
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
       repositories << [
-        [
-            [
-                id: 'maven-releases',
-                name: 'Maven Releases',
-                format: 'maven2',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Release'
-            ],
-            [
-                id: 'maven1-releases',
-                name: 'Maven 1 Releases',
-                format: 'maven1',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Release'
-            ],
-            [
-                id: 'maven-snapshots',
-                name: 'Maven Snapshots',
-                format: 'maven2',
-                repositoryType: 'hosted',
-                repositoryPolicy: 'Snapshot'
-            ],
-            [
-                id: 'maven-proxy',
-                name: 'Maven Proxy',
-                format: 'maven2',
-                repositoryType: 'proxy',
-                repositoryPolicy: 'Release'
-            ]
-        ]
+          [
+              [
+                  id              : 'maven-releases',
+                  name            : 'Maven Releases',
+                  format          : 'maven2',
+                  repositoryType  : 'hosted',
+                  repositoryPolicy: 'Release'
+              ],
+              [
+                  id              : 'maven1-releases',
+                  name            : 'Maven 1 Releases',
+                  format          : 'maven1',
+                  repositoryType  : 'hosted',
+                  repositoryPolicy: 'Release'
+              ],
+              [
+                  id              : 'maven-snapshots',
+                  name            : 'Maven Snapshots',
+                  format          : 'maven2',
+                  repositoryType  : 'hosted',
+                  repositoryPolicy: 'Snapshot'
+              ],
+              [
+                  id              : 'maven-proxy',
+                  name            : 'Maven Proxy',
+                  format          : 'maven2',
+                  repositoryType  : 'proxy',
+                  repositoryPolicy: 'Release'
+              ]
+          ]
       ]
   }
 
   def 'it tests invalid server credentials'() {
     when:
-      GroovyMock(RepositoryManagerClientUtil.class, global: true)
-      def client = Mock(RepositoryManagerV2Client.class)
       client.getRepositoryList() >> { throw new RepositoryManagerException("something went wrong") }
-      RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId) >> client
-      def configuration = (Nxrm2Configuration.DescriptorImpl) jenkins.getInstance().getDescriptor(Nxrm2Configuration.class)
 
     and:
-      FormValidation validation = configuration.doVerifyCredentials(serverUrl, credentialsId)
-
+      FormValidation validation = getDescriptor().doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       validation.kind == Kind.ERROR
@@ -271,5 +94,15 @@ class Nxrm2ConfigurationTest
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
+  }
+
+  @Override
+  NxrmConfiguration createConfig(final String id, final String displayName) {
+    new Nxrm2Configuration(id, 'internalId', displayName, 'http://foo.com', 'credId')
+  }
+
+  @Override
+  NxrmDescriptor getDescriptor() {
+    (DescriptorImpl)jenkins.getInstance().getDescriptor(Nxrm2Configuration.class)
   }
 }

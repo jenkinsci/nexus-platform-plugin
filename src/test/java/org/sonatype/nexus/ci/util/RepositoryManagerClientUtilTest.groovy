@@ -46,7 +46,7 @@ class RepositoryManagerClientUtilTest
       def credentialsId = '42'
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
     then:
       IllegalArgumentException ex = thrown()
       ex.message =~ /No credentials were found for credentialsId: 42/
@@ -58,7 +58,7 @@ class RepositoryManagerClientUtilTest
       def credentialsId = null
       CredentialsMatchers.firstOrNull(_, _) >> null
     when:
-      RepositoryManagerV2Client client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerV2Client client = RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
     then:
       client != null
   }
@@ -69,7 +69,7 @@ class RepositoryManagerClientUtilTest
       def credentialsId = "42"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
     when:
-      RepositoryManagerV2Client client = RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerV2Client client = RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
     then:
       client != null
   }
@@ -86,7 +86,7 @@ class RepositoryManagerClientUtilTest
       jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, null, null, '')
 
     when:
-      RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
     then:
       1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
       1 * clientBuilder.withProxyConfig { ProxyConfig config ->
@@ -108,7 +108,7 @@ class RepositoryManagerClientUtilTest
       jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, 'username', 'password', '')
 
     when:
-      RepositoryManagerClientUtil.newRepositoryManagerClient(url, credentialsId)
+      RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
     then:
       1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
       1 * clientBuilder.withProxyConfig { ProxyConfig config ->

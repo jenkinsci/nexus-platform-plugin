@@ -52,7 +52,7 @@ class ComponentUploaderTest
       def expectedClient = Mock(RepositoryManagerV2Client)
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> expectedClient
+      RepositoryManagerClientUtil.nexus2Client('serverUrl', 'credentialsId') >> expectedClient
 
     when:
       def actualClient = componentUploader.getRepositoryManagerClient(nexusConfiguration)
@@ -67,7 +67,7 @@ class ComponentUploaderTest
       def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> {
+      RepositoryManagerClientUtil.nexus2Client('serverUrl', 'credentialsId') >> {
         throw new URISyntaxException('foo', 'bar')
       }
 
