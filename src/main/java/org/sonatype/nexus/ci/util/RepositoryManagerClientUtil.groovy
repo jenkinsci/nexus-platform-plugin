@@ -16,6 +16,8 @@ import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2ClientBuilder
+import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
+import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3ClientBuilder
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
@@ -27,14 +29,56 @@ import jenkins.model.Jenkins
 @SuppressWarnings(value = ['AbcMetric'])
 class RepositoryManagerClientUtil
 {
-  static RepositoryManagerV2Client newRepositoryManagerClient(String url, String credentialsId)
+  static RepositoryManagerV2Client nexus2Client(String url, String credentialsId)
       throws URISyntaxException
   {
     def uri = new URI(url)
+    def clientBuilder = RepositoryManagerV2ClientBuilder.create().
+        withServerConfig(getServerConfig(uri, credentialsId))
+    def jenkinsProxy = Jenkins.instance.proxy
 
+    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
+      clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
+    }
+
+    return clientBuilder.build()
+  }
+
+  /**
+   * Creates a nxrm 3.x client that does not authenticate (anonymous access)
+   * @param url the nexus repository manager 3.x server url
+   * @return a {@link RepositoryManagerV3Client}
+   */
+  static RepositoryManagerV3Client nexus3Client(String url) {
+    nexus3Client(url, null, true)
+  }
+
+  /**
+   * Creates a nxrm 3.x client
+   * @param url the nexus repository manager 3.x server url
+   * @param credentialsId the id of the credentials configured in jenkisn
+   * @param anonymousAccess whether anonymous access is enabled on the nxrm 3.x server
+   * @return a {@link RepositoryManagerV3Client}
+   */
+  static RepositoryManagerV3Client nexus3Client(String url, String credentialsId, boolean anonymousAccessEnabled)
+      throws URISyntaxException
+  {
+    def uri = new URI(url)
+    def clientBuilder = RepositoryManagerV3ClientBuilder.create().
+        withServerConfig(getServerConfig(uri, credentialsId))
+    def jenkinsProxy = Jenkins.instance.proxy
+
+    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
+      clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
+    }
+
+    return clientBuilder.withAnonymousAccess(anonymousAccessEnabled).build()
+  }
+
+  private static ServerConfig getServerConfig(URI uri, String credentialsId) {
     def credentials = CredentialsMatchers.firstOrNull(CredentialsProvider
         .lookupCredentials(StandardUsernamePasswordCredentials, Jenkins.getInstance(), ACL.SYSTEM,
-        URIRequirementBuilder.fromUri(url).build()), CredentialsMatchers.withId(credentialsId))
+        URIRequirementBuilder.fromUri(uri.toString()).build()), CredentialsMatchers.withId(credentialsId))
 
     def authentication
 
@@ -45,16 +89,6 @@ class RepositoryManagerClientUtil
       authentication = new Authentication(credentials.getUsername(), credentials.getPassword().getPlainText())
     }
 
-    def serverConfig = authentication != null ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
-
-    def clientBuilder = RepositoryManagerV2ClientBuilder.create().withServerConfig(serverConfig)
-
-    def jenkinsProxy = Jenkins.instance.proxy
-
-    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
-      clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
-    }
-
-    return clientBuilder.build()
+    return authentication ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
   }
 }

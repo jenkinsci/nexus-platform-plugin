@@ -115,8 +115,7 @@ class ComponentUploader
   RepositoryManagerV2Client getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration)
   {
     try {
-      return RepositoryManagerClientUtil.newRepositoryManagerClient(nexusConfiguration.serverUrl,
-          nexusConfiguration.credentialsId)
+      return RepositoryManagerClientUtil.nexus2Client(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
     }
     catch (Exception e) {
       def message = 'Error creating RepositoryManagerClient'

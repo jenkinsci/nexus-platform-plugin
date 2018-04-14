@@ -14,8 +14,6 @@ package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 
-import org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
-
 import hudson.Extension
 import hudson.util.FormValidation
 import org.kohsuke.stapler.DataBoundConstructor
@@ -23,25 +21,31 @@ import org.kohsuke.stapler.QueryParameter
 
 import static hudson.util.FormValidation.error
 import static hudson.util.FormValidation.ok
-import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_2
-import static org.sonatype.nexus.ci.util.Nxrm2Util.getApplicableRepositories
+import static org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
+import static org.sonatype.nexus.ci.util.Nxrm3Util.getApplicableRepositories
 
-class Nxrm2Configuration
+class Nxrm3Configuration
     extends NxrmConfiguration
 {
+  boolean anonymousAccess
+
+  @SuppressWarnings('ParameterCount')
   @DataBoundConstructor
-  Nxrm2Configuration(final String id,
+  Nxrm3Configuration(final String id,
                      final String internalId,
                      final String displayName,
                      final String serverUrl,
-                     final String credentialsId)
+                     final String credentialsId,
+                     final boolean anonymousAccess)
   {
     super(id, internalId, displayName, serverUrl, credentialsId)
+    this.anonymousAccess = anonymousAccess
   }
 
   @Override
   NxrmVersion getVersion() {
-    NEXUS_2
+    NEXUS_3
   }
 
   @Extension
@@ -49,27 +53,32 @@ class Nxrm2Configuration
       extends NxrmDescriptor
   {
     DescriptorImpl() {
-      super(Nxrm2Configuration)
+      super(Nxrm3Configuration)
     }
 
     @Override
     String getDisplayName() {
-      return 'Nexus Repository Manager 2.x Server'
+      return 'Nexus Repository Manager 3.x Server'
     }
 
     @Override
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
-      try {
-        def repositories = getApplicableRepositories(serverUrl, credentialsId)
+      doVerifyCredentials(serverUrl, credentialsId, true)
+    }
 
-        return ok(
-            "Nexus Repository Manager 2.x connection succeeded (${repositories.size()} hosted release Maven 2 " +
-                "repositories)")
+    FormValidation doVerifyCredentials(
+        @QueryParameter String serverUrl,
+        @QueryParameter String credentialsId,
+        @QueryParameter boolean anonymousAccess) throws IOException
+    {
+      try {
+        def repositories = getApplicableRepositories(serverUrl, credentialsId, credentialsId ? anonymousAccess : true)
+        ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted Maven 2 repositories)")
       }
       catch (RepositoryManagerException e) {
-        return error(e, 'Nexus Repository Manager 2.x connection failed')
+        error(e, 'Nexus Repository Manager 3.x connection failed')
       }
     }
   }
