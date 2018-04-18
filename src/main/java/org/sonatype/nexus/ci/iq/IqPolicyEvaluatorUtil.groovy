@@ -58,12 +58,13 @@ class IqPolicyEvaluatorUtil
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, expandedScanPatterns,
-              expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+          getRemoteScanner(iqPolicyEvaluator.iqApplication.applicationId, iqPolicyEvaluator.iqStage,
+              expandedScanPatterns, expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge,
+              GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = iqClient.
-          evaluateApplication(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanResult)
+          evaluateApplication(iqPolicyEvaluator.iqApplication.applicationId, iqPolicyEvaluator.iqStage, scanResult)
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
@@ -90,7 +91,7 @@ class IqPolicyEvaluatorUtil
       throw e
     }
     else {
-      listener.logger.println Messages.IqPolicyEvaluation_UnableToCommunicate(e.message)
+      listener.logger.println ExceptionUtils.getStackTrace(e)
       run.result = Result.UNSTABLE
       return null
     }

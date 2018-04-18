@@ -63,7 +63,7 @@ class GlobalNexusConfiguration
     return all().get(GlobalNexusConfiguration)
   }
 
-  static getInstanceId() {
+  static String getInstanceId() {
     getGlobalNexusConfiguration()?.@instanceId
   }
 

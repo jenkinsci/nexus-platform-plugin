@@ -91,7 +91,7 @@ class ComToOrgMigratorIntegrationTest
   }
 
   def 'it migrates a Freestyle IQ job'() {
-    when:
+    when: 'a build is run'
       def project = (FreeStyleProject)jenkins.jenkins.getItem('Freestyle-IQ')
       def buildStep = (IqPolicyEvaluatorBuildStep)project.builders[0]
       def build = project.scheduleBuild2(0).get()
@@ -101,16 +101,17 @@ class ComToOrgMigratorIntegrationTest
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
           'http://server/link/to/report')
+
+    then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
+
+    then: 'the fields are properly migrated'
       buildStep.iqStage == 'build'
       buildStep.iqApplication.applicationId == 'sample-app'
       buildStep.failBuildOnNetworkError
       buildStep.jobCredentialsId == 'user2'
       buildStep.iqScanPatterns.size() == 1
       buildStep.iqScanPatterns[0].scanPattern == 'target/*.jar'
-
-
-    then: 'the return code is successful'
-      jenkins.assertBuildStatusSuccess(build)
   }
 
   def 'it migrates a Pipeline IQ job'() {
