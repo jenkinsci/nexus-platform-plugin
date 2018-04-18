@@ -90,7 +90,7 @@ class IqPolicyEvaluatorUtil
       throw e
     }
     else {
-      listener.logger.println Messages.IqPolicyEvaluation_UnableToCommunicate(e.message)
+      listener.logger.println ExceptionUtils.getStackTrace(e)
       run.result = Result.UNSTABLE
       return null
     }

@@ -179,7 +179,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the build status is unstable and the result is null'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
       build.getLog(100).contains('result-after-failure:null')
-      build.getLog(100).contains('Unable to communicate with IQ Server: ERROR')
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
 
     where:
       description     | failBuildOnNetworkErrorScript
@@ -227,6 +227,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the return code is successful'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
   }
 
   def 'Freestyle build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
