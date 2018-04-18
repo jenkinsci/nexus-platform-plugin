@@ -31,6 +31,7 @@ import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
 import hudson.remoting.Channel
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
@@ -199,6 +200,7 @@ class IqPolicyEvaluatorTest
 
   def 'exception handling (part 2)'() {
     setup:
+      def expectedMsg = ExceptionUtils.getStackTrace(new IqClientException('BOOM!!', new IOException("CRASH")))
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> { throw exception }
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')
@@ -214,7 +216,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       noExceptionThrown()
       1 * run.setResult(Result.UNSTABLE)
-      1 * logger.println('Unable to communicate with IQ Server: BOOM!!')
+      1 * logger.println({String c -> c.startsWith('com.sonatype.nexus.api.exception.IqClientException: BOOM!!')})
 
     where:
       exception                     | failBuildOnNetworkError || expectedException | expectedMessage
