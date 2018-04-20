@@ -43,7 +43,7 @@ class IqPolicyEvaluatorBuildStep
 {
   String iqStage
 
-  String iqApplication
+  IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns
 
@@ -56,7 +56,7 @@ class IqPolicyEvaluatorBuildStep
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
-                             final String iqApplication,
+                             final IqApplication iqApplication,
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> moduleExcludes,
                              final Boolean failBuildOnNetworkError,
@@ -66,8 +66,8 @@ class IqPolicyEvaluatorBuildStep
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
     this.moduleExcludes = moduleExcludes
-    this.iqApplication = iqApplication
     this.iqStage = iqStage
+    this.iqApplication = iqApplication
   }
 
   @Override
@@ -82,6 +82,7 @@ class IqPolicyEvaluatorBuildStep
       extends BuildStepDescriptor<Builder>
       implements IqPolicyEvaluatorDescriptor
   {
+
     @Override
     String getDisplayName() {
       Messages.IqPolicyEvaluation_DisplayName()
@@ -101,17 +102,6 @@ class IqPolicyEvaluatorBuildStep
     ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
-    }
-
-    @Override
-    FormValidation doCheckIqApplication(@QueryParameter String value) {
-      FormValidation.validateRequired(value)
-    }
-
-    @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
     }
 
     @Override
