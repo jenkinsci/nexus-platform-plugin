@@ -156,7 +156,8 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
-  def 'Pipeline build should return null and set status to unstable when build fails with network error'() {
+  @Unroll
+  def 'Pipeline build should return null and set status to unstable when build fails with network error with failBuildOnNetworkError #description'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -164,7 +165,7 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          "def result = nexusPolicyEvaluation ${failBuildOnNetworkErrorScript} iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           'echo \'result-after-failure:\' + result' +
           '}\n')

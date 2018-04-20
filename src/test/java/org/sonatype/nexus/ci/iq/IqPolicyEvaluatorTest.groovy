@@ -200,7 +200,6 @@ class IqPolicyEvaluatorTest
 
   def 'exception handling (part 2)'() {
     setup:
-      def expectedMsg = ExceptionUtils.getStackTrace(new IqClientException('BOOM!!', new IOException("CRASH")))
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> { throw exception }
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')

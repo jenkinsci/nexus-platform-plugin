@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
@@ -77,37 +78,22 @@ class IqPolicyEvaluatorUtil
 
       return evaluationResult
     }
-    catch (IqNetworkException e) {
+    catch (IqClientException e) {
       return handleNetworkException(iqPolicyEvaluator.failBuildOnNetworkError, e, listener, run)
     }
   }
 
-  private static handleNetworkException(final boolean failBuildOnNetworkError, final IqNetworkException e,
-                                    final TaskListener listener, final Run run)
+  private static handleNetworkException(final Boolean failBuildOnNetworkError, final IqClientException e,
+                                        final TaskListener listener, final Run run)
   {
-    if (failBuildOnNetworkError) {
-      throw e.cause
+    def isNetworkError = isNetworkError(e)
+    if (!isNetworkError || failBuildOnNetworkError) {
+      throw e
     }
     else {
       listener.logger.println ExceptionUtils.getStackTrace(e)
       run.result = Result.UNSTABLE
       return null
-    }
-  }
-
-  @SuppressWarnings('CatchException')
-  // all exceptions are rethrown and possibly modified
-  private static <T> T rethrowNetworkErrors(final Closure<T> closure) {
-    try {
-      closure()
-    }
-    catch (Exception e) {
-      if (isNetworkError(e)) {
-        throw new IqNetworkException(e.getMessage(), e)
-      }
-      else {
-        throw e
-      }
     }
   }
 
