@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import com.sonatype.insight.scan.model.Scan
+import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
@@ -35,6 +36,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 
@@ -150,7 +152,8 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
-  def 'Pipeline build should return null and set status to unstable when build fails with network error'() {
+  @Unroll
+  def 'Pipeline build should return null and set status to unstable when build fails with network error with failBuildOnNetworkError #description'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -158,21 +161,50 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          "def result = nexusPolicyEvaluation ${failBuildOnNetworkErrorScript} iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           'echo \'result-after-failure:\' + result' +
           '}\n')
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new IOException("BANG!") }
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
 
     then: 'the build status is unstable and the result is null'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
       build.getLog(100).contains('result-after-failure:null')
+      build.getLog(100).contains('Unable to communicate with IQ Server: ERROR')
+
+    where:
+      description     | failBuildOnNetworkErrorScript
+      'false'         | 'failBuildOnNetworkError: false,'
+      'not supplied'  | ''
   }
 
-  def 'Freestyle build should set build status to unstable when network error occurs'() {
+  def 'Pipeline build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'nexusPolicyEvaluation failBuildOnNetworkError: true, iqApplication: \'app\', iqStage: \'stage\'\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'an exception is thrown when getting proprietary config from IQ server'
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
+
+    then: 'the build status is failure and the error is logged'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
+  }
+
+  def 'Freestyle build should set build status to unstable when network error occurs with failBuildOnNetworkError false'() {
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
@@ -183,13 +215,36 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new IOException("BANG!") }
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
 
-    then: 'the return code is successful'
+    then: 'the return code is unstable and the error is logged'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
+      build.getLog(100).contains('Unable to communicate with IQ Server: ERROR')
   }
 
-  def 'Pipeline build fails when an exception other than IOException occurs'() {
+  def 'Freestyle build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', 'app', [], [], true, 'cred-id'))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'an exception is thrown when getting proprietary config from IQ server'
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
+        throw new IqClientException("ERROR", new IOException("BANG!"))
+      }
+
+    then: 'the build status is failure and the error is logged'
+      jenkins.assertBuildStatus(Result.FAILURE, build)
+      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
+  }
+
+  @Unroll
+  def 'Pipeline build fails when an exception other than IqClientException with IOException occurs with #description'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -203,13 +258,18 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new NullPointerException("CRASH!") }
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the build fails'
      jenkins.assertBuildStatus(Result.FAILURE, build)
+
+    where:
+      description                   | exception
+      'NPE'                         | new NullPointerException("CRASH!")
+      'IqClientException with NPE'  | new IqClientException("ERROR", new NullPointerException("CRASH!"))
   }
 
-  def 'Freestyle build should set build status to failed when an exception other than IOException occurs'() {
+  def 'Freestyle build should set build status to failed when an exception other than IqClientException with IOException occurs with #description'() {
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
@@ -220,10 +280,15 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw new NullPointerException("BANG!") }
+      1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the return code is successful'
       jenkins.assertBuildStatus(Result.FAILURE, build)
+
+    where:
+      description                   | exception
+      'NPE'                         | new NullPointerException("CRASH!")
+      'IqClientException with NPE'  | new IqClientException("ERROR", new NullPointerException("CRASH!"))
   }
 
   def 'Pipeline build should fail and stop execution when policy violations are present'() {
