@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import org.sonatype.nexus.ci.nxrm.v2.ComponentUploaderNxrm2
+
 import hudson.FilePath
 import hudson.model.Run
 import hudson.model.TaskListener
@@ -52,8 +54,8 @@ class PackagePublisherExecutionTest
       underTest.filePath = filePath
 
       GroovyMock(ComponentUploaderFactory.class, global: true)
-      def componentUploader = Mock(ComponentUploader)
-      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+      def componentUploader = Mock(ComponentUploaderNxrm2)
+      ComponentUploaderFactory.getComponentUploader(nexus2Configuration.id, run, taskListener) >> componentUploader
 
     when:
       underTest.run()
@@ -85,8 +87,8 @@ class PackagePublisherExecutionTest
       underTest.filePath = filePath
 
       GroovyMock(ComponentUploaderFactory.class, global: true)
-      def componentUploader = Mock(ComponentUploader)
-      ComponentUploaderFactory.getComponentUploader(run, taskListener) >> componentUploader
+      def componentUploader = Mock(ComponentUploaderNxrm2)
+      ComponentUploaderFactory.getComponentUploader(nxrm2Configuration.id,  run, taskListener) >> componentUploader
 
       componentUploader.uploadComponents(nexusPublisher, filePath) >> { throw new IOException("oops") }
 
@@ -94,7 +96,7 @@ class PackagePublisherExecutionTest
       underTest.run()
 
     then:
-      IOException ex = thrown()
+      IOException ex = thrown(IOException)
       ex.message =~ /oops/
   }
 

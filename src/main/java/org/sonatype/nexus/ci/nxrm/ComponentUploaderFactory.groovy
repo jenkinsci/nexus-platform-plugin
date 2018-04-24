@@ -12,14 +12,42 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import org.sonatype.nexus.ci.nxrm.v2.ComponentUploaderNxrm2
+import org.sonatype.nexus.ci.nxrm.v3.ComponentUploaderNxrm3
+
 import hudson.model.Run
 import hudson.model.TaskListener
+import hudson.util.FormValidation.Kind
+
+import static hudson.model.Result.FAILURE
+import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.globalNexusConfiguration
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
+import static org.sonatype.nexus.ci.util.FormUtil.validateUrl
 
 class ComponentUploaderFactory
 {
-  static ComponentUploader getComponentUploader(final Run run,
+  static ComponentUploader getComponentUploader(final String nexusInstanceId,
+                                                final Run run,
                                                 final TaskListener taskListener)
   {
-    return new ComponentUploader(run, taskListener)
+    def logger = taskListener.getLogger()
+    def nxrmConfig = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
+
+    if (!nxrmConfig) {
+      failRun(run, logger, "Nexus Configuration ${nexusInstanceId} not found.")
+    }
+
+    if (validateUrl(nxrmConfig.serverUrl).kind == Kind.ERROR) {
+      failRun(run, logger, "Nexus Server URL ${nxrmConfig.serverUrl} is invalid.")
+    }
+
+    return nxrmConfig.version == NEXUS_3 ? new ComponentUploaderNxrm3(nxrmConfig, run, taskListener) :
+        new ComponentUploaderNxrm2(nxrmConfig, run, taskListener)
+  }
+
+  private static void failRun(final Run run, final PrintStream logger, final String failMsg) {
+    logger.println("Failing build due to: ${failMsg}")
+    run.setResult(FAILURE)
+    throw new IllegalArgumentException(failMsg)
   }
 }
