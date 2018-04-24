@@ -24,7 +24,7 @@ import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    globalNexusConfiguration.nxrmConfigs.size() > 0
+    globalNexusConfiguration.nxrmConfigs?.size() > 0
   }
 
   static NxrmConfiguration getNexusConfiguration(final String nexusInstanceId) {

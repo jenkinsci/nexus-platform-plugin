@@ -12,57 +12,54 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.exception.RepositoryManagerException
-import com.sonatype.nexus.api.repository.v2.GAV
-import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
-
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxrmConfiguration
-import org.sonatype.nexus.ci.util.FormUtil
-import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
-import hudson.util.FormValidation.Kind
 
 @SuppressWarnings(['CatchException', 'AbcMetric', 'MethodSize'])
-class ComponentUploader
+abstract class ComponentUploader
 {
-  private final Run run
+  protected final NxrmConfiguration nxrmConfiguration
 
-  private final PrintStream logger
+  protected final Run run
 
-  private final EnvVars envVars
+  protected final PrintStream logger
 
-  ComponentUploader(final Run run,
-                    final TaskListener taskListener)
+  protected final EnvVars envVars
+
+  protected ComponentUploader(final NxrmConfiguration nxrmConfiguration,
+                              final Run run,
+                              final TaskListener taskListener)
   {
+    this.nxrmConfiguration = nxrmConfiguration
     this.run = run
     this.logger = taskListener.getLogger()
     this.envVars = run.getEnvironment(taskListener)
   }
 
+  protected abstract void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
+                                 final String nxrmRepositoryId)
+
   void uploadComponents(final NexusPublisher nexusPublisher,
                         final FilePath filePath)
   {
-
-    def nexusConfiguration = getNexusConfiguration(nexusPublisher.nexusInstanceId)
-    def nxrmClient = getRepositoryManagerClient(nexusConfiguration)
     def mavenPackages = getPackagesOfType(nexusPublisher.packages, MavenPackage)
-
-    def remoteMavenComponents = []
+    def remoteMavenComponents = [:]
 
     // Iterate through all packages and assets first to ensure that everything exists
     // This prevents uploading assets from an incomplete set
     mavenPackages.each { MavenPackage mavenPackage ->
-      mavenPackage.assets.each { MavenAsset mavenFilePath ->
-        def artifactPath = new FilePath(filePath, envVars.expand(mavenFilePath.filePath))
+      remoteMavenComponents.put(mavenPackage.coordinate, [])
+
+      mavenPackage.assets.each { MavenAsset mavenAsset ->
+        def artifactPath = new FilePath(filePath, envVars.expand(mavenAsset.filePath))
 
         if (!artifactPath.exists()) {
-          final String missingFile = "${mavenFilePath.filePath} does not exist"
+          final String missingFile = "${mavenAsset.filePath} does not exist"
 
           logger.println(missingFile)
           logger.println('Failing build due to missing expected files for Nexus Repository Manager Publisher')
@@ -70,108 +67,26 @@ class ComponentUploader
           throw new IOException(missingFile)
         }
 
-        remoteMavenComponents.add(new RemoteMavenComponent(mavenPackage.coordinate, mavenFilePath, artifactPath))
+        remoteMavenComponents[mavenPackage.coordinate].add(new RemoteMavenAsset(mavenAsset, artifactPath))
       }
     }
 
-    remoteMavenComponents.each { RemoteMavenComponent component ->
-      try {
-        logger.println("Uploading Maven asset with groupId: ${component.Coordinate.groupId} " +
-            "artifactId: ${component.Coordinate.artifactId} version: ${component.Coordinate.version} " +
-            "To repository: ${nexusPublisher.nexusRepositoryId}")
-
-        def localFile = File.createTempFile(component.RemotePath.getName(), 'tmp')
-        component.RemotePath.copyTo(new FilePath(localFile))
-
-        def mavenCoordinate = new GAV(envVars.expand(component.Coordinate.groupId),
-            envVars.expand(component.Coordinate.artifactId), envVars.expand(component.Coordinate.version),
-            envVars.expand(component.Coordinate.packaging))
-        def mavenFile = new com.sonatype.nexus.api.repository.v2.MavenAsset(localFile,
-            envVars.expand(component.Asset.extension), envVars.expand(component.Asset.classifier))
-
-        try {
-          nxrmClient.uploadComponent(nexusPublisher.nexusRepositoryId, mavenCoordinate, [mavenFile])
-        }
-        catch (RepositoryManagerException ex) {
-          throw new IOException(ex)
-        }
-        finally {
-          localFile.delete()
-        }
-      }
-      catch (IOException ex) {
-        final String uploadFailed = "Upload of ${component.Asset.filePath} failed"
-
-        logger.println(uploadFailed)
-        logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
-        run.setResult(Result.FAILURE)
-        throw new IOException(uploadFailed, ex)
-      }
-    }
-
-    logger.println('Successfully Uploaded Maven Assets')
-  }
-
-  RepositoryManagerV2Client getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration)
-  {
-    try {
-      return RepositoryManagerClientUtil.nexus2Client(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
-    }
-    catch (Exception e) {
-      def message = 'Error creating RepositoryManagerClient'
-      logger.println(message)
-      logger.println('Failing build due to error creating RepositoryManagerClient')
-      run.setResult(Result.FAILURE)
-      throw e
-    }
-  }
-
-  NxrmConfiguration getNexusConfiguration(final String nexusInstanceId)
-  {
-    def nexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
-      return it.id == nexusInstanceId
-    }
-
-    if (!nexusConfiguration) {
-      def message = "Nexus Configuration ${nexusInstanceId} not found."
-      logger.println(message)
-      logger.println('Failing build due to missing Nexus Configuration')
-      run.setResult(Result.FAILURE)
-      throw new IllegalArgumentException(message)
-    }
-
-    if (FormUtil.validateUrl(nexusConfiguration.serverUrl).kind == Kind.ERROR) {
-      def message = "Nexus Server URL ${nexusConfiguration.serverUrl} is invalid."
-      logger.println(message)
-      logger.println('Failing build due to invalid Nexus Server URL')
-      run.setResult(Result.FAILURE)
-      throw new IllegalArgumentException(message)
-    }
-
-    return nexusConfiguration
+    upload(remoteMavenComponents, nexusPublisher.nexusRepositoryId)
   }
 
   @SuppressWarnings('Instanceof')
   private static <T extends Package> List<T> getPackagesOfType(List<Package> packageList, Class<T> type) {
-    return packageList.findAll { Package iPackage ->
-      return iPackage instanceof T
-    }.collect { Package iPackage ->
-      return type.cast(iPackage)
-    }
+    return packageList.findAll { it.class == type }.collect { type.cast(it) }
   }
 
   @SuppressWarnings(['FieldName', 'PublicInstanceField'])
-  private static class RemoteMavenComponent
+  static class RemoteMavenAsset
   {
-    public final MavenCoordinate Coordinate
     public final MavenAsset Asset
+
     public final FilePath RemotePath
 
-    RemoteMavenComponent(final MavenCoordinate coordinate,
-                         final MavenAsset asset,
-                         final FilePath remotePath)
-    {
-      this.Coordinate = coordinate
+    RemoteMavenAsset(final MavenAsset asset, final FilePath remotePath) {
       this.Asset = asset
       this.RemotePath = remotePath
     }

@@ -30,6 +30,8 @@ import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
+import static org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory.getComponentUploader
+
 class NexusPublisherBuildStep
     extends Builder
     implements NexusPublisher, SimpleBuildStep
@@ -51,8 +53,7 @@ class NexusPublisherBuildStep
   void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    def componentUploader = ComponentUploaderFactory.getComponentUploader(run, listener)
-    componentUploader.uploadComponents(this, workspace)
+    getComponentUploader(nexusInstanceId, run, listener).uploadComponents(this, workspace)
   }
 
   @Extension
