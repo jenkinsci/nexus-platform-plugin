@@ -10,19 +10,12 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.iq
+package org.sonatype.nexus.ci.iq.ManualApplication
 
-interface IqPolicyEvaluator
-{
-  String getIqStage()
+import org.sonatype.nexus.ci.iq.Messages
 
-  IqApplication getIqApplication()
+def f = namespace(lib.FormTagLib)
 
-  List<ScanPattern> getIqScanPatterns()
-
-  List<ModuleExclude> getModuleExcludes()
-
-  Boolean getFailBuildOnNetworkError()
-
-  String getJobCredentialsId()
+f.entry(title: _(Messages.IqPolicyEvaluation_Application()), help: descriptor.getHelpFile('applicationId')) {
+  f.textbox(field: 'applicationId')
 }

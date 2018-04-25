@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
@@ -49,7 +49,7 @@ class ComponentUploaderTest
   def 'it builds a repository client from configuration'() {
     setup:
       def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
-      def expectedClient = Mock(RepositoryManagerClient)
+      def expectedClient = Mock(RepositoryManagerV2Client)
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
       RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> expectedClient
@@ -152,7 +152,7 @@ class ComponentUploaderTest
                                              MavenAsset expectedAsset)
   {
     setup:
-      def client = Mock(RepositoryManagerClient)
+      def client = Mock(RepositoryManagerV2Client)
       def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
       run.getEnvironment(_) >> envVar
 
