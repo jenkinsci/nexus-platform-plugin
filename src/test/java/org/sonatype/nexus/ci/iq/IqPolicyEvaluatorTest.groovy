@@ -31,7 +31,6 @@ import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
 import hudson.remoting.Channel
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
@@ -200,7 +199,6 @@ class IqPolicyEvaluatorTest
 
   def 'exception handling (part 2)'() {
     setup:
-      def expectedMsg = ExceptionUtils.getStackTrace(new IqClientException('BOOM!!', new IOException("CRASH")))
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> { throw exception }
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           failBuildOnNetworkError, '131-cred')
@@ -228,8 +226,7 @@ class IqPolicyEvaluatorTest
     setup:
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
       RemoteScanner remoteScanner = Mock()
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
 
@@ -262,8 +259,7 @@ class IqPolicyEvaluatorTest
   def 'global no credentials are passed to the client builder when no job credentials provided'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          true,
-          jobCredentials)
+          true, jobCredentials)
 
     when:
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
@@ -279,8 +275,7 @@ class IqPolicyEvaluatorTest
   def 'evaluation result outcome determines build status'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
 
     when:
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))
@@ -301,8 +296,7 @@ class IqPolicyEvaluatorTest
   def 'evaluation throws exception when build results in failure'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
       def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0,
           [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
 
@@ -323,8 +317,7 @@ class IqPolicyEvaluatorTest
   def 'prints an error message on failure'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log
@@ -351,8 +344,7 @@ class IqPolicyEvaluatorTest
   def 'prints a log message on warnings'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log
@@ -376,8 +368,7 @@ class IqPolicyEvaluatorTest
   def 'prints a summary on success'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false,
-          '131-cred')
+          false, '131-cred')
       TaskListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log

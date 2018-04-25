@@ -58,13 +58,11 @@ class IqPolicyEvaluatorUtil
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.iqApplication.applicationId, iqPolicyEvaluator.iqStage,
-              expandedScanPatterns, expandedModuleExcludes, workspace, proprietaryConfig, loggerBridge,
-              GlobalNexusConfiguration.instanceId)
+          getRemoteScanner(applicationId, iqPolicyEvaluator.iqStage, expandedScanPatterns, expandedModuleExcludes,
+              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def evaluationResult = iqClient.
-          evaluateApplication(iqPolicyEvaluator.iqApplication.applicationId, iqPolicyEvaluator.iqStage, scanResult)
+      def evaluationResult = iqClient.evaluateApplication(applicationId, iqPolicyEvaluator.iqStage, scanResult)
 
       def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
       run.addAction(healthAction)
