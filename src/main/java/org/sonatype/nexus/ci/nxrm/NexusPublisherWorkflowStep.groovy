@@ -54,12 +54,12 @@ class NexusPublisherWorkflowStep
 
     @Override
     String getFunctionName() {
-      return 'nexusPublisher'
+      return Messages.NexusPublisherWorkflowStep_FunctionName()
     }
 
     @Override
     String getDisplayName() {
-      return 'Nexus Repository Manager Publisher'
+      return Messages.NexusPublisherWorkflowStep_DisplayName()
     }
 
     FormValidation doCheckNexusInstanceId(@QueryParameter String value) {

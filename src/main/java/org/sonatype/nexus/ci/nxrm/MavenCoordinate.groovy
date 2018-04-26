@@ -42,7 +42,7 @@ class MavenCoordinate
   {
     @Override
     String getDisplayName() {
-      return 'Maven Coordinate'
+      return Messages.MavenCoordinate_DisplayName()
     }
   }
 }
