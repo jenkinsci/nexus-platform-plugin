@@ -63,7 +63,7 @@ class NexusPublisherBuildStep
   {
     @Override
     String getDisplayName() {
-      'Nexus Repository Manager Publisher'
+      Messages.NexusPublisherBuildStep_DisplayName()
     }
 
     @Override

@@ -58,7 +58,7 @@ class MavenPackage
 
     @Override
     String getDisplayName() {
-      return 'Maven Package'
+      return Messages.MavenPackage_DisplayName()
     }
   }
 }

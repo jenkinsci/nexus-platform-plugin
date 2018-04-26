@@ -39,7 +39,7 @@ class MavenAsset
   {
     @Override
     String getDisplayName() {
-      return 'Maven Artifact'
+      return Messages.MavenAsset_DisplayName()
     }
   }
 }
