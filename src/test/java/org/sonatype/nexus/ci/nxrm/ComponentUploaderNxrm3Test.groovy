@@ -42,20 +42,18 @@ class ComponentUploaderNxrm3Test
   }
 
   def setup() {
-    def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
-        true)
+    def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
     componentUploader = new ComponentUploaderNxrm3(nexusConfiguration, run, taskListener)
   }
 
   @WithoutJenkins
   def 'it builds a repository client from configuration'() {
     setup:
-      def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
-          true)
+      def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
       def expectedClient = Mock(RepositoryManagerV3Client)
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.nexus3Client('serverUrl', 'credentialsId', _) >> expectedClient
+      RepositoryManagerClientUtil.nexus3Client('serverUrl', 'credentialsId') >> expectedClient
 
     when:
       def actualClient = componentUploader.getRepositoryManagerClient(nexusConfiguration)
@@ -67,11 +65,10 @@ class ComponentUploaderNxrm3Test
   @WithoutJenkins
   def 'it fails the build when a client cannot be created'() {
     setup:
-      def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId',
-          true)
+      def nexusConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
 
       GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.nexus3Client('serverUrl', 'credentialsId', _) >> {
+      RepositoryManagerClientUtil.nexus3Client('serverUrl', 'credentialsId') >> {
         throw new URISyntaxException('foo', 'bar')
       }
 
@@ -98,7 +95,7 @@ class ComponentUploaderNxrm3Test
   {
     setup:
       def client = Mock(RepositoryManagerV3Client)
-      def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId', true)
+      def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
       run.getEnvironment(_) >> envVar
 
       def mockComponentUploader =
@@ -157,7 +154,7 @@ class ComponentUploaderNxrm3Test
   def 'it uploads the remote path from stream'() {
     setup:
       def client = Mock(RepositoryManagerV3Client)
-      def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId', true)
+      def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
       run.getEnvironment(_) >> new EnvVars([:])
       def workspace = GroovyMock(FilePath)
       def remotePath = GroovyMock(FilePath)

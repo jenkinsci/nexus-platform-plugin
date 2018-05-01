@@ -87,7 +87,7 @@ class ComponentUploaderNxrm3
       checkArgument(nxrmConfiguration.class == Nxrm3Configuration.class,
           'Nexus Repository Manager 3.x server is required')
       Nxrm3Configuration nxrm3Configuration = nxrmConfiguration as Nxrm3Configuration
-      nexus3Client(nxrm3Configuration.serverUrl, nxrm3Configuration.credentialsId, nxrm3Configuration.anonymousAccess)
+      nexus3Client(nxrm3Configuration.serverUrl, nxrm3Configuration.credentialsId)
     }
     catch (Exception e) {
       logger.println('Error creating RepositoryManagerClient')

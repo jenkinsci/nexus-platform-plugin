@@ -93,7 +93,7 @@ class ComponentUploaderFactoryTest
     where:
       nxrmVersion << ['NXRM 2', 'NXRM 3']
       config << [new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId'),
-                 new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId', true)]
+                 new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId')]
       expectedType << [ComponentUploaderNxrm2, ComponentUploaderNxrm3]
   }
 }

@@ -191,7 +191,7 @@ class ComponentUploaderNxrm2Test
   @WithoutJenkins
   def 'it requires a nxrm2 server'() {
     setup:
-      def config = new Nxrm3Configuration('id', 'interalId', 'displayName', 'http://localhost', 'credsId', true)
+      def config = new Nxrm3Configuration('id', 'interalId', 'displayName', 'http://localhost', 'credsId')
       def logger = Mock(PrintStream)
       def publisher = Mock(NexusPublisher)
       def workspace = GroovyMock(FilePath)
