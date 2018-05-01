@@ -34,10 +34,6 @@ f.section(title: descriptor.displayName) {
     f.textbox(clazz: 'required')
   }
 
-  f.entry(title: _('Anonymous Access Allowed'), field: 'anonymousAccess') {
-    f.checkbox()
-  }
-
   f.entry(title: _('Credentials'), field: 'credentialsId') {
     c.select(context:app, includeUser:false, expressionAllowed:false)
   }
@@ -47,7 +43,7 @@ f.section(title: descriptor.displayName) {
         title: _('Test connection'),
         progress: _('Testing...'),
         method: 'verifyCredentials',
-        with: 'serverUrl,credentialsId,anonymousAccess'
+        with: 'serverUrl,credentialsId'
     )
   }
 }

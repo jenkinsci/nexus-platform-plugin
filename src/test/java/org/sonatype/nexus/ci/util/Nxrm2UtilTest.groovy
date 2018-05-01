@@ -69,7 +69,7 @@ class Nxrm2UtilTest
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.
-          add(new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId', true))
+          add(new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId'))
       globalConfiguration.save()
 
     when:

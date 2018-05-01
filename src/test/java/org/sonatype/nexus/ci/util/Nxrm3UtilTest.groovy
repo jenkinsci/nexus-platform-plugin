@@ -33,7 +33,7 @@ class Nxrm3UtilTest
   def setup() {
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
     RepositoryManagerClientUtil.nexus3Client(_) >> client
-    RepositoryManagerClientUtil.nexus3Client(_, _, _) >> client
+    RepositoryManagerClientUtil.nexus3Client(_, _) >> client
   }
 
   def 'getsReposUsingValidInstance'() {
@@ -41,7 +41,7 @@ class Nxrm3UtilTest
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.nxrmConfigs = []
       globalConfiguration.nxrmConfigs.
-          add(new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId', true))
+          add(new Nxrm3Configuration('id', 'internalId', 'displayName', 'http://foo.com', 'credId'))
       globalConfiguration.save()
 
       client.getRepositories() >> repositories
@@ -85,7 +85,7 @@ class Nxrm3UtilTest
       client.getRepositories() >> repositories
 
     when:
-      def fetchedRepos = Nxrm3Util.getApplicableRepositories('foo', 'bar', true)
+      def fetchedRepos = Nxrm3Util.getApplicableRepositories('foo', 'bar')
 
     then:
       fetchedRepos.size() == 3

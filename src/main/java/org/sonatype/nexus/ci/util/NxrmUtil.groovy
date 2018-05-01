@@ -58,8 +58,7 @@ class NxrmUtil
             Nxrm2Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
       case NEXUS_3:
         return FormUtil.newListBoxModel({ it.name }, { it.name },
-            Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId,
-                configuration.anonymousAccess))
+            Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
     }
   }
 }

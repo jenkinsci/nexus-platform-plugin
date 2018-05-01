@@ -28,19 +28,15 @@ import static org.sonatype.nexus.ci.util.Nxrm3Util.getApplicableRepositories
 class Nxrm3Configuration
     extends NxrmConfiguration
 {
-  boolean anonymousAccess
-
   @SuppressWarnings('ParameterCount')
   @DataBoundConstructor
   Nxrm3Configuration(final String id,
                      final String internalId,
                      final String displayName,
                      final String serverUrl,
-                     final String credentialsId,
-                     final boolean anonymousAccess)
+                     final String credentialsId)
   {
     super(id, internalId, displayName, serverUrl, credentialsId)
-    this.anonymousAccess = anonymousAccess
   }
 
   @Override
@@ -65,16 +61,8 @@ class Nxrm3Configuration
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
-      doVerifyCredentials(serverUrl, credentialsId, true)
-    }
-
-    FormValidation doVerifyCredentials(
-        @QueryParameter String serverUrl,
-        @QueryParameter String credentialsId,
-        @QueryParameter boolean anonymousAccess) throws IOException
-    {
       try {
-        def repositories = getApplicableRepositories(serverUrl, credentialsId, credentialsId ? anonymousAccess : true)
+        def repositories = getApplicableRepositories(serverUrl, credentialsId)
         ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted Maven 2 repositories)")
       }
       catch (RepositoryManagerException e) {

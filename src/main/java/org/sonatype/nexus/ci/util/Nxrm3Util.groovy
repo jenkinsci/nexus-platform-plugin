@@ -30,17 +30,16 @@ class Nxrm3Util
       throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 3.x server')
     }
 
-    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, configuration.anonymousAccess)
+    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)
   }
 
   /**
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<Repository> getApplicableRepositories(final String serverUrl,
-                                                    final String credentialsId,
-                                                    boolean anonymousAccess)
+                                                    final String credentialsId)
   {
-    nexus3Client(serverUrl, credentialsId, anonymousAccess).getRepositories().
+    nexus3Client(serverUrl, credentialsId).getRepositories().
         findAll { 'hosted'.equalsIgnoreCase(it.type) && 'maven2'.equalsIgnoreCase(it.format) }
   }
 }

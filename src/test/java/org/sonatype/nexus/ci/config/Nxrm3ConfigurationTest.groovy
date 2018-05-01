@@ -31,7 +31,7 @@ class Nxrm3ConfigurationTest
   def setup() {
     client = Mock(RepositoryManagerV3Client.class)
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
-    RepositoryManagerClientUtil.nexus3Client(_, _, _) >> client
+    RepositoryManagerClientUtil.nexus3Client(_, _) >> client
   }
 
   def 'it tests valid server credentials'() {
@@ -39,7 +39,7 @@ class Nxrm3ConfigurationTest
       client.getRepositories() >> repositories
 
     and:
-      FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId, anonymousAccess)
+      FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       validation.kind == Kind.OK
@@ -48,7 +48,6 @@ class Nxrm3ConfigurationTest
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
-      anonymousAccess << [true]
       repositories << [
           [
               [
@@ -84,7 +83,7 @@ class Nxrm3ConfigurationTest
       client.getRepositories() >> { throw new RepositoryManagerException("something went wrong") }
 
     and:
-      FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId, anonymousAccess)
+      FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       validation.kind == Kind.ERROR
@@ -93,7 +92,6 @@ class Nxrm3ConfigurationTest
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
-      anonymousAccess << [true]
   }
 
   def 'defaults to anonymous access with no credentials'() {
@@ -101,20 +99,19 @@ class Nxrm3ConfigurationTest
       GroovySpy(Nxrm3Util.class, global: true)
       client.getRepositories() >> []
     and:
-      descriptor.doVerifyCredentials(serverUrl, credentialsId, anonymousAccess)
+      descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
-      1 * Nxrm3Util.getApplicableRepositories(serverUrl, null, true)
+      1 * Nxrm3Util.getApplicableRepositories(serverUrl, null)
 
     where:
       serverUrl << ['serverUrl']
       credentialsId << [null]
-      anonymousAccess << [true]
   }
 
   @Override
   NxrmConfiguration createConfig(final String id, final String displayName) {
-    new Nxrm3Configuration(id, 'internalId', displayName, 'http://foo.com', 'credId', true)
+    new Nxrm3Configuration(id, 'internalId', displayName, 'http://foo.com', 'credId')
   }
 
   @Override

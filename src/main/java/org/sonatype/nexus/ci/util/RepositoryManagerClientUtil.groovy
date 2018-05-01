@@ -50,17 +50,16 @@ class RepositoryManagerClientUtil
    * @return a {@link RepositoryManagerV3Client}
    */
   static RepositoryManagerV3Client nexus3Client(String url) {
-    nexus3Client(url, null, true)
+    nexus3Client(url, null)
   }
 
   /**
    * Creates a nxrm 3.x client
    * @param url the nexus repository manager 3.x server url
    * @param credentialsId the id of the credentials configured in jenkisn
-   * @param anonymousAccess whether anonymous access is enabled on the nxrm 3.x server
    * @return a {@link RepositoryManagerV3Client}
    */
-  static RepositoryManagerV3Client nexus3Client(String url, String credentialsId, boolean anonymousAccessEnabled)
+  static RepositoryManagerV3Client nexus3Client(String url, String credentialsId)
       throws URISyntaxException
   {
     def uri = new URI(url)
@@ -72,7 +71,7 @@ class RepositoryManagerClientUtil
       clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
     }
 
-    return clientBuilder.withAnonymousAccess(anonymousAccessEnabled).build()
+    return clientBuilder.build()
   }
 
   private static ServerConfig getServerConfig(URI uri, String credentialsId) {
