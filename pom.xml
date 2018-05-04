@@ -58,7 +58,7 @@
     <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
-    <java.level>7</java.level>
+    <java.level>8</java.level>
     <slf4j.version>1.7.7</slf4j.version>
 
     <buildsupport.version>10</buildsupport.version>
@@ -112,9 +112,9 @@
         <version>1.11</version>
       </dependency>
       <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>symbol-annotation</artifactId>
-        <version>1.5</version>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>structs</artifactId>
+        <version>1.14</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -182,8 +182,8 @@
       <artifactId>token-macro</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>symbol-annotation</artifactId>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

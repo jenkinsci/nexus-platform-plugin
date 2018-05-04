@@ -12,13 +12,13 @@
  */
 package org.sonatype.nexus.ci.util
 
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxrmConfiguration
 import org.sonatype.nexus.ci.config.NxrmVersion
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
-import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.globalNexusConfiguration
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_2
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModel
@@ -28,11 +28,11 @@ import static org.sonatype.nexus.ci.util.FormUtil.validateNotEmpty
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    globalNexusConfiguration.nxrmConfigs?.size() > 0
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs?.size() > 0
   }
 
   static NxrmConfiguration getNexusConfiguration(final String nexusInstanceId) {
-    globalNexusConfiguration.nxrmConfigs.find { return it.id == nexusInstanceId }
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { return it.id == nexusInstanceId }
   }
 
   static FormValidation doCheckNexusInstanceId(final String value) {
@@ -41,12 +41,12 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusInstanceIdItems() {
     return newListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
-        globalNexusConfiguration.nxrmConfigs)
+        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
   }
 
   static ListBoxModel doFillNexusInstanceIdItems(NxrmVersion version) {
     newListBoxModel({ it.displayName }, { it.id },
-        globalNexusConfiguration.nxrmConfigs.findAll({ it.version == version }))
+        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.findAll({ it.version == version }))
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {

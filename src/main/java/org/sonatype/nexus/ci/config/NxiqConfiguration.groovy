@@ -27,8 +27,6 @@ import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-import static GlobalNexusConfiguration.globalNexusConfiguration
-
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
 {
@@ -61,7 +59,7 @@ class NxiqConfiguration
   }
 
   static @Nullable NxiqConfiguration getIqConfig() {
-    return globalNexusConfiguration.iqConfigs?.find { true }
+    return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
   }
 
   @Extension

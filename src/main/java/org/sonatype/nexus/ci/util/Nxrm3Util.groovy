@@ -36,8 +36,7 @@ class Nxrm3Util
   /**
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
-  static List<Repository> getApplicableRepositories(final String serverUrl, final String credentialsId)
-  {
+  static List<Repository> getApplicableRepositories(final String serverUrl, final String credentialsId) {
     nexus3Client(serverUrl, credentialsId).getRepositories().
         findAll { 'hosted'.equalsIgnoreCase(it.type) && 'maven2'.equalsIgnoreCase(it.format) }
   }
