@@ -23,6 +23,7 @@ import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3ClientBuilder
 
 import org.sonatype.nexus.ci.config.Nxrm3Configuration
+import org.sonatype.nexus.ci.config.NxrmVersion
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
@@ -32,6 +33,7 @@ import hudson.security.ACL
 import hudson.util.FormValidation.Kind
 import jenkins.model.Jenkins
 
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 import static org.sonatype.nexus.ci.util.FormUtil.validateUrl
 
 @SuppressWarnings(value = ['AbcMetric'])
@@ -64,6 +66,10 @@ class RepositoryManagerClientUtil
 
     if (!nxrmConfig) {
       throw new RepositoryManagerException("Nexus Configuration ${nexusInstanceId} not found.")
+    }
+
+    if (nxrmConfig.version != NEXUS_3) {
+      throw new RepositoryManagerException("The specified instance is not a Nexus Repository Manager 3 server")
     }
 
     if (validateUrl(nxrmConfig.serverUrl).kind == Kind.ERROR) {
