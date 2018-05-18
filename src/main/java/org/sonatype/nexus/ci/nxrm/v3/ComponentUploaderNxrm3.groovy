@@ -53,8 +53,7 @@ class ComponentUploaderNxrm3
             .withPackaging(envVars.expand(mavenCoordinate.packaging))
 
         remoteMavenAssets.eachWithIndex { remoteMavenAsset, idx ->
-          def asset = new DefaultAsset("asset${idx}", remoteMavenAsset.RemotePath.getRemote(),
-              remoteMavenAsset.RemotePath.read())
+          def asset = new DefaultAsset(remoteMavenAsset.RemotePath.getRemote(), remoteMavenAsset.RemotePath.read())
 
           mavenComponentBuilder.withAsset(asset, envVars.expand(remoteMavenAsset.Asset.extension),
               envVars.expand(remoteMavenAsset.Asset.classifier))

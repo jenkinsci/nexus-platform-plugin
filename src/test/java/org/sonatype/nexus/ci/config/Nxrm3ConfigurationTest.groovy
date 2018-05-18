@@ -43,7 +43,7 @@ class Nxrm3ConfigurationTest
 
     then:
       validation.kind == Kind.OK
-      validation.message == "Nexus Repository Manager 3.x connection succeeded (2 hosted Maven 2 repositories)"
+      validation.message == "Nexus Repository Manager 3.x connection succeeded (3 hosted repositories)"
 
     where:
       serverUrl << ['serverUrl']
