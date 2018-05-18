@@ -12,10 +12,15 @@
  */
 package org.sonatype.nexus.ci.util
 
+import com.sonatype.nexus.api.common.NexusStringUtils
 import com.sonatype.nexus.api.repository.v3.Repository
 
+import hudson.util.ListBoxModel
+
+import static com.sonatype.nexus.api.common.NexusStringUtils.isNotBlank
 import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.getGlobalNexusConfiguration
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
+import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModel
 import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus3Client
 
 class Nxrm3Util
@@ -30,14 +35,30 @@ class Nxrm3Util
       throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 3.x server')
     }
 
-    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)
+    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven')
   }
 
   /**
-   * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
+   * Return Nexus repositories which are applicable for package upload. These are hosted repositories matching
+   * the provided format.
    */
-  static List<Repository> getApplicableRepositories(final String serverUrl, final String credentialsId) {
-    nexus3Client(serverUrl, credentialsId).getRepositories().
-        findAll { 'hosted'.equalsIgnoreCase(it.type) && 'maven2'.equalsIgnoreCase(it.format) }
+  static List<Repository> getApplicableRepositories(final String serverUrl, final String credentialsId,
+                                                    final String format = null) {
+    nexus3Client(serverUrl, credentialsId).getRepositories()
+        .findAll { ('hosted'.equalsIgnoreCase(it.type)) && (isNotBlank(format) ?
+        format.equalsIgnoreCase(it.format) : true)}
+  }
+
+  /**
+   * Return Nexus all hosted repositories regardless of format.
+   */
+  static ListBoxModel doFillNexusHostedRepositoryIdItems(final String nexusInstanceId) {
+    def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
+
+    if (configuration.version != NEXUS_3) {
+      throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 3.x server')
+    }
+    newListBoxModel({ it.name }, { it.name },
+        getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
   }
 }
