@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.common.NexusStringUtils
 import com.sonatype.nexus.api.repository.v3.Repository
 
 import hudson.util.ListBoxModel
@@ -25,6 +24,8 @@ import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus3Clien
 
 class Nxrm3Util
 {
+  private static final String INSTANCE_IS_NOT_NXRM3 = 'Specified Nexus Repository Manager instance is not a 3.x server'
+
   /**
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
@@ -32,10 +33,10 @@ class Nxrm3Util
     def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
 
     if (configuration.version != NEXUS_3) {
-      throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 3.x server')
+      throw new IllegalArgumentException(INSTANCE_IS_NOT_NXRM3)
     }
 
-    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven')
+    getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven2')
   }
 
   /**
@@ -56,7 +57,7 @@ class Nxrm3Util
     def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
 
     if (configuration.version != NEXUS_3) {
-      throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 3.x server')
+      throw new IllegalArgumentException(INSTANCE_IS_NOT_NXRM3)
     }
     newListBoxModel({ it.name }, { it.name },
         getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))

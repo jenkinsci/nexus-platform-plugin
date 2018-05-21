@@ -43,7 +43,7 @@ class Nxrm3ConfigurationTest
 
     then:
       validation.kind == Kind.OK
-      validation.message == "Nexus Repository Manager 3.x connection succeeded (3 hosted repositories)"
+      validation.message == "Nexus Repository Manager 3.x connection succeeded (2 hosted maven2 repositories)"
 
     where:
       serverUrl << ['serverUrl']
@@ -102,7 +102,7 @@ class Nxrm3ConfigurationTest
       descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
-      1 * Nxrm3Util.getApplicableRepositories(serverUrl, null)
+      1 * Nxrm3Util.getApplicableRepositories(serverUrl, null, 'maven2')
 
     where:
       serverUrl << ['serverUrl']

@@ -77,7 +77,7 @@ class MoveComponentsStepTest
           [
               name: 'Maven 1 Releases',
               format: 'maven1',
-              type: 'hosted',
+              type: 'proxy',
               repositoryPolicy: 'Release'
           ],
           [
