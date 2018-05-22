@@ -59,7 +59,6 @@ public class DeleteComponentsStep
 
   @DataBoundConstructor
   public DeleteComponentsStep(final String nexusInstanceId, final String tagName) {
-
     this.nexusInstanceId = checkArgument(nexusInstanceId, isNotBlank(nexusInstanceId),
         Common_Validation_NexusInstanceIDRequired());
     this.tagName = checkArgument(tagName, isNotBlank(tagName), Common_Validation_Staging_TagNameRequired());
