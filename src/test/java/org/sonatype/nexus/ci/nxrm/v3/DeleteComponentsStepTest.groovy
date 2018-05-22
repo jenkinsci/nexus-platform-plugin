@@ -39,7 +39,7 @@ class DeleteComponentsStepTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  RepositoryManagerV3Client nxrm3Client = Mock()
+  RepositoryManagerV3Client nxrm3Client = Mock(RepositoryManagerV3Client)
 
   def 'it populates Nexus instances'() {
     setup:
