@@ -39,7 +39,7 @@ class MoveComponentsStepTest
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule()
 
-  RepositoryManagerV3Client nxrm3Client = Mock()
+  RepositoryManagerV3Client nxrm3Client = Mock(RepositoryManagerV3Client)
 
   def 'it populates Nexus instances'() {
     setup:
@@ -134,6 +134,63 @@ class MoveComponentsStepTest
       def build = project.scheduleBuild2(0).get()
 
     then:
+      jenkinsRule.assertBuildStatus(Result.FAILURE, build)
+      jenkinsRule.assertLogContains("Move failed", build)
+  }
+
+  def 'it fails to complete a move operation based on a tag and verifies no follow-on steps are run'() {
+    setup:
+      def instance = 'localhost'
+      def destination = 'maven-releases'
+      def config = createNxrm3Config(instance)
+      def project = jenkinsRule.createFreeStyleProject()
+
+      def builder = new MoveComponentsStep(instance, 'foo', destination)
+      project.getBuildersList().add(builder)
+
+      //This is a second build step which should not get executed
+      def builder2 = new MoveComponentsStep(instance, 'boo', destination)
+      project.getBuildersList().add(builder2)
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+
+    when:
+      def build = project.scheduleBuild2(0).get()
+
+    then:
+      //Verify the move call only happens 1 time signaling the second step never gets executed
+      1 * nxrm3Client.move(destination, _) >> { throw new RepositoryManagerException("Move failed") }
+      jenkinsRule.assertBuildStatus(Result.FAILURE, build)
+      jenkinsRule.assertLogContains("Move failed", build)
+  }
+
+  def 'it fails to complete a move operation based on a tag and verifies no follow-on steps are run as workflow'() {
+    setup:
+      def instance = 'localhost'
+      def destination = 'maven-releases'
+      def tagName = 'foo'
+      def config = createNxrm3Config(instance)
+      def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
+
+      //We set up the workflow with 2 move steps...we should only see the first one called
+      project.setDefinition(new CpsFlowDefinition(
+          "node { " +
+          "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance +"', tagName: '" +
+              tagName + "'" +
+          "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance +"', tagName: '" +
+              tagName + "'" +
+          "}"))
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+
+    when:
+      def build = project.scheduleBuild2(0).get()
+
+    then:
+      //Verify the move call only happens 1 time signaling the second step never gets executed
+      1 * nxrm3Client.move(destination, _) >> { throw new RepositoryManagerException("Move failed") }
       jenkinsRule.assertBuildStatus(Result.FAILURE, build)
       jenkinsRule.assertLogContains("Move failed", build)
   }

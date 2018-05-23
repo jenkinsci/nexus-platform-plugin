@@ -98,6 +98,7 @@ public class MoveComponentsStep
     catch (RepositoryManagerException e) {
       listener.getLogger().println("Failing build due to: " + e.getResponseMessage().orElse(e.getMessage()));
       run.setResult(FAILURE);
+      throw new IOException(e);
     }
   }
 
