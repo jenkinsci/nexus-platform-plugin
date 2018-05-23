@@ -86,6 +86,59 @@ class DeleteComponentsStepTest
       jenkinsRule.assertLogContains("Delete failed", build)
   }
 
+  def 'it fails to complete a delete operation based on a tag and verifies no follow-on steps are run'() {
+    setup:
+      def instance = 'localhost'
+      def config = createNxrm3Config(instance)
+      def project = jenkinsRule.createFreeStyleProject()
+
+      def builder = new DeleteComponentsStep(instance, 'foo')
+      project.getBuildersList().add(builder)
+
+      //This is a second build step which should not get executed
+      def builder2 = new DeleteComponentsStep(instance, 'boo')
+      project.getBuildersList().add(builder2)
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+
+    when:
+      def build = project.scheduleBuild2(0).get()
+
+    then:
+      //Verify the delete call only happens 1 time signaling the second step never gets executed
+      1 * nxrm3Client.delete(_) >> { throw new RepositoryManagerException("Delete failed") }
+      jenkinsRule.assertBuildStatus(Result.FAILURE, build)
+      jenkinsRule.assertLogContains("Delete failed", build)
+  }
+
+  def 'it fails to complete a delete operation based on a tag and verifies no follow-on steps are run as workflow'() {
+    setup:
+      def instance = 'localhost'
+      def tagName = 'foo'
+      def config = createNxrm3Config(instance)
+      def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingDelete")
+
+      //We set up the workflow with 2 delete steps...we should only see the first one called
+      project.setDefinition(new CpsFlowDefinition(
+          "node { " +
+              "\ndeleteComponents nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'" +
+              "\ndeleteComponents nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'" +
+              "}"))
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+
+    when:
+      def build = project.scheduleBuild2(0).get()
+
+    then:
+      //Verify the delete call only happens 1 time signaling the second step never gets executed
+      1 * nxrm3Client.delete(_) >> { throw new RepositoryManagerException("Delete failed") }
+      jenkinsRule.assertBuildStatus(Result.FAILURE, build)
+      jenkinsRule.assertLogContains("Delete failed", build)
+  }
+
   def 'it fails attempting to get an nxrm3 client with invalid id'() {
     setup:
       def project = getProject('invalidclient', 'foo',
