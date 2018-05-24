@@ -66,7 +66,7 @@ class NxrmUtil
             Nxrm2Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
       case NEXUS_3:
         return newListBoxModel({ it.name }, { it.name },
-            Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
+            Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven2'))
     }
   }
 }
