@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm.v3
 
+import javax.annotation.Nullable
+
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v3.DefaultAsset
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
@@ -35,8 +37,17 @@ class ComponentUploaderNxrm3
     extends ComponentUploader
 {
   @Override
+  void maybeCreateTag(@Nullable final String tagName) {
+    if (tagName?.trim()) {
+      def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
+      nxrmClient.getTag(tagName).orElse(nxrmClient.createTag(tagName))
+    }
+  }
+
+  @Override
   void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
-              final String nxrmRepositoryId)
+              final String nxrmRepositoryId,
+              @Nullable final String tagName = null)
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 
@@ -60,7 +71,7 @@ class ComponentUploaderNxrm3
         }
 
         try {
-          nxrmClient.upload(nxrmRepositoryId, mavenComponentBuilder.build())
+          nxrmClient.upload(nxrmRepositoryId, mavenComponentBuilder.build(), tagName?.trim() ? tagName : null)
         }
         catch (RepositoryManagerException ex) {
           throw new IOException(ex)

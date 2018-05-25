@@ -61,7 +61,7 @@ class PackagePublisherExecutionTest
       underTest.run()
 
     then:
-      1 * componentUploader.uploadComponents(nxrmPublisher, filePath)
+      1 * componentUploader.uploadComponents(nxrmPublisher, filePath, null)
   }
 
   def 'it bubbles up IOException when things go wrong'() {
@@ -90,7 +90,7 @@ class PackagePublisherExecutionTest
       def componentUploader = Mock(ComponentUploaderNxrm2)
       ComponentUploaderFactory.getComponentUploader(nxrm2Configuration.id,  run, taskListener) >> componentUploader
 
-      componentUploader.uploadComponents(nexusPublisher, filePath) >> { throw new IOException("oops") }
+      componentUploader.uploadComponents(nexusPublisher, filePath, null) >> { throw new IOException("oops") }
 
     when:
       underTest.run()

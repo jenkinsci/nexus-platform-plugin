@@ -69,4 +69,8 @@ class NxrmUtil
             Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven2'))
     }
   }
+
+  static boolean isVersion(final String nexusInstanceId, final NxrmVersion version) {
+    getNexusConfiguration(nexusInstanceId)?.version == version
+  }
 }

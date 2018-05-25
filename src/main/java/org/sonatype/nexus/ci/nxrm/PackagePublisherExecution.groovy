@@ -41,6 +41,7 @@ class PackagePublisherExecution
   @Override
   @SuppressWarnings('ConfusingMethodName')
   protected Void run() throws Exception {
-    getComponentUploader(nxrmPublisher.nexusInstanceId, run, taskListener).uploadComponents(nxrmPublisher, filePath)
+    getComponentUploader(nxrmPublisher.nexusInstanceId, run, taskListener)
+        .uploadComponents(nxrmPublisher, filePath, nxrmPublisher.tagName)
   }
 }

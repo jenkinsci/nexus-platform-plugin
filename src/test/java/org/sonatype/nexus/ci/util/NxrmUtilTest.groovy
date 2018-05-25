@@ -23,6 +23,10 @@ import org.sonatype.nexus.ci.config.NxrmConfiguration
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.lang.Unroll
+
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_2
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 
 class NxrmUtilTest
     extends Specification
@@ -155,9 +159,30 @@ class NxrmUtilTest
       listBoxModel.get(2).value == repositories.get(4).id
   }
 
+  @Unroll
+  def 'isVersion(#id, #version) == #expected'() {
+    setup:
+      createNxrmConfig('nxrm2')
+      createNxrmConfig('nxrm3')
+
+    expect:
+      NxrmUtil.isVersion(id, version) == expected
+
+    where:
+      id      | version | expected
+      'nxrm2' | NEXUS_2 | true
+      'nxrm2' | NEXUS_3 | false
+      'nxrm3' | NEXUS_3 | true
+      'nxrm3' | NEXUS_2 | false
+  }
+
   //get a config, defaults to nxrm3
-  NxrmConfiguration createNxrmConfig(String id = 'nxrm3') {
-    def configurationList = []
+  private NxrmConfiguration createNxrmConfig(final String id = 'nxrm3') {
+    def globalConfiguration = jenkins.getInstance().getDescriptorByType(GlobalNexusConfiguration)
+    if (!globalConfiguration.nxrmConfigs) {
+      globalConfiguration.nxrmConfigs = []
+    }
+
     def nxrmConfiguration
     if (id == 'nxrm2') {
       nxrmConfiguration = new Nxrm2Configuration(id, "internal${id}", 'displayName', 'http://foo.com', 'credentialsId')
@@ -165,10 +190,7 @@ class NxrmUtilTest
       nxrmConfiguration = new Nxrm3Configuration(id, "internal${id}", 'displayName', 'http://foo.com', 'credentialsId')
     }
 
-    configurationList <<  nxrmConfiguration
-
-    def globalConfiguration = jenkins.getInstance().getDescriptorByType(GlobalNexusConfiguration)
-    globalConfiguration.nxrmConfigs = configurationList
+    globalConfiguration.nxrmConfigs << nxrmConfiguration
     globalConfiguration.save()
 
     nxrmConfiguration

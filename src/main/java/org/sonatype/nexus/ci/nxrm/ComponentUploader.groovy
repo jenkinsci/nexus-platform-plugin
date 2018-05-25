@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import javax.annotation.Nullable
+
 import org.sonatype.nexus.ci.config.NxrmConfiguration
 
 import hudson.EnvVars
@@ -42,13 +44,21 @@ abstract class ComponentUploader
   }
 
   protected abstract void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
-                                 final String nxrmRepositoryId)
+                                 final String nxrmRepositoryId,
+                                 @Nullable final String tagName = null)
+
+  @SuppressWarnings(['UnusedMethodParameter', 'EmptyMethodInAbstractClass'])
+  void maybeCreateTag(@Nullable final String tagName) {
+  }
 
   void uploadComponents(final NexusPublisher nexusPublisher,
-                        final FilePath filePath)
+                        final FilePath filePath,
+                        @Nullable final String tagName = null)
   {
     def mavenPackages = getPackagesOfType(nexusPublisher.packages, MavenPackage)
     def remoteMavenComponents = [:]
+
+    maybeCreateTag(tagName)
 
     // Iterate through all packages and assets first to ensure that everything exists
     // This prevents uploading assets from an incomplete set
@@ -71,7 +81,7 @@ abstract class ComponentUploader
       }
     }
 
-    upload(remoteMavenComponents, nexusPublisher.nexusRepositoryId)
+    upload(remoteMavenComponents, nexusPublisher.nexusRepositoryId, tagName)
   }
 
   @SuppressWarnings('Instanceof')
