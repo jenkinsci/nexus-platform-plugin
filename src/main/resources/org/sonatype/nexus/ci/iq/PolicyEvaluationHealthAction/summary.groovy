@@ -20,7 +20,7 @@ def l = namespace(lib.LayoutTagLib)
 
 def action = (PolicyEvaluationHealthAction) it
 
-l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
+l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
 t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
   a(href: "${action.getUrlName()}", Messages.IqPolicyEvaluation_ReportName())
   br()

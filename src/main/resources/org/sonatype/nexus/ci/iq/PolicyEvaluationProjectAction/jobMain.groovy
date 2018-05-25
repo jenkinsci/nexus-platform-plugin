@@ -23,7 +23,7 @@ def projectAction = (PolicyEvaluationProjectAction) it
 def action = projectAction.getJob().lastCompletedBuild.getAction(PolicyEvaluationHealthAction.class)
 
 if (action) {
-  l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
+  l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
       a(href: "lastCompletedBuild/${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
