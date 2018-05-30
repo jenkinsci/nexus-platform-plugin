@@ -40,7 +40,7 @@ class ComponentUploaderNxrm3
   void maybeCreateTag(@Nullable final String tagName) {
     if (tagName?.trim()) {
       def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
-      nxrmClient.getTag(tagName).orElse(nxrmClient.createTag(tagName))
+      nxrmClient.getTag(tagName).orElseGet({ nxrmClient.createTag(tagName) })
     }
   }
 
