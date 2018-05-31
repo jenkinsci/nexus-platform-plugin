@@ -24,31 +24,8 @@ def action = projectAction.getJob().lastCompletedBuild.getAction(PolicyEvaluatio
 if (action) {
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
+      // Inline the iq-chiclet css here for Jenkins v1 which does not support the css tag.
       style(type: 'text/css', """
-            .nexus-jenkins-error {
-              background: #faf3d1;
-              border: 1px solid #eac9a9;
-              -moz-border-radius: 3px;
-              -webkit-border-radius: 3px;
-              border-radius: px;
-              padding: 0;
-              -moz-box-shadow: 0 0 5px #ccc8b3;
-              -webkit-box-shadow: 0 0 5px #ccc8b3;
-              box-shadow: 0 0 5px #ccc8b3;
-              margin: 15px;
-              letter-spacing: normal;
-              text-align: center
-            }
-            
-            .iq-job-main-table {
-              margin-top: 1em;
-              margin-left: 1em;
-            }
-            
-            .iq-job-main-table img {
-              margin-right: 0 !important;
-            }
-            
             .iq-chiclet {
               display:inline-block;
               width:25px;
