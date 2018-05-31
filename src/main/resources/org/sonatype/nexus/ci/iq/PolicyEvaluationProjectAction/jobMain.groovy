@@ -17,15 +17,37 @@ import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 
 def t = namespace(lib.JenkinsTagLib)
-def l = namespace(lib.LayoutTagLib)
 
 def projectAction = (PolicyEvaluationProjectAction) it
 def action = projectAction.getJob().lastCompletedBuild.getAction(PolicyEvaluationHealthAction.class)
 
 if (action) {
-  l.css(src: '/plugin/nexus-jenkins-plugin/css/nexus.css')
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
+      // Inline the iq-chiclet css here for Jenkins v1 which does not support the css tag.
+      style(type: 'text/css', """
+            .iq-chiclet {
+              display:inline-block;
+              width:25px;
+              text-align:center;
+              border-radius:5px;
+              -moz-border-radius:5px;
+              color:white;
+              margin-right: 5px;
+            }
+            
+            .iq-chiclet.critical {
+              background-color: #bc012f;
+            }
+            
+            .iq-chiclet.severe {
+              background-color: #f4861d;
+            }
+            
+            .iq-chiclet.moderate {
+              background-color: #f5c648;
+            }
+          """)
       a(href: "lastCompletedBuild/${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
       br()
       img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")

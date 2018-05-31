@@ -33,25 +33,3 @@
 .iq-job-main-table img {
   margin-right: 0 !important;
 }
-
-.iq-chiclet {
-  display:inline-block;
-  width:25px;
-  text-align:center;
-  border-radius:5px;
-  -moz-border-radius:5px;
-  color:white;
-  margin-right: 5px;
-}
-
-.iq-chiclet.critical {
-  background-color: #bc012f;
-}
-
-.iq-chiclet.severe {
-  background-color: #f4861d;
-}
-
-.iq-chiclet.moderate {
-  background-color: #f5c648;
-}
