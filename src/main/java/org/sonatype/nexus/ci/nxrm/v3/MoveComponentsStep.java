@@ -91,9 +91,7 @@ public class MoveComponentsStep
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
       List<ComponentInfo> components = client.move(destination, tagName);
       listener.getLogger().println("Move successful. Destination: '" + destination + "' Components moved:\n" +
-          components.stream()
-          .map(c -> c.getGroup() + ":" + c.getName() + ":" + c.getVersion())
-          .collect(joining("\n")));
+          components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }
     catch (RepositoryManagerException e) {
       listener.getLogger().println("Failing build due to: " + e.getResponseMessage().orElse(e.getMessage()));

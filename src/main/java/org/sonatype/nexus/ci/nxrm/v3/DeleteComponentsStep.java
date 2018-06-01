@@ -80,9 +80,7 @@ public class DeleteComponentsStep
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
       List<ComponentInfo> components = client.delete(tagName);
       listener.getLogger().println("Delete successful. Components deleted:\n" +
-          components.stream()
-              .map(c -> c.getGroup() + ":" + c.getName() + ":" + c.getVersion())
-              .collect(joining("\n")));
+          components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }
     catch (RepositoryManagerException e) {
       listener.getLogger().println("Failing build due to: " + e.getResponseMessage().orElse(e.getMessage()));
