@@ -123,7 +123,7 @@ abstract class NxrmConfigurationDescriptorTest
       'other_id'    | Kind.OK    | '<div/>'
   }
 
-  def 'it validates the server url is a valid url'() {
+  def 'it shows error message for invalid URL'() {
     when:
       "validating $url"
       def validation = descriptor.doCheckServerUrl(url)
@@ -136,7 +136,7 @@ abstract class NxrmConfigurationDescriptorTest
     where:
       url              | kind         | message
       'foo'            | Kind.ERROR   | 'Malformed url (no protocol: foo)'
-      'http://foo.com' | Kind.OK      | '<div/>'
+      'foo://bar'      | Kind.ERROR   | 'Malformed url (unknown protocol: foo)'
   }
 
   def 'it validates the server url is required'() {
@@ -153,7 +153,6 @@ abstract class NxrmConfigurationDescriptorTest
       url                | kind         | message
       ''                 | Kind.ERROR   | 'Server Url is required'
       null               | Kind.ERROR   | 'Server Url is required'
-      'http://foo.com'   | Kind.OK      | '<div/>'
   }
 
   def 'it loads the credential items'() {

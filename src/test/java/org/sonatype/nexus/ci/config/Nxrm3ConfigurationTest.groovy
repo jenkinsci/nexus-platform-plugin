@@ -34,6 +34,45 @@ class Nxrm3ConfigurationTest
     RepositoryManagerClientUtil.nexus3Client(_, _) >> client
   }
 
+  def 'it checks nxrm version'() {
+    given:
+      URL.metaClass.getText = {
+        if (delegate.host.contains('invalid')) {
+          return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><status><edition>PRO</edition><version>3.12' +
+              '.0-01</version></status>'
+        }
+        else if (delegate.host.contains('valid')) {
+          return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><status><edition>PRO</edition><version>3.13' +
+              '.0-01</version></status>'
+        }
+        else {
+          throw new ConnectException()
+        }
+      }
+
+    when:
+      "checking $url for nxrm version"
+      def validation = descriptor.doCheckServerUrl(url)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    cleanup:
+      GroovySystem.metaClassRegistry.setMetaClass(URL, null)
+
+    where:
+      url                       | kind         | message
+      'http://foo.com'          | Kind.WARNING |
+          'Unable to determine Nexus Repository Manager version. Certain operations may not be compatible with your ' +
+          'server which could result in failed builds.'
+      'http://nxrm.invalid.com' | Kind.WARNING |
+          'NXRM PRO 3.12.0-01 found. Some operations require a Nexus Repository Manager Professional server version 3' +
+          '.13.0 or newer; use of an incompatible server will result in failed builds.'
+      'http://nxrm.valid.com'   | Kind.OK      | ''
+  }
+
   def 'it tests valid server credentials'() {
     when:
       client.getRepositories() >> repositories

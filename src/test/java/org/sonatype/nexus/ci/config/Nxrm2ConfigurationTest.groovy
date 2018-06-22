@@ -32,6 +32,22 @@ class Nxrm2ConfigurationTest
     RepositoryManagerClientUtil.nexus2Client(_, _) >> client
   }
 
+  def 'it validates the server url is required'() {
+    when:
+      "validating $url"
+      def validation = descriptor.doCheckServerUrl(url)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      url                | kind         | message
+      ''                 | Kind.ERROR   | 'Server Url is required'
+      null               | Kind.ERROR   | 'Server Url is required'
+  }
+
   def 'it tests valid server credentials'() {
     when:
       client.getRepositoryList() >> repositories
