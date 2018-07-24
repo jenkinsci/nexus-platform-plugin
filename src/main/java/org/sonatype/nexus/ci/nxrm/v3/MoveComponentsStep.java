@@ -14,18 +14,22 @@ package org.sonatype.nexus.ci.nxrm.v3;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException;
 import com.sonatype.nexus.api.repository.v3.ComponentInfo;
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client;
+import com.sonatype.nexus.api.repository.v3.SearchBuilder;
 
 import org.sonatype.nexus.ci.config.NxrmVersion;
 import org.sonatype.nexus.ci.util.FormUtil;
 import org.sonatype.nexus.ci.util.Nxrm3Util;
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import com.google.common.collect.Maps;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -39,11 +43,15 @@ import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.sonatype.nexus.api.common.ArgumentUtils.checkArgument;
 import static com.sonatype.nexus.api.common.NexusStringUtils.isNotBlank;
+import static hudson.Util.fixEmptyAndTrim;
 import static hudson.model.Result.FAILURE;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.joining;
 import static org.sonatype.nexus.ci.nxrm.Messages.Common_Validation_NexusInstanceIDRequired;
 import static org.sonatype.nexus.ci.nxrm.Messages.Common_Validation_Staging_TagNameRequired;
@@ -57,30 +65,45 @@ public class MoveComponentsStep
 {
   private final String nexusInstanceId;
 
-  private final String tagName;
-
   private final String destination;
 
+  private final Map<String, String> search = newHashMap();
+
+  private String tagName;
+
   @DataBoundConstructor
-  public MoveComponentsStep(final String nexusInstanceId, final String tagName, final String destination)
+  public MoveComponentsStep(final String nexusInstanceId, final String destination)
   {
     this.nexusInstanceId = checkArgument(nexusInstanceId, isNotBlank(nexusInstanceId),
         Common_Validation_NexusInstanceIDRequired());
     this.destination = checkArgument(destination, isNotBlank(destination),
         MoveComponents_Validation_DestinationRequired());
-    this.tagName = checkArgument(tagName, isNotBlank(tagName), Common_Validation_Staging_TagNameRequired());
   }
 
   public String getNexusInstanceId() {
     return nexusInstanceId;
   }
 
+  public String getDestination() {
+    return destination;
+  }
+
+  public Map<String, String> getSearch() { return unmodifiableMap(search);}
+
+  @DataBoundSetter
+  public void setSearch(final Map<String, String> search) {
+    this.search.clear();
+    this.search.putAll(search);
+  }
+
+  @CheckForNull
   public String getTagName() {
     return tagName;
   }
 
-  public String getDestination() {
-    return destination;
+  @DataBoundSetter
+  public void setTagName(@CheckForNull final String tagName) {
+    this.tagName = fixEmptyAndTrim(tagName);
   }
 
   @Override
@@ -89,7 +112,12 @@ public class MoveComponentsStep
   {
     try {
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
-      List<ComponentInfo> components = client.move(destination, tagName);
+      SearchBuilder searchBuilder = SearchBuilder.create();
+      search.forEach(searchBuilder::withParameter);
+      if (isNotBlank(tagName)) { // explicit tag will take priority if one was also supplied
+        searchBuilder.withTag(tagName);
+      }
+      List<ComponentInfo> components = client.move(destination, searchBuilder.build());
       listener.getLogger().println("Move successful. Destination: '" + destination + "' Components moved:\n" +
           components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }
