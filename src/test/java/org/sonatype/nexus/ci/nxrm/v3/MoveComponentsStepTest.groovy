@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.nxrm.v3
 
-import javax.annotation.CheckForNull
-
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v3.ComponentInfo
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
