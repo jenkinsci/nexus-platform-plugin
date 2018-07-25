@@ -71,27 +71,27 @@ class MoveComponentsStepTest
       def client = Mock(RepositoryManagerV3Client.class)
       def repositories = [
           [
-              name            : 'Maven Releases',
-              format          : 'maven2',
-              type            : 'hosted',
+              name: 'Maven Releases',
+              format: 'maven2',
+              type: 'hosted',
               repositoryPolicy: 'Release'
           ],
           [
-              name            : 'Maven 1 Releases',
-              format          : 'maven1',
-              type            : 'proxy',
+              name: 'Maven 1 Releases',
+              format: 'maven1',
+              type: 'proxy',
               repositoryPolicy: 'Release'
           ],
           [
-              name            : 'Maven Snapshots',
-              format          : 'maven2',
-              type            : 'hosted',
+              name: 'Maven Snapshots',
+              format: 'maven2',
+              type: 'hosted',
               repositoryPolicy: 'Snapshot'
           ],
           [
-              name            : 'Maven Proxy',
-              format          : 'maven2',
-              type            : 'proxy',
+              name: 'Maven Proxy',
+              format: 'maven2',
+              type: 'proxy',
               repositoryPolicy: 'Release'
           ]
       ]
@@ -180,11 +180,11 @@ class MoveComponentsStepTest
       //We set up the workflow with 2 move steps...we should only see the first one called
       project.setDefinition(new CpsFlowDefinition(
           "node { " +
-              "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance + "', tagName: '" +
+          "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance +"', tagName: '" +
               tagName + "'" +
-              "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance + "', tagName: '" +
+          "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance +"', tagName: '" +
               tagName + "'" +
-              "}"))
+          "}"))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -202,7 +202,7 @@ class MoveComponentsStepTest
   def 'it fails attempting to get an nxrm3 client with invalid id'() {
     setup:
       def project = getProject('invalidclient', 'maven-releases', 'foo',
-          { throw new RepositoryManagerException("localhost not found") })
+          { throw new RepositoryManagerException("localhost not found") } )
 
     when:
       def build = project.scheduleBuild2(0).get()
@@ -225,17 +225,17 @@ class MoveComponentsStepTest
   }
 
   def 'it fails to complete a move operation based on a tag as a workflow'() {
-    setup:
-      def project = getWorkflowProject('localhost', 'maven-releases', 'foo'
-          , { throw new RepositoryManagerException("Move failed") })
+      setup:
+        def project = getWorkflowProject('localhost', 'maven-releases', 'foo'
+            , { throw new RepositoryManagerException("Move failed") })
 
-    when:
-      def build = project.scheduleBuild2(0).get()
+      when:
+        def build = project.scheduleBuild2(0).get()
 
-    then:
-      jenkinsRule.assertBuildStatus(Result.FAILURE, build)
-      jenkinsRule.assertLogContains("Failing build due to: Move failed", build)
-  }
+      then:
+        jenkinsRule.assertBuildStatus(Result.FAILURE, build)
+        jenkinsRule.assertLogContains("Failing build due to: Move failed", build)
+    }
 
   @Unroll
   def 'it fails due to missing parameter in workflow dsl - #missingParam'(stepArgs, missingParam, expectedLogMsg) {

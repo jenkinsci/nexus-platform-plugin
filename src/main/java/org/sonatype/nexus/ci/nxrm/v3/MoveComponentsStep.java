@@ -29,7 +29,6 @@ import org.sonatype.nexus.ci.util.FormUtil;
 import org.sonatype.nexus.ci.util.Nxrm3Util;
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
-import com.google.common.collect.Maps;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -93,7 +92,10 @@ public class MoveComponentsStep
   @DataBoundSetter
   public void setSearch(final Map<String, String> search) {
     this.search.clear();
-    this.search.putAll(search);
+
+    if (search != null) {
+      this.search.putAll(search);
+    }
   }
 
   @CheckForNull
