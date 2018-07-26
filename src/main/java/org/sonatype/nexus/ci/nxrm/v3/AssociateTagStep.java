@@ -42,10 +42,8 @@ import org.kohsuke.stapler.QueryParameter;
 import static com.sonatype.nexus.api.common.ArgumentUtils.checkArgument;
 import static com.sonatype.nexus.api.common.NexusStringUtils.isNotBlank;
 import static hudson.model.Result.FAILURE;
-import static hudson.util.FormValidation.error;
-import static hudson.util.FormValidation.ok;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3;
 import static org.sonatype.nexus.ci.nxrm.Messages.AssociateTag_DisplayName;
@@ -63,16 +61,15 @@ public class AssociateTagStep
 
   private final String tagName;
 
-  private final List<SearchCriteria> searchCriteria;
+  private final List<SearchParameter> search;
 
   @DataBoundConstructor
-  public AssociateTagStep(final String nexusInstanceId, final String tagName, final List<SearchCriteria> searchCriteria)
+  public AssociateTagStep(final String nexusInstanceId, final String tagName, final List<SearchParameter> search)
   {
     this.nexusInstanceId = checkArgument(nexusInstanceId, isNotBlank(nexusInstanceId),
         Common_Validation_NexusInstanceIDRequired());
     this.tagName = checkArgument(tagName, isNotBlank(tagName), Common_Validation_Staging_TagNameRequired());
-    this.searchCriteria = checkArgument(searchCriteria, isNotEmpty(searchCriteria),
-        Common_Validation_Staging_SearchRequired());
+    this.search = checkArgument(search, isNotEmpty(search), Common_Validation_Staging_SearchRequired());
   }
 
   public String getNexusInstanceId() {
@@ -83,45 +80,27 @@ public class AssociateTagStep
     return tagName;
   }
 
-  public List<SearchCriteria> getSearchCriteria() {
-    return searchCriteria;
+  public List<SearchParameter> getSearch() {
+    return unmodifiableList(search);
   }
 
   @Override
   public void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
                       @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
-    RepositoryManagerV3Client client = null;
-
     try {
-      client = nexus3Client(nexusInstanceId);
+      RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
+      SearchBuilder searchBuilder = SearchBuilder.create();
+      search.forEach(s -> searchBuilder.withParameter(s.getKey(), s.getValue()));
+      List<ComponentInfo> components = client.associate(tagName, searchBuilder.build());
+      listener.getLogger().println("Associate successful. Components associated:\n" +
+          components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }
     catch (RepositoryManagerException e) {
-      failBuildAndThrow(run, listener, e.getResponseMessage().orElse(e.getMessage()), new IOException(e));
+      listener.getLogger().println("Failing build due to: " + e.getResponseMessage().orElse(e.getMessage()));
+      run.setResult(FAILURE);
+      throw new IOException(e);
     }
-
-    try {
-      SearchBuilder search = SearchBuilder.create();
-      searchCriteria.forEach(sc -> search.withParameter(sc.getKey(), sc.getValue()));
-      List<ComponentInfo> associated = client.associate(tagName, search.build());
-      listener.getLogger().println("Associate successful for components:\n" +
-          associated.stream().map(c -> c.getGroup() + ":" + c.getName() + ":" + c.getVersion()).collect(joining("\n")));
-    }
-    catch (RepositoryManagerException e) {
-      failBuildAndThrow(run, listener, e.getResponseMessage().orElse(e.getMessage()), new IOException(e));
-    }
-  }
-
-  private void failBuild(Run run, TaskListener listener, String reason) {
-    listener.getLogger().println("Failing build due to: " + reason);
-    run.setResult(FAILURE);
-  }
-
-  private void failBuildAndThrow(Run run, TaskListener listener, String reason, IOException ioException)
-      throws IOException
-  {
-    failBuild(run, listener, reason);
-    throw ioException;
   }
 
   @Extension

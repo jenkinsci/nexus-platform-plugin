@@ -10,7 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.nxrm.v3.CreateTagStep
+package org.sonatype.nexus.ci.nxrm.v3.AssociateTagStep
 
 import org.sonatype.nexus.ci.util.NxrmUtil
 
@@ -42,7 +42,7 @@ f.section() {
     f.textbox(clazz: 'required')
   }
 
-  f.entry(title: 'Search Criteria', field: 'searchCriteria') {
-    f.repeatableProperty(field: 'searchCriteria', minimum: '1')
+  f.entry(title: 'Search Criteria', field: 'search') {
+    f.repeatableProperty(field: 'search', minimum: '1')
   }
 }
