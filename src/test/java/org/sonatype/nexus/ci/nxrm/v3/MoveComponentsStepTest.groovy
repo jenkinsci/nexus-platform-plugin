@@ -121,7 +121,7 @@ class MoveComponentsStepTest
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.move('maven-releases', 'foo') >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      1 * nxrm3Client.move('maven-releases', ['tag': 'foo']) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
       jenkinsRule.assertBuildStatus(SUCCESS, build)
   }
 
@@ -145,11 +145,13 @@ class MoveComponentsStepTest
       def config = createNxrm3Config(instance)
       def project = jenkinsRule.createFreeStyleProject()
 
-      def builder = new MoveComponentsStep(instance, 'foo', destination)
+      def builder = new MoveComponentsStep(instance, destination)
+      builder.tagName = 'foo'
       project.getBuildersList().add(builder)
 
       //This is a second build step which should not get executed
-      def builder2 = new MoveComponentsStep(instance, 'boo', destination)
+      def builder2 = new MoveComponentsStep(instance, destination)
+      builder2.tagName = 'bar'
       project.getBuildersList().add(builder2)
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
@@ -216,7 +218,7 @@ class MoveComponentsStepTest
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.move('maven-releases', 'foo') >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      1 * nxrm3Client.move('maven-releases', ['tag': 'foo']) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
       jenkinsRule.assertBuildStatus(SUCCESS, build)
   }
 
@@ -253,10 +255,56 @@ class MoveComponentsStepTest
 
     where:
       stepArgs << ['tagName: "foo", nexusInstanceId: "someInstance"',
-                   'destination: "maven-releases", nexusInstanceId: "someInstance"',
                    'destination: "maven-releases", tagName: "foo"']
-      missingParam << ['destination', 'tagName', 'nexusInstanceId']
-      expectedLogMsg << ['Destination is required', 'Tag Name is required', 'Nexus Instance ID is required']
+      missingParam << ['destination', 'nexusInstanceId']
+      expectedLogMsg << ['Destination is required', 'Nexus Instance ID is required']
+  }
+
+  def 'callable with tag or search'(stepArgs, expectedSearch) {
+    setup:
+      def config = createNxrm3Config('someInstance')
+
+      def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
+      project.setDefinition(new CpsFlowDefinition("node {moveComponents ${stepArgs} }"))
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+
+    when:
+      def build = project.scheduleBuild2(0).get()
+
+    then:
+      1 * nxrm3Client.move(_, expectedSearch) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      jenkinsRule.assertBuildStatus(Result.SUCCESS, build)
+
+    where:
+      stepArgs << ['destination: "maven-releases", tagName: "foo", nexusInstanceId: "someInstance"',
+                   'destination: "maven-releases", search: ["tag": "bar", "format": "maven"], nexusInstanceId: ' +
+                       '"someInstance"']
+      expectedSearch << [['tag': 'foo'], ['tag': 'bar', 'format': 'maven']]
+  }
+
+  def 'tagName parameter overrides search tag'() {
+    setup:
+      def config = createNxrm3Config('someInstance')
+
+      def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
+      project.setDefinition(new CpsFlowDefinition("node {moveComponents destination: \"maven-releases\", tagName: " +
+          "\"foo\", nexusInstanceId: \"someInstance\", search: [\"tag\": \"bar\"] }"))
+
+      GroovyMock(RepositoryManagerClientUtil.class, global: true)
+      RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
+      def actualSearch = [:]
+
+    when:
+      project.scheduleBuild2(0).get()
+
+    then:
+      1 * nxrm3Client.move(*_) >> { args ->
+        actualSearch = args[1]
+        Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      }
+      actualSearch == ['tag': 'foo']
   }
 
   def getDescriptor() {
@@ -280,7 +328,8 @@ class MoveComponentsStepTest
   def getProject(String instance, String destination, String tag, Closure clientReturn = { nxrm3Client }) {
     def config = createNxrm3Config(instance)
     def project = jenkinsRule.createFreeStyleProject()
-    def builder = new MoveComponentsStep(instance, tag, destination)
+    def builder = new MoveComponentsStep(instance, destination)
+    builder.tagName = tag
     project.getBuildersList().add(builder)
 
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
@@ -294,7 +343,7 @@ class MoveComponentsStepTest
     def config = createNxrm3Config(instance)
     def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
     project.setDefinition(new CpsFlowDefinition("node {moveComponents destination: '" + destination +
-        "', nexusInstanceId: '" + instance +"', tagName: '" + tagName + "'}"))
+        "', nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'}"))
 
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
     RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> { clientReturn.call() }
