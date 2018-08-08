@@ -59,4 +59,5 @@ t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
   if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
     span(Messages.IqPolicyEvaluation_NoViolations())
   }
+  span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
 }

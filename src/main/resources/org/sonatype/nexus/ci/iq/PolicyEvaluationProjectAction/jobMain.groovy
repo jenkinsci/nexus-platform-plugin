@@ -63,6 +63,7 @@ if (action) {
       if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
         span(Messages.IqPolicyEvaluation_NoViolations())
       }
+      span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
     }
   }
 }
