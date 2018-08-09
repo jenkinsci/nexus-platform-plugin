@@ -47,6 +47,10 @@ if (action) {
             .iq-chiclet.moderate {
               background-color: #f5c648;
             }
+            
+            .iq-chiclet-message {
+              margin-right: 5px;
+            }
           """)
       a(href: "lastCompletedBuild/${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
       br()
@@ -61,9 +65,9 @@ if (action) {
         span(class: 'iq-chiclet moderate', action.moderateComponentCount)
       }
       if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
-        span(Messages.IqPolicyEvaluation_NoViolations())
+        span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NoViolations())
       }
-      span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+      span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
     }
   }
 }
