@@ -99,7 +99,7 @@ class ComToOrgMigratorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
+      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
           'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -122,7 +122,7 @@ class ComToOrgMigratorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, [],
+      1 * iqClient.evaluateApplication('sample-app', 'build', _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
           'http://server/link/to/report')
 
     then: 'the expected result is returned'
