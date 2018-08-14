@@ -43,6 +43,10 @@ t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
         .iq-chiclet.moderate {
           background-color: #f5c648;
         }
+        
+        .iq-chiclet-message {
+          margin-right: 5px;
+        }
       """)
   a(href: "${action.getUrlName()}", Messages.IqPolicyEvaluation_ReportName())
   br()
@@ -57,6 +61,7 @@ t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
     span(class: 'iq-chiclet moderate', action.moderateComponentCount)
   }
   if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
-    span(Messages.IqPolicyEvaluation_NoViolations())
+    span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NoViolations())
   }
+  span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
 }
