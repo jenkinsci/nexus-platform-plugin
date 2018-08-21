@@ -30,6 +30,8 @@ import static com.google.common.base.Preconditions.checkArgument
 
 class IqPolicyEvaluatorUtil
 {
+  private static final String MINIMAL_SERVER_VERSION_REQUIRED = "1.50.0"
+
   @SuppressWarnings('AbcMetric')
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
@@ -49,6 +51,7 @@ class IqPolicyEvaluatorUtil
           new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
               log: loggerBridge))
 
+      iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED);
       def verified = iqClient.verifyOrCreateApplication(applicationId)
       checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
