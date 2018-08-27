@@ -10,32 +10,32 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.iq
+package org.sonatype.nexus.ci.iq;
 
-import hudson.Extension
-import org.jenkinsci.Symbol
-import org.kohsuke.stapler.DataBoundConstructor
+import hudson.Extension;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-class ManualApplication
+public class ManualApplication
     extends IqApplication
 {
   @DataBoundConstructor
-  ManualApplication(final String applicationId) {
-    super(applicationId)
+  public ManualApplication(final String applicationId) {
+    super(applicationId);
   }
 
-  @Symbol('manualApplication')
+  @Symbol("manualApplication")
   @Extension
-  static class DescriptorImpl
-      extends IqApplication.IqApplicationDescriptor
+  public static class DescriptorImpl
+      extends IqApplicationDescriptor
   {
-    DescriptorImpl() {
-      super(ManualApplication)
+    public DescriptorImpl() {
+      super(ManualApplication.class);
     }
 
     @Override
-    String getDisplayName() {
-      return Messages.IqPolicyEvaluation_ManualApplication()
+    public String getDisplayName() {
+      return Messages.IqPolicyEvaluation_ManualApplication();
     }
   }
 }

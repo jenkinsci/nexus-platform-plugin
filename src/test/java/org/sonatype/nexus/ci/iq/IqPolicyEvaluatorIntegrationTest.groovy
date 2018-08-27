@@ -99,6 +99,37 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
+  def 'Declarative pipeline build successful with selectedApplication call'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+              stages {
+                stage("Example") {
+                  steps { 
+                    writeFile file: 'dummy.txt', text: 'dummy'
+                    nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                      iqApplication: selectedApplication('app'), iqStage: 'stage'
+                  }
+                }
+              }
+          }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application with application id "app" is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
   def 'Pipeline build should return result when build is successful'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)

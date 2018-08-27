@@ -23,6 +23,7 @@ import hudson.Extension
 import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
+import org.jenkinsci.plugins.structs.describable.UninstantiatedDescribable
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.AncestorInPath
@@ -75,6 +76,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
     else if (iqApplication instanceof String) {
       this.iqApplication = new SelectedApplication(iqApplication)
+    }
+    else if (iqApplication instanceof UninstantiatedDescribable) {
+      this.iqApplication = ((UninstantiatedDescribable) iqApplication).instantiate()
     }
     else {
       throw new IllegalArgumentException("iqApplication is not a valid format")

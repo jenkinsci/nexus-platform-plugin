@@ -12,12 +12,14 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.model.Job
 import hudson.util.FormValidation.Kind
+import hudson.util.ListBoxModel
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
@@ -146,27 +148,37 @@ abstract class IqPolicyEvaluatorDescriptorTest
   def 'it validates that application items are filled'() {
     setup:
       def descriptor = getSelectedApplication()
-      GroovyMock(IqUtil, global: true)
       def job = Mock(Job)
+      ListBoxModel appList
 
     when:
-      descriptor.doFillApplicationIdItems('', job)
+      appList = descriptor.doFillApplicationIdItems('', job)
 
     then:
-      1 * IqUtil.doFillIqApplicationItems('', job)
+      appList.size() == 1
+      appList.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      appList.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'it uses custom credentials for application items'() {
     setup:
       def descriptor = getSelectedApplication()
-      GroovyMock(IqUtil, global: true)
+      // create a config so that IqUtil.doFillApplicationIdItems will go down the path that uses custom credentials
+      GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('http://server/url',
+          null)]
       def job = Mock(Job)
 
     when:
       descriptor.doFillApplicationIdItems('credentialsId', job)
 
     then:
-      1 * IqUtil.doFillIqApplicationItems('credentialsId', job)
+      // this is a bit odd, but because we're mixing Groovy and Java classes SelectedApplication, we can't
+      // use GroovyMock to verify interactions.  What we are testing here is that IqUtil.doFillIqApplicationItems
+      // was invoked with 'credentialsId'.  Since the Jenkins credential hasn't been created
+      // IqUtil.doFillIqApplicationItems will throw an exception, and then we can check the exception message
+      // to make sure that IqUtil.doFillIqApplicationItems received the expected parameter.
+      IllegalArgumentException ex = thrown()
+      ex.message == 'No credentials were found for credentials credentialsId'
   }
 
   def 'it validates that stage items are filled'() {
