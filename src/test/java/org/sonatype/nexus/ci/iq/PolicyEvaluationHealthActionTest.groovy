@@ -25,7 +25,7 @@ class PolicyEvaluationHealthActionTest
   def 'it redirects to the application composition report'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, [], reportLink)
       def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
@@ -74,5 +74,27 @@ class PolicyEvaluationHealthActionTest
 
     then:
       buildNumber == 3
+  }
+  
+  def 'it returns the correct component and grandfathered policy violation counts'() {
+    setup:
+      def reportLink = 'http://localhost/reportLink'
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 5, [], reportLink)
+      def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
+      def response = Mock(StaplerResponse)
+
+    when: 'getting component and grandfathered policy violation counts'
+      def affectedComponentCount = healthAction.affectedComponentCount
+      def criticalComponentCount = healthAction.criticalComponentCount
+      def severeComponentCount = healthAction.severeComponentCount
+      def moderateComponentCount = healthAction.moderateComponentCount
+      def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
+
+    then:
+      affectedComponentCount == 1
+      criticalComponentCount == 2
+      severeComponentCount == 3
+      moderateComponentCount == 4
+      grandfatheredPolicyViolationCount == 5
   }
 }

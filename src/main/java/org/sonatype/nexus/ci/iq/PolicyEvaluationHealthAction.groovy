@@ -38,6 +38,8 @@ class PolicyEvaluationHealthAction
   private final int severeComponentCount
 
   private final int moderateComponentCount
+  
+  private final int grandfatheredPolicyViolationCount
 
   PolicyEvaluationHealthAction(final Run run,
                                       final ApplicationPolicyEvaluation policyEvaluationResult)
@@ -48,6 +50,7 @@ class PolicyEvaluationHealthAction
     this.criticalComponentCount = policyEvaluationResult.criticalComponentCount
     this.severeComponentCount = policyEvaluationResult.severeComponentCount
     this.moderateComponentCount = policyEvaluationResult.moderateComponentCount
+    this.grandfatheredPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
   }
 
   int getBuildNumber() {
@@ -64,6 +67,10 @@ class PolicyEvaluationHealthAction
 
   int getModerateComponentCount() {
     return moderateComponentCount
+  }
+
+  int getGrandfatheredPolicyViolationCount() {
+    return grandfatheredPolicyViolationCount
   }
 
   @Override
