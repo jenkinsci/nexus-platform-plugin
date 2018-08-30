@@ -32,6 +32,7 @@ Closure postHandler = {
 
 Closure iqPolicyEvaluation = {
   stage ->
+    def commitId = OsTools.runSafe(this, 'git rev-parse HEAD')
     gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
     try {
