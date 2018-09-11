@@ -18,7 +18,7 @@ A plugin for integrating Nexus Repository Manager and Nexus Lifecycle into a Jen
 plugin with Nexus Repository Manager can be found in the
 [Nexus RM Documentation](https://help.sonatype.com/display/NXRM2/Jenkins). Information about using the plugin with
 Nexus Lifecycle can be found in the
-[Nexus IQ Documentation](https://help.sonatype.com/display/NXI/Nexus+IQ+for+Jenkins).
+[Nexus IQ Documentation](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-NexusIQServerIntegration).
 
 ## LICENSE ##
 
