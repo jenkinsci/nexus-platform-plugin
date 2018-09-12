@@ -49,6 +49,15 @@ Closure iqPolicyEvaluation = {
 }
 
 if (!params.isRelease) {
+  /**
+   * Currently master branch will attempt a deploy which requires logic invoked when isRelease is true. If
+   * mavenSnapshotPipeline is used on master an unauthorized deploy will be attempted against the jenkinsci repository.
+   **/
+  if (scm.branches[0].name == '*/master') {
+    echo 'Master builds should only be used for release.'
+    return
+  }
+
   mavenSnapshotPipeline(
       notificationSender: postHandler,
       iqPolicyEvaluation: iqPolicyEvaluation
