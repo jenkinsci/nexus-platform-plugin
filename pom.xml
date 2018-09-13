@@ -86,8 +86,15 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.3.20180828-152410.8e581c6</version>
+        <version>3.3.20180912-160644.740f677</version>
         <classifier>internal</classifier>
+      </dependency>
+      
+      <!-- bcprov-jdk15on versions before 1.60 have a lot of security vulnerabilities. -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>1.60</version>
       </dependency>
 
       <dependency>
