@@ -37,6 +37,9 @@ class Nxrm3ConfigurationTest
   def 'it checks nxrm version'() {
     given:
       URL.metaClass.getText = {
+        if (delegate.path.startsWith('//')) {
+          throw new ConnectException()
+        }
         if (delegate.host.contains('invalid')) {
           return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><status><edition>PRO</edition><version>3.12' +
               '.0-01</version></status>'
@@ -71,6 +74,7 @@ class Nxrm3ConfigurationTest
           'NXRM PRO 3.12.0-01 found. Some operations require a Nexus Repository Manager Professional server version 3' +
           '.13.0 or newer; use of an incompatible server will result in failed builds.'
       'http://nxrm.valid.com'   | Kind.OK      | ''
+      'http://nxrm.valid.com/'  | Kind.OK      | ''
   }
 
   def 'it tests valid server credentials'() {

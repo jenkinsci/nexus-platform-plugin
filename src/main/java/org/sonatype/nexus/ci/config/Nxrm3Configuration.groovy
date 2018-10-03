@@ -96,7 +96,8 @@ class Nxrm3Configuration
 
       // check nexus version, warn if < 3.13.0 PRO
       try {
-        def response = new XmlSlurper().parseText(new URL("${nxrmUrl}/service/rest/wonderland/status").text)
+        def statusServiceUrl = "${nxrmUrl}${nxrmUrl.endsWith('/') ? '' : '/'}service/rest/wonderland/status"
+        def response = new XmlSlurper().parseText(new URL(statusServiceUrl).text)
         def edition = response.edition.text()
         def version = response.version.text()
         def (major, minor) = version.tokenize(DOT).take(2).collect { it as int }
