@@ -20,7 +20,7 @@ interface IqPolicyEvaluator
 
   List<ScanPattern> getIqScanPatterns()
 
-  List<ModuleExclude> getModuleExcludes()
+  List<ModuleExclude> getIqModuleExcludes()
 
   Boolean getFailBuildOnNetworkError()
 
