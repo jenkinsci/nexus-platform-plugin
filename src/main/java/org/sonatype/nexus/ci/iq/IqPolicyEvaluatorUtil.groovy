@@ -57,7 +57,7 @@ class IqPolicyEvaluatorUtil
 
       def envVars = run.getEnvironment(listener)
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
-      def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.moduleExcludes, envVars)
+      def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def remoteScanner = RemoteScannerFactory.

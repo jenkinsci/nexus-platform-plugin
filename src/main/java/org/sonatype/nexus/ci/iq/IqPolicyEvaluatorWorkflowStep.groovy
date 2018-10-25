@@ -42,7 +42,7 @@ class IqPolicyEvaluatorWorkflowStep
 
   List<ScanPattern> iqScanPatterns
 
-  List<ModuleExclude> moduleExcludes
+  List<ModuleExclude> iqModuleExcludes
 
   Boolean failBuildOnNetworkError
 
@@ -54,8 +54,8 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @DataBoundSetter
-  public void setModuleExcludes(final List<ModuleExclude> moduleExcludes) {
-    this.moduleExcludes = moduleExcludes
+  public void setIqModuleExcludes(final List<ModuleExclude> iqModuleExcludes) {
+    this.iqModuleExcludes = iqModuleExcludes
   }
 
   @DataBoundSetter

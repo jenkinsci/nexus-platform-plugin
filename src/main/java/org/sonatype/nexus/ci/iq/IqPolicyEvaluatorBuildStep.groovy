@@ -47,7 +47,7 @@ class IqPolicyEvaluatorBuildStep
 
   List<ScanPattern> iqScanPatterns
 
-  List<ModuleExclude> moduleExcludes
+  List<ModuleExclude> iqModuleExcludes
 
   Boolean failBuildOnNetworkError
 
@@ -58,14 +58,14 @@ class IqPolicyEvaluatorBuildStep
   IqPolicyEvaluatorBuildStep(final String iqStage,
                              final IqApplication iqApplication,
                              final List<ScanPattern> iqScanPatterns,
-                             final List<ModuleExclude> moduleExcludes,
+                             final List<ModuleExclude> iqModuleExcludes,
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
-    this.moduleExcludes = moduleExcludes
+    this.iqModuleExcludes = iqModuleExcludes
     this.iqStage = iqStage
     this.iqApplication = iqApplication
   }
