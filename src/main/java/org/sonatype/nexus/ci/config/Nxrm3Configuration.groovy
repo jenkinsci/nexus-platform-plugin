@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-import java.util.logging.Level
-
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 
 import groovy.util.logging.Log
@@ -22,13 +20,15 @@ import hudson.util.FormValidation
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-import static hudson.util.FormValidation.Kind.OK
 import static hudson.util.FormValidation.error
 import static hudson.util.FormValidation.ok
 import static hudson.util.FormValidation.warning
+import static java.util.logging.Level.WARNING
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR
 import static org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 import static org.sonatype.nexus.ci.util.Nxrm3Util.getApplicableRepositories
+import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus3Client
 
 @Log
 class Nxrm3Configuration
@@ -41,6 +41,10 @@ class Nxrm3Configuration
   private static final int PATCH_VERSION_REQ = 0
 
   private static final String DOT = '.'
+
+  private static final String INVALID_VERSION_WARNING = "Some operations require Nexus Repository Manager " +
+      "Professional server version ${[MAJOR_VERSION_REQ, MINOR_VERSION_REQ, PATCH_VERSION_REQ].join(DOT)} or " +
+      "newer; use of an incompatible server could result in failed builds."
 
   @SuppressWarnings('ParameterCount')
   @DataBoundConstructor
@@ -75,49 +79,46 @@ class Nxrm3Configuration
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
+      def repositories
+      def badVersionMsg = ''
+
+      /*
+       * note: consider removing this and only verifying version as the v1 endpoints aren't available pre 3.13 which
+       * would result in a connection failure even tho upload will work with 3.9+
+       *
+       * also if anonymous access is disabled the endpoint will show 0 repositories without credentials which is
+       * potentially confusing
+       */
       try {
-        def repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
-        ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)")
+        repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
       }
       catch (RepositoryManagerException e) {
-        error(e, 'Nexus Repository Manager 3.x connection failed')
-      }
-    }
-
-    @SuppressWarnings('CatchException')
-    @Override
-    FormValidation doCheckServerUrl(@QueryParameter String value) {
-      def nxrmUrl = value
-      def validation = super.doCheckServerUrl(value)
-
-      if (validation.kind != OK) {
-        return validation
+        return error(e, 'Nexus Repository Manager 3.x connection failed')
       }
 
-      // check nexus version, warn if < 3.13.0 PRO
       try {
-        def statusServiceUrl = "${nxrmUrl}${nxrmUrl.endsWith('/') ? '' : '/'}service/rest/wonderland/status"
-        def response = new XmlSlurper().parseText(new URL(statusServiceUrl).text)
-        def edition = response.edition.text()
-        def version = response.version.text()
-        def (major, minor) = version.tokenize(DOT).take(2).collect { it as int }
+        // check nexus version, warn if < 3.13.0 PRO
+        def client = nexus3Client(serverUrl, credentialsId)
+        def sv = client.getVersion()
+        def (major, minor) = sv.version.tokenize(DOT).take(2).collect { it as int }
 
-        if (!edition.equalsIgnoreCase('pro') || major < MAJOR_VERSION_REQ || minor < MINOR_VERSION_REQ) {
-          return warning(
-              "NXRM ${edition} ${version} found. Some operations require a Nexus Repository Manager Professional " +
-                  "server version ${[MAJOR_VERSION_REQ, MINOR_VERSION_REQ, PATCH_VERSION_REQ].join(DOT)} or newer; " +
-                  "use of an incompatible server will result in failed builds.")
+        if (!sv.edition.equalsIgnoreCase('pro') || major < MAJOR_VERSION_REQ || minor < MINOR_VERSION_REQ) {
+          badVersionMsg = "NXRM ${sv.edition} ${sv.version} found."
         }
       }
       catch (Exception e) {
-        log.log(Level.WARNING, "Unsuccessful request to ${nxrmUrl} for version information for compatibility check", e)
-
-        return warning(
-            'Unable to determine Nexus Repository Manager version. Certain operations may not be compatible with your' +
-                ' server which could result in failed builds.')
+        log.log(WARNING, "Unsuccessful request to ${serverUrl} for version information for compatibility check", e)
+        badVersionMsg = 'Unable to determine Nexus Repository Manager version.'
       }
 
-      ok()
+      if (badVersionMsg) {
+        warning(
+            "Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)" +
+                "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
+      }
+      else {
+        ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)")
+      }
     }
   }
 }
