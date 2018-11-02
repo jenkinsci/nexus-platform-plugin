@@ -40,7 +40,8 @@ class IqPolicyEvaluatorUtil
                                                     final TaskListener listener)
   {
     try {
-      String applicationId = iqPolicyEvaluator.getIqApplication()?.applicationId
+      EnvVars envVars = run.getEnvironment(listener)
+      String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
 
       checkArgument(iqPolicyEvaluator.iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
@@ -55,7 +56,6 @@ class IqPolicyEvaluatorUtil
       def verified = iqClient.verifyOrCreateApplication(applicationId)
       checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
-      def envVars = run.getEnvironment(listener)
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 

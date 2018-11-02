@@ -29,8 +29,10 @@ import com.cloudbees.plugins.credentials.CredentialsScope
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.Domain
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
+import hudson.EnvVars
 import hudson.model.FreeStyleProject
 import hudson.model.Result
+import hudson.slaves.EnvironmentVariablesNodeProperty
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
@@ -533,6 +535,49 @@ class IqPolicyEvaluatorIntegrationTest
       with(build.getLog(100)) {
         !it.contains('next')
       }
+  }
+
+  def 'Manual application without variable substitution'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('app'), [], [], false, 'cred-id'))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication('app', _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+          'http://server/link/to/report')
+
+    then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Manual application with variable substitution'() {
+    given: 'a jenkins project that uses an environment variable for application ID'   
+      EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty()
+      EnvVars envVars = prop.getEnvVars()
+      envVars.put('APP', 'app')
+      jenkins.jenkins.getGlobalNodeProperties().add(prop)
+
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('$APP'), [], [], false, 'cred-id'))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication('app', _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+          'http://server/link/to/report')
+
+    then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
   }
 
   def configureJenkins() {
