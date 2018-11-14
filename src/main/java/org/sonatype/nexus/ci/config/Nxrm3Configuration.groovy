@@ -89,12 +89,12 @@ class Nxrm3Configuration
        * also if anonymous access is disabled the endpoint will show 0 repositories without credentials which is
        * potentially confusing
        */
-      try {
-        repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
-      }
-      catch (RepositoryManagerException e) {
-        return error(e, 'Nexus Repository Manager 3.x connection failed')
-      }
+//      try {
+//        repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
+//      }
+//      catch (RepositoryManagerException e) {
+//        return error(e, 'Nexus Repository Manager 3.x connection failed')
+//      }
 
       try {
         // check nexus version, warn if < 3.13.0 PRO
@@ -105,19 +105,28 @@ class Nxrm3Configuration
         if (!sv.edition.equalsIgnoreCase('pro') || major < MAJOR_VERSION_REQ || minor < MINOR_VERSION_REQ) {
           badVersionMsg = "NXRM ${sv.edition} ${sv.version} found."
         }
+
       }
       catch (Exception e) {
         log.log(WARNING, "Unsuccessful request to ${serverUrl} for version information for compatibility check", e)
-        badVersionMsg = 'Unable to determine Nexus Repository Manager version.'
+//        badVersionMsg = 'Unable to determine Nexus Repository Manager version.'
+        return error(e, 'Nexus Repository Manager 3.x connection failed')
       }
 
       if (badVersionMsg) {
         warning(
-            "Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)" +
+//            "Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)" +
                 "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
       }
       else {
-        ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)")
+        try {
+          repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
+          ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)")
+        }
+        catch (RepositoryManagerException e) {
+          return error(e, 'Nexus Repository Manager 3.x connection failed')
+        }
+
       }
     }
   }
