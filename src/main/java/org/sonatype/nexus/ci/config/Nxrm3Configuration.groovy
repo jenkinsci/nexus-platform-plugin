@@ -82,20 +82,6 @@ class Nxrm3Configuration
       def repositories
       def badVersionMsg = ''
 
-      /*
-       * note: consider removing this and only verifying version as the v1 endpoints aren't available pre 3.13 which
-       * would result in a connection failure even tho upload will work with 3.9+
-       *
-       * also if anonymous access is disabled the endpoint will show 0 repositories without credentials which is
-       * potentially confusing
-       */
-//      try {
-//        repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
-//      }
-//      catch (RepositoryManagerException e) {
-//        return error(e, 'Nexus Repository Manager 3.x connection failed')
-//      }
-
       try {
         // check nexus version, warn if < 3.13.0 PRO
         def client = nexus3Client(serverUrl, credentialsId)
@@ -109,14 +95,11 @@ class Nxrm3Configuration
       }
       catch (Exception e) {
         log.log(WARNING, "Unsuccessful request to ${serverUrl} for version information for compatibility check", e)
-//        badVersionMsg = 'Unable to determine Nexus Repository Manager version.'
         return error(e, 'Nexus Repository Manager 3.x connection failed')
       }
 
       if (badVersionMsg) {
-        warning(
-//            "Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)" +
-                "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
+        warning("${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
       }
       else {
         try {

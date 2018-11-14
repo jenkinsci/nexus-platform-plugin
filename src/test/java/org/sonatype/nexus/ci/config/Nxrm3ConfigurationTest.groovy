@@ -38,22 +38,56 @@ class Nxrm3ConfigurationTest
     when:
       "checking $serverUrl for nxrm version"
       client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
+      client.getRepositories() >> repositories
       def validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       "it returns $kind with message $message"
       validation.kind == kind
-      validation.renderHtml().startsWith(message)
+      validation.renderHtml().contains(message)
 
     cleanup:
       GroovySystem.metaClassRegistry.setMetaClass(URL, null)
 
     where:
-      kind         | serverUrl                 | credentialsId   | version | edition | message
-      Kind.WARNING | 'http://foo.com'          | 'credentialsId' | '3.13.0'| 'PRO'   | 'Unable to determine Nexus Repository Manager version.'
-      Kind.WARNING | 'http://nxrm.invalid.com' | 'credentialsId' | '3.12.1'| 'PRO'   | 'Unable to determine Nexus Repository Manager version.'
-      Kind.OK      | 'http://nxrm.valid.com'   | 'credentialsId' | '3.13.0'| 'OSS'   | 'NXRM OSS 3.13.0 found. Some operations require a Nexus Repository Manager Professional server version 3.13.0 or newer; use of an incompatible server will result in failed builds. '
-      Kind.OK      | 'http://nxrm.valid.com/'  | 'credentialsId' | '3.13.0'| 'PRO'   | 'Nexus Repository Manager 3.x connection succeeded (0 hosted maven2 repositories'
+      kind         | serverUrl               | credentialsId   | version | edition | message  | repositories
+      Kind.WARNING | 'http://nxrm.valid.com' | 'credentialsId' | '3.12.1'| 'PRO'   |
+          'NXRM PRO 3.12.1 found. Some operations require Nexus Repository Manager ' +
+          'Professional server version 3.13.0 or newer; use of an incompatible server could result in failed builds.' |
+          []
+      Kind.WARNING | 'http://nxrm.valid.com' | 'credentialsId' | '3.13.0'| 'OSS'   |
+          'NXRM OSS 3.13.0 found. Some operations require Nexus Repository Manager ' +
+          'Professional server version 3.13.0 or newer; use of an incompatible server could result in failed builds.' |
+          []
+      Kind.OK      | 'http://nxrm.valid.com/'| 'credentialsId' | '3.13.0'| 'PRO'   |
+          'Nexus Repository Manager 3.x connection succeeded (1 hosted maven2 repositories)' |
+          [
+              [
+                  url   : 'maven-releases',
+                  name  : 'Maven Releases',
+                  format: 'maven2',
+                  type  : 'hosted'
+              ]
+          ]
+  }
+
+  def 'it checks nxrm version for invalid urls'() {
+    when:
+      "checking $serverUrl for nxrm version"
+      client.getVersion() >> { throw new RepositoryManagerException("something went wrong") }
+      def validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().contains(message)
+
+    cleanup:
+      GroovySystem.metaClassRegistry.setMetaClass(URL, null)
+
+    where:
+      kind       | serverUrl        | credentialsId   | message
+      Kind.ERROR | 'http://foo.com' | 'credentialsId' | 'Nexus Repository Manager 3.x connection failed'
   }
 
   def 'it tests valid server credentials'() {
