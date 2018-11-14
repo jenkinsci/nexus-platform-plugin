@@ -108,7 +108,6 @@ class Nxrm3Configuration
         catch (RepositoryManagerException e) {
           return error(e, 'Nexus Repository Manager 3.x connection failed')
         }
-
       }
     }
   }
