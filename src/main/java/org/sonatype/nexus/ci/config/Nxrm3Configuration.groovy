@@ -91,7 +91,6 @@ class Nxrm3Configuration
         if (!sv.edition.equalsIgnoreCase('pro') || major < MAJOR_VERSION_REQ || minor < MINOR_VERSION_REQ) {
           badVersionMsg = "NXRM ${sv.edition} ${sv.version} found."
         }
-
       }
       catch (Exception e) {
         log.log(WARNING, "Unsuccessful request to ${serverUrl} for version information for compatibility check", e)
