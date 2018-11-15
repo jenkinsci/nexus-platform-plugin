@@ -98,7 +98,8 @@ class Nxrm3Configuration
       }
 
       if (badVersionMsg) {
-        warning("${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
+        warning("Nexus Repository Manager 3.x connection succeeded " +
+                "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
       }
       else {
         try {

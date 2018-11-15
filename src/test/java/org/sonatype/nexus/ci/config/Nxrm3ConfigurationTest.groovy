@@ -71,7 +71,7 @@ class Nxrm3ConfigurationTest
           ]
   }
 
-  def 'it checks nxrm version for invalid urls'() {
+  def 'attempts to check nxrm version when using invalid urls'() {
     when:
       "checking $serverUrl for nxrm version"
       client.getVersion() >> { throw new RepositoryManagerException("something went wrong") }
@@ -156,6 +156,7 @@ class Nxrm3ConfigurationTest
       GroovySpy(Nxrm3Util.class, global: true)
       client.getRepositories() >> []
     and:
+      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion("3.13.0", "PRO")
       descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
