@@ -93,7 +93,7 @@ class Nxrm3ConfigurationTest
   def 'it tests valid server credentials'() {
     when:
       client.getRepositories() >> repositories
-      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion("3.13.0", "PRO")
+      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
 
     and:
       FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
@@ -103,6 +103,8 @@ class Nxrm3ConfigurationTest
       validation.message == "Nexus Repository Manager 3.x connection succeeded (2 hosted maven2 repositories)"
 
     where:
+      version << ['3.13.0']
+      edition << ['PRO']
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
       repositories << [
@@ -137,7 +139,7 @@ class Nxrm3ConfigurationTest
 
   def 'it tests invalid server credentials'() {
     when:
-      client.getRepositories() >> { throw new RepositoryManagerException("something went wrong") }
+      client.getVersion() >> { throw new RepositoryManagerException("something went wrong") }
 
     and:
       FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
@@ -154,15 +156,20 @@ class Nxrm3ConfigurationTest
   def 'defaults to anonymous access with no credentials'() {
     when:
       GroovySpy(Nxrm3Util.class, global: true)
+      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
       client.getRepositories() >> []
+
     and:
-      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion("3.13.0", "PRO")
-      descriptor.doVerifyCredentials(serverUrl, credentialsId)
+      FormValidation validation =descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
     then:
       1 * Nxrm3Util.getApplicableRepositories(serverUrl, null, 'maven2')
+      validation.kind == Kind.OK
+      validation.message == "Nexus Repository Manager 3.x connection succeeded (0 hosted maven2 repositories)"
 
     where:
+      version << ['3.13.0']
+      edition << ['PRO']
       serverUrl << ['serverUrl']
       credentialsId << [null]
   }
