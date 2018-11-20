@@ -13,12 +13,14 @@
 package org.sonatype.nexus.ci.config
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException
+import com.sonatype.nexus.api.repository.v3.NxrmVersion
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 
 import org.sonatype.nexus.ci.config.Nxrm3Configuration.DescriptorImpl
 import org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
 import org.sonatype.nexus.ci.util.Nxrm3Util
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
+
 
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
@@ -37,7 +39,7 @@ class Nxrm3ConfigurationTest
   def 'it checks nxrm version'() {
     when:
       "checking $serverUrl for nxrm version"
-      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
+      client.getVersion() >> new NxrmVersion(version, edition)
       client.getRepositories() >> repositories
       def validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
 
@@ -93,7 +95,7 @@ class Nxrm3ConfigurationTest
   def 'it tests valid server credentials'() {
     when:
       client.getRepositories() >> repositories
-      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
+      client.getVersion() >> new NxrmVersion(version, edition)
 
     and:
       FormValidation validation = descriptor.doVerifyCredentials(serverUrl, credentialsId)
@@ -156,11 +158,11 @@ class Nxrm3ConfigurationTest
   def 'defaults to anonymous access with no credentials'() {
     when:
       GroovySpy(Nxrm3Util.class, global: true)
-      client.getVersion() >> new com.sonatype.nexus.api.repository.v3.NxrmVersion(version, edition)
+      client.getVersion() >> new NxrmVersion(version, edition)
       client.getRepositories() >> []
 
     and:
-      FormValidation validation =descriptor.doVerifyCredentials(serverUrl, credentialsId)
+      FormValidation validation = descriptor.doVerifyCredentials(serverUrl, null)
 
     then:
       1 * Nxrm3Util.getApplicableRepositories(serverUrl, null, 'maven2')
@@ -171,7 +173,6 @@ class Nxrm3ConfigurationTest
       version << ['3.13.0']
       edition << ['PRO']
       serverUrl << ['serverUrl']
-      credentialsId << [null]
   }
 
   @Override

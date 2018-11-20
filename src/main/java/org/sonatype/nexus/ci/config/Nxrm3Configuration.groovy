@@ -43,7 +43,7 @@ class Nxrm3Configuration
   private static final String DOT = '.'
 
   private static final String INVALID_VERSION_WARNING = "Some operations require Nexus Repository Manager " +
-      "Professional server version ${[MAJOR_VERSION_REQ, MINOR_VERSION_REQ, PATCH_VERSION_REQ].join(DOT)} or " +
+      "Professional server version ${MAJOR_VERSION_REQ}.${MINOR_VERSION_REQ}.${PATCH_VERSION_REQ} or " +
       "newer; use of an incompatible server could result in failed builds."
 
   @SuppressWarnings('ParameterCount')
