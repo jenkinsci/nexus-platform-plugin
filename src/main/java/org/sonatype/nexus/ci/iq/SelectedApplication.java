@@ -15,6 +15,7 @@ package org.sonatype.nexus.ci.iq;
 import org.sonatype.nexus.ci.util.IqUtil;
 
 import hudson.Extension;
+import hudson.RelativePath;
 import hudson.model.Job;
 import hudson.util.ListBoxModel;
 import org.jenkinsci.Symbol;
@@ -44,7 +45,7 @@ public class SelectedApplication
       return Messages.IqPolicyEvaluation_SelectApplication();
     }
 
-    public ListBoxModel doFillApplicationIdItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
       return IqUtil.doFillIqApplicationItems(jobCredentialsId, job);
     }
