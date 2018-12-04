@@ -83,7 +83,7 @@ class Nxrm3Configuration
       def badVersionMsg = ''
 
       try {
-        // check nexus version, warn if < 3.13.0 PRO
+        // check nexus version and warn if < 3.13.0 PRO
         def client = nexus3Client(serverUrl, credentialsId)
         def sv = client.getVersion()
         def (major, minor) = sv.version.tokenize(DOT).take(2).collect { it as int }
