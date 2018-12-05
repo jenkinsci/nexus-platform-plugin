@@ -21,7 +21,6 @@ import org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
 import org.sonatype.nexus.ci.util.Nxrm3Util
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
-
 import hudson.util.FormValidation
 import hudson.util.FormValidation.Kind
 
