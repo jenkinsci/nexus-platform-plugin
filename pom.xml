@@ -86,7 +86,7 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.4.20181203-154456.a0c3711</version>
+        <version>3.4-SNAPSHOT</version>
         <classifier>internal</classifier>
       </dependency>
       

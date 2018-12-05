@@ -46,6 +46,10 @@ class Nxrm3Configuration
       "Professional server version ${MAJOR_VERSION_REQ}.${MINOR_VERSION_REQ}.${PATCH_VERSION_REQ} or " +
       "newer; use of an incompatible server could result in failed builds."
 
+  private static final String CONNECTION_SUCCEEDED = 'Nexus Repository Manager 3.x connection succeeded'
+
+  private static final String CONNECTION_FAILED = 'Nexus Repository Manager 3.x connection failed'
+
   @SuppressWarnings('ParameterCount')
   @DataBoundConstructor
   Nxrm3Configuration(final String id,
@@ -92,22 +96,22 @@ class Nxrm3Configuration
           badVersionMsg = "NXRM ${sv.edition} ${sv.version} found."
         }
       }
-      catch (Exception e) {
+      catch (RepositoryManagerException e) {
         log.log(WARNING, "Unsuccessful request to ${serverUrl} for version information for compatibility check", e)
-        return error(e, 'Nexus Repository Manager 3.x connection failed')
+        return error(e, CONNECTION_FAILED)
       }
 
       if (badVersionMsg) {
-        warning("Nexus Repository Manager 3.x connection succeeded " +
+        warning(CONNECTION_SUCCEEDED +
                 "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
       }
       else {
         try {
           repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
-          ok("Nexus Repository Manager 3.x connection succeeded (${repositories.size()} hosted maven2 repositories)")
+          ok(CONNECTION_SUCCEEDED + " (${repositories.size()} hosted maven2 repositories)")
         }
         catch (RepositoryManagerException e) {
-          return error(e, 'Nexus Repository Manager 3.x connection failed')
+          return error(e, CONNECTION_FAILED)
         }
       }
     }
