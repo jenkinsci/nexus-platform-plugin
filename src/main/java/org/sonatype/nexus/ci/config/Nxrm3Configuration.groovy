@@ -102,13 +102,13 @@ class Nxrm3Configuration
       }
 
       if (badVersionMsg) {
-        warning(CONNECTION_SUCCEEDED +
-                "${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} ${INVALID_VERSION_WARNING}")
+        warning("${CONNECTION_SUCCEEDED} ${LINE_SEPARATOR}${LINE_SEPARATOR} ${badVersionMsg} " +
+            "${INVALID_VERSION_WARNING}")
       }
       else {
         try {
           repositories = getApplicableRepositories(serverUrl, credentialsId, 'maven2')
-          ok(CONNECTION_SUCCEEDED + " (${repositories.size()} hosted maven2 repositories)")
+          ok("${CONNECTION_SUCCEEDED} (${repositories.size()} hosted maven2 repositories)")
         }
         catch (RepositoryManagerException e) {
           return error(e, CONNECTION_FAILED)
