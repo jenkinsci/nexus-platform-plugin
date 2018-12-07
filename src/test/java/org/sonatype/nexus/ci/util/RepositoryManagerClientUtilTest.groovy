@@ -15,6 +15,7 @@ package org.sonatype.nexus.ci.util
 import com.sonatype.nexus.api.common.ProxyConfig
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2ClientBuilder
+import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3ClientBuilder
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
@@ -96,6 +97,28 @@ class RepositoryManagerClientUtilTest
       } >> clientBuilder
   }
 
+  def 'it creates a v3 client with proxy when configured '() {
+    setup:
+      GroovyMock(RepositoryManagerV3ClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerV3ClientBuilder)
+      RepositoryManagerV3ClientBuilder.create() >> clientBuilder
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, null, null, '')
+
+    when:
+      RepositoryManagerClientUtil.nexus3Client(url, credentialsId)
+    then:
+      1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
+      1 * clientBuilder.withProxyConfig { ProxyConfig config ->
+        config.host == 'localhost'
+        config.port == 8888
+        config.authentication == null
+      } >> clientBuilder
+  }
+
   def 'it creates a client with proxy with authentication when configured'() {
     setup:
       GroovyMock(RepositoryManagerV2ClientBuilder, global: true)
@@ -109,6 +132,29 @@ class RepositoryManagerClientUtilTest
 
     when:
       RepositoryManagerClientUtil.nexus2Client(url, credentialsId)
+    then:
+      1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
+      1 * clientBuilder.withProxyConfig { ProxyConfig config ->
+        config.host == 'localhost'
+        config.port == 8888
+        config.authentication.username == 'username'
+        config.authentication.password.toString() == 'password'
+      } >> clientBuilder
+  }
+
+  def 'it creates a v3 client with proxy with authentication when configured'() {
+    setup:
+      GroovyMock(RepositoryManagerV3ClientBuilder, global: true)
+      def clientBuilder = Mock(RepositoryManagerV3ClientBuilder)
+      RepositoryManagerV3ClientBuilder.create() >> clientBuilder
+      def url = 'http://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, 'username', 'password', '')
+
+    when:
+      RepositoryManagerClientUtil.nexus3Client(url, credentialsId)
     then:
       1 * clientBuilder.withServerConfig{ it.address == URI.create("http://foo.com/") } >> clientBuilder
       1 * clientBuilder.withProxyConfig { ProxyConfig config ->

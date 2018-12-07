@@ -23,7 +23,6 @@ import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3ClientBuilder
 
 import org.sonatype.nexus.ci.config.Nxrm3Configuration
-import org.sonatype.nexus.ci.config.NxrmVersion
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
 import com.cloudbees.plugins.credentials.CredentialsProvider
