@@ -90,7 +90,7 @@ class PolicyEvaluationHealthAction
 
   @Override
   String getUrlName() {
-    return 'nexus-iq-application-composition-report'
+    return reportLink
   }
 
   @Override
@@ -100,7 +100,7 @@ class PolicyEvaluationHealthAction
     }
 
     def job = run.getParent()
-    return Collections.singleton(new PolicyEvaluationProjectAction(job))
+    return Collections.singleton(new PolicyEvaluationProjectAction(job, reportLink))
   }
 
   @SuppressWarnings(value = ['UnusedMethodParameter', 'SynchronizedMethod'])

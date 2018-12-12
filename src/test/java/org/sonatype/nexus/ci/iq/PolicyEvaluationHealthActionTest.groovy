@@ -89,6 +89,7 @@ class PolicyEvaluationHealthActionTest
       def severeComponentCount = healthAction.severeComponentCount
       def moderateComponentCount = healthAction.moderateComponentCount
       def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
+      def urlName = healthAction.urlName
 
     then:
       affectedComponentCount == 1
@@ -96,5 +97,21 @@ class PolicyEvaluationHealthActionTest
       severeComponentCount == 3
       moderateComponentCount == 4
       grandfatheredPolicyViolationCount == 5
+      urlName == reportLink
+  }
+
+  def 'health action and project action have matching report links'() {
+    setup:
+      def reportLink = 'http://localhost/reportLink'
+      def run = Mock(Run)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 5, [], reportLink)
+      def healthAction = new PolicyEvaluationHealthAction(run, policyEvaluation)
+
+    when:
+      PolicyEvaluationProjectAction projectAction = (PolicyEvaluationProjectAction)healthAction.getProjectActions()[0]
+
+    then:
+      healthAction.urlName == reportLink
+      projectAction.reportLink == reportLink
   }
 }
