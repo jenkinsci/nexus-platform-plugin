@@ -56,7 +56,7 @@ if (action) {
               margin-right: 5px;
             }
           """)
-      a(href: "lastCompletedBuild/${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
+      a(href: "${action.getUrlName()}", Messages.IqPolicyEvaluation_LatestReportName())
       br()
       img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")
       if (action.criticalComponentCount) {
