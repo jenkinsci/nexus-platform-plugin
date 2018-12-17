@@ -99,7 +99,7 @@ class PolicyEvaluationHealthAction
 
   @Override
   String getDisplayName() {
-    return 'Nexus IQ Policy Evaluation' //Messages.IqPolicyEvaluation_ReportName()
+    return Messages.IqPolicyEvaluation_ReportName()
   }
 
   @Override
