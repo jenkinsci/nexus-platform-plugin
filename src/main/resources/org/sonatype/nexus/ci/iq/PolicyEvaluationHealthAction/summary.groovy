@@ -44,11 +44,6 @@ def policyCss = {
           padding-left: 0;
         }
         
-        .iq-governance {
-          margin-top: -4px;
-          margin-right: 3px;
-        }
-        
         .iq-chiclet {
           display:inline-block;
           width:35px;
