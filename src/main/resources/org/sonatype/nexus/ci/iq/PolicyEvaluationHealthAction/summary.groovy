@@ -85,7 +85,7 @@ def policyUI = {
   div(class: 'iq-block') {
     div() {
       span(class: 'iq-title', Messages.IqPolicyEvaluation_ReportName())
-      a(href: "${action.getUrlName()}", "(view report)")
+      a(href: "${action.getUrlName()}", target: "_blank", "(view report)")
     }
     if (action.getApplicationId()) {
       div() {
