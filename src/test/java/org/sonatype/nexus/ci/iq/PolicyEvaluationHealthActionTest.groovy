@@ -26,7 +26,7 @@ class PolicyEvaluationHealthActionTest
     setup:
       def reportLink = 'http://localhost/reportLink'
       def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, [], reportLink)
-      def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
     when: 'browsing to index'
@@ -38,7 +38,7 @@ class PolicyEvaluationHealthActionTest
 
   def 'it returns no project actions before build'() {
     setup:
-      def healthAction = new PolicyEvaluationHealthAction(null, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', null, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting project actions'
       def projectActions = healthAction.getProjectActions()
@@ -52,7 +52,7 @@ class PolicyEvaluationHealthActionTest
       def run = Mock(Run)
       def job = Mock(Job)
       run.getParent() >> job
-      def healthAction = new PolicyEvaluationHealthAction(run, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting project actions'
       def projectActions = healthAction.getProjectActions()
@@ -67,7 +67,7 @@ class PolicyEvaluationHealthActionTest
     setup:
       def run = Mock(Run)
       run.getNumber() >> 3
-      def healthAction = new PolicyEvaluationHealthAction(run, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting build number'
       def buildNumber = healthAction.getBuildNumber()
@@ -80,7 +80,7 @@ class PolicyEvaluationHealthActionTest
     setup:
       def reportLink = 'http://localhost/reportLink'
       def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 5, [], reportLink)
-      def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
+      def healthAction = new PolicyEvaluationHealthAction('my-iq-app', 'build', null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
     when: 'getting component and grandfathered policy violation counts'
@@ -90,6 +90,8 @@ class PolicyEvaluationHealthActionTest
       def moderateComponentCount = healthAction.moderateComponentCount
       def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
       def urlName = healthAction.urlName
+      def appId = healthAction.applicationId
+      def iqStage = healthAction.iqStage
 
     then:
       affectedComponentCount == 1
@@ -98,6 +100,8 @@ class PolicyEvaluationHealthActionTest
       moderateComponentCount == 4
       grandfatheredPolicyViolationCount == 5
       urlName == reportLink
+      appId == 'my-iq-app'
+      iqStage == 'build'
   }
 
   def 'health action and project action have matching report links'() {
@@ -105,7 +109,7 @@ class PolicyEvaluationHealthActionTest
       def reportLink = 'http://localhost/reportLink'
       def run = Mock(Run)
       def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 5, [], reportLink)
-      def healthAction = new PolicyEvaluationHealthAction(run, policyEvaluation)
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, policyEvaluation)
 
     when:
       PolicyEvaluationProjectAction projectAction = (PolicyEvaluationProjectAction)healthAction.getProjectActions()[0]

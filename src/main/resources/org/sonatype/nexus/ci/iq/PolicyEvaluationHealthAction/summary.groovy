@@ -19,17 +19,47 @@ def t = namespace(lib.JenkinsTagLib)
 
 def action = (PolicyEvaluationHealthAction) it
 
-t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
+def policyCss = {
   // Inline the iq-chiclet css here for Jenkins v1 which does not support the css tag.
   style(type: 'text/css', """
+        .iq-block {
+          display:inline-block;
+          margin-right: 1em;
+          float: left;
+          line-height: 1.4;
+          margin-bottom: 1.5em;
+        }
+        
+        .iq-title {
+          font-weight:bold;
+          padding-right: 0.25em;
+        }
+        
+        .iq-label {
+          font-weight: bold;
+        }
+        
+        .p-iq-chiclet {
+          margin: 3px 0;
+          padding-left: 0;
+        }
+        
+        .iq-governance {
+          margin-top: -4px;
+          margin-right: 3px;
+        }
+        
         .iq-chiclet {
           display:inline-block;
-          width:25px;
+          width:35px;
           text-align:center;
           border-radius:5px;
           -moz-border-radius:5px;
           color:white;
-          margin-right: 5px;
+          margin-right: 3px;
+          padding-right: 1px;
+          font-weight: bold;
+          padding-top: 2px;
         }
         
         .iq-chiclet.critical {
@@ -45,23 +75,36 @@ t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
         }
         
         .iq-chiclet-message {
-          margin-right: 5px;
+          margin-left: 3px;
+          padding-top: 2px;
         }
       """)
-  a(href: "${action.getUrlName()}", Messages.IqPolicyEvaluation_ReportName())
-  br()
-  img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")
-  if (action.criticalComponentCount) {
-    span(class: 'iq-chiclet critical', action.criticalComponentCount)
-  }
-  if (action.severeComponentCount) {
-    span(class: 'iq-chiclet severe', action.severeComponentCount)
-  }
-  if (action.moderateComponentCount) {
-    span(class: 'iq-chiclet moderate', action.moderateComponentCount)
-  }
-  if (!action.criticalComponentCount && !action.severeComponentCount && !action.moderateComponentCount) {
-    span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NoViolations())
-  }
-  span(class: 'iq-chiclet-message', Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
 }
+
+def policyUI = {
+  div(class: 'iq-block') {
+    div() {
+      span(class: 'iq-title', Messages.IqPolicyEvaluation_ReportName())
+      a(href: "${action.getUrlName()}", "(view report)")
+    }
+    if (action.getApplicationId()) {
+      div() {
+        span(class: 'iq-label', Messages.IqPolicyEvaluation_ApplicationLabel() + ' : ')
+        span("${action.getApplicationId()}")
+      }
+      div() {
+        span(class: 'iq-label', Messages.IqPolicyEvaluation_StageLabel() + ' : ')
+        span("${action.getIqStage()}")
+      }
+    }
+    div(class: 'p-iq-chiclet') {
+      span(class: 'iq-chiclet critical', action.criticalComponentCount ? action.criticalComponentCount : 0)
+      span(class: 'iq-chiclet severe', action.severeComponentCount ? action.severeComponentCount : 0)
+      span(class: 'iq-chiclet moderate', action.moderateComponentCount ? action.moderateComponentCount : 0)
+      span(class: 'iq-chiclet-message',
+          Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+    }
+  }
+}
+
+t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png', policyUI << policyCss)

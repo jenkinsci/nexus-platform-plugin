@@ -42,8 +42,9 @@ class IqPolicyEvaluatorUtil
     try {
       EnvVars envVars = run.getEnvironment(listener)
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
+      String iqStage = iqPolicyEvaluator.iqStage
 
-      checkArgument(iqPolicyEvaluator.iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
+      checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
@@ -61,13 +62,13 @@ class IqPolicyEvaluatorUtil
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(applicationId, iqPolicyEvaluator.iqStage, expandedScanPatterns, expandedModuleExcludes,
+          getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def evaluationResult = iqClient.evaluateApplication(applicationId, iqPolicyEvaluator.iqStage, scanResult)
+      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult)
 
-      def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
+      def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
 
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
