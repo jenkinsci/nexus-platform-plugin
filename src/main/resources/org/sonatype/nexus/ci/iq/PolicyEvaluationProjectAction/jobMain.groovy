@@ -19,7 +19,11 @@ import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 def t = namespace(lib.JenkinsTagLib)
 
 def projectAction = (PolicyEvaluationProjectAction) it
-def action = projectAction.getJob().lastCompletedBuild.getAction(PolicyEvaluationHealthAction.class)
+def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
+
+// there could be multiple policy evaluations so we need to find the specific health action that corresponds
+// to the given project action
+def action = actions ? actions.stream().find({a -> a.urlName == projectAction.reportLink}) : null
 
 if (action) {
   table(class: 'iq-job-main-table') {
@@ -52,7 +56,7 @@ if (action) {
               margin-right: 5px;
             }
           """)
-      a(href: "lastCompletedBuild/${action.getUrlName()}", target: "_blank", Messages.IqPolicyEvaluation_LatestReportName())
+      a(href: "${action.getUrlName()}", target: "_blank", Messages.IqPolicyEvaluation_LatestReportName())
       br()
       img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")
       if (action.criticalComponentCount) {
