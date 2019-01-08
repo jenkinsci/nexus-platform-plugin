@@ -20,12 +20,19 @@ class PolicyEvaluationProjectAction
 {
   private final Job job
 
-  PolicyEvaluationProjectAction(Job job) {
+  private final String reportLink
+
+  PolicyEvaluationProjectAction(Job job, String reportLink) {
     this.job = job
+    this.reportLink = reportLink
   }
 
   Job getJob() {
     return job
+  }
+
+  String getReportLink() {
+    return reportLink
   }
 
   @Override
