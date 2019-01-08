@@ -48,7 +48,7 @@ t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png') {
           margin-right: 5px;
         }
       """)
-  a(href: "${action.getUrlName()}", Messages.IqPolicyEvaluation_ReportName())
+  a(href: "${action.getUrlName()}", target: "_blank", Messages.IqPolicyEvaluation_ReportName())
   br()
   img(src: "${rootURL}/plugin/nexus-jenkins-plugin/images/16x16/governance-badge.png")
   if (action.criticalComponentCount) {
