@@ -23,11 +23,13 @@ class IqApplicationMigratorIntegrationTest
     extends Specification
 {
   @Rule
-  public JenkinsRule jenkins = new JenkinsRule().withExistingHome(new File(
-      getClass().getClassLoader().getResource('org/sonatype/nexus/ci/config/ComToOrgMigratorIntegrationTest').
-          getFile()))
+  public JenkinsRule jenkins
 
   def setup() {
+    def classLoader = getClass().getClassLoader();
+    def file = new File(classLoader.getResource('org/sonatype/nexus/ci/iq/IqApplicationMigratorIntegrationTest').getFile());
+    jenkins = new JenkinsRule().withExistingHome(file)
+
     GroovyMock(InternalIqClientBuilder, global: true)
     def iqClientBuilder = Mock(InternalIqClientBuilder)
     InternalIqClientBuilder.create() >> iqClientBuilder
