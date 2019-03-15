@@ -35,17 +35,15 @@ class ComToOrgMigratorIntegrationTest
     extends Specification
 {
   @Rule
-  public JenkinsRule jenkins
+  public JenkinsRule jenkins = new JenkinsRule().withExistingHome(new File(
+      getClass().getClassLoader().getResource('org/sonatype/nexus/ci/config/ComToOrgMigratorIntegrationTest').
+          getFile()))
 
   private InternalIqClient iqClient
 
   private ComponentUploader componentUploader
 
   def setup() {
-    def classLoader = getClass().getClassLoader();
-    def file = new File(classLoader.getResource('org/sonatype/nexus/ci/config/ComToOrgMigratorIntegrationTest').getFile());
-    jenkins = new JenkinsRule().withExistingHome(file)
-
     GroovyMock(InternalIqClientBuilder, global: true)
     def iqClientBuilder = Mock(InternalIqClientBuilder)
     InternalIqClientBuilder.create() >> iqClientBuilder
