@@ -149,7 +149,8 @@ public class CreateTagStep
     }
 
     try {
-      Tag tag = client.createTag(tagName, tagAttributes);
+      String resolvedTagName = env.expand(tagName);
+      Tag tag = client.createTag(resolvedTagName, tagAttributes);
       listener.getLogger().println("Successfully created tag: '" + tag.toJson() + "'");
     }
     catch (RepositoryManagerException e) {

@@ -29,6 +29,7 @@ import org.sonatype.nexus.ci.util.FormUtil;
 import org.sonatype.nexus.ci.util.Nxrm3Util;
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -113,11 +114,14 @@ public class MoveComponentsStep
                       @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
     try {
+      EnvVars env = run.getEnvironment(listener);
+      String resolvedTagName = env.expand(tagName);
+
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
       SearchBuilder searchBuilder = SearchBuilder.create();
       search.forEach(searchBuilder::withParameter);
-      if (isNotBlank(tagName)) { // explicit tag will take priority if one was also supplied
-        searchBuilder.withTag(tagName);
+      if (isNotBlank(resolvedTagName)) { // explicit tag will take priority if one was also supplied
+        searchBuilder.withTag(resolvedTagName);
       }
       List<ComponentInfo> components = client.move(destination, searchBuilder.build());
       listener.getLogger().println("Move successful. Destination: '" + destination + "' Components moved:\n" +

@@ -25,6 +25,7 @@ import org.sonatype.nexus.ci.config.NxrmVersion;
 import org.sonatype.nexus.ci.util.FormUtil;
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -77,8 +78,11 @@ public class DeleteComponentsStep
                       @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
     try {
+      EnvVars env = run.getEnvironment(listener);
+      String resolvedTagName = env.expand(tagName);
+
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
-      List<ComponentInfo> components = client.delete(tagName);
+      List<ComponentInfo> components = client.delete(resolvedTagName);
       listener.getLogger().println("Delete successful. Components deleted:\n" +
           components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }

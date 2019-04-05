@@ -76,14 +76,19 @@ class AssociateTagStepTest
 
   def 'build success when associate succeeds in freestyle'() {
     setup:
-      def project = getProject()
+      def project = getProject(DEFAULT_INSTANCE, tag)
 
     when:
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.associate(DEFAULT_TAG, DEFAULT_SEARCH) >> TEST_COMPONENT_LIST_RETURN
+      1 * nxrm3Client.associate(expectedTag, DEFAULT_SEARCH) >> TEST_COMPONENT_LIST_RETURN
       jenkinsRule.assertBuildStatus(SUCCESS, build)
+
+    where:
+      tag               | expectedTag
+      DEFAULT_TAG       | DEFAULT_TAG
+      'foo-${BUILD_ID}' | 'foo-1'
   }
 
   def 'build success when associate succeeds in workflow'() {

@@ -54,8 +54,7 @@ class CreateTagStepTest
 
   def 'creates a tag using workspace'() {
     setup:
-      def tagName = 'create-tag-test'
-      def job = prepareJob('nx3', tagName)
+      def job = prepareJob('nx3', tag)
       def attrFile = Paths.get(job.workspace.absolutePath, 'attr-file.json')
       Files.write(attrFile, '{"foo": "bar"}'.bytes, StandardOpenOption.CREATE_NEW) // create file in workspace
 
@@ -66,8 +65,13 @@ class CreateTagStepTest
       def build = job.project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.createTag(tagName, [foo: 'bar', baz: 'qux']) >> new Tag(tagName, [foo: 'bar', baz: 'qux'])
+      1 * nxrm3Client.createTag(expectedTag, [foo: 'bar', baz: 'qux']) >> new Tag(expectedTag, [foo: 'bar', baz: 'qux'])
       jenkins.assertBuildStatus(Result.SUCCESS, build)
+
+    where:
+      tag               | expectedTag
+      'foo'             | 'foo'
+      'foo-${BUILD_ID}' | 'foo-1'
   }
 
   def 'runnable from pipeline'() {

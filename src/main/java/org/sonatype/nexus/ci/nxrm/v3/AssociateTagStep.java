@@ -24,6 +24,7 @@ import com.sonatype.nexus.api.repository.v3.SearchBuilder;
 
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -89,11 +90,14 @@ public class AssociateTagStep
                       @Nonnull final TaskListener listener) throws InterruptedException, IOException
   {
     try {
+      EnvVars env = run.getEnvironment(listener);
+      String resolvedTagName = env.expand(tagName);
+
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
       SearchBuilder searchBuilder = SearchBuilder.create();
       search.forEach(s -> searchBuilder.withParameter(s.getKey(), s.getValue()));
-      List<ComponentInfo> components = client.associate(tagName, searchBuilder.build());
-      listener.getLogger().println("Associate successful. Components associated:\n" +
+      List<ComponentInfo> components = client.associate(resolvedTagName, searchBuilder.build());
+      listener.getLogger().println("Associate to tag '" + resolvedTagName + "' successful. Components associated:\n" +
           components.stream().map(ComponentInfo::toString).collect(joining("\n")));
     }
     catch (RepositoryManagerException e) {

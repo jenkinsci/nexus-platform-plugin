@@ -158,7 +158,7 @@ class ComponentUploaderNxrm3Test
     setup:
       def client = Mock(RepositoryManagerV3Client)
       def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
-      run.getEnvironment(_ as TaskListener) >> new EnvVars([:])
+      run.getEnvironment(_ as TaskListener) >> new EnvVars(['BUILD_ID': '1'])
       client.getTag(_ as String) >> Optional.empty()
 
       ComponentUploaderNxrm3 mockComponentUploader =
@@ -185,7 +185,7 @@ class ComponentUploaderNxrm3Test
       tempFile.delete()
 
     then:
-      expectedCreateTag * client.createTag(tagName)
+      expectedCreateTag * client.createTag(expectedTagName)
       1 * client.upload(*_) >> { args ->
         repo = args[0]
         component = args[1]
@@ -203,10 +203,12 @@ class ComponentUploaderNxrm3Test
       tag == expectedTagName
 
     where:
-      groupId      | artifactId      | version | packaging | classifier | extension | tagName  | expectedTagName
-      'some-group' | 'some-artifact' | '1.0'   | 'jar'     | null       | 'jar'     | 'foobar' | 'foobar'
-      'some-group' | 'some-artifact' | '2.0'   | 'jar'     | null       | 'jar'     | ''       | null
-      'some-group' | 'some-artifact' | '3.0'   | 'jar'     | null       | 'jar'     | null     | null
+      groupId      | artifactId      | version | packaging | classifier | extension | tagName           |
+          expectedTagName
+      'some-group' | 'some-artifact' | '1.0'   | 'jar'     | null       | 'jar'     | 'foobar'          | 'foobar'
+      'some-group' | 'some-artifact' | '2.0'   | 'jar'     | null       | 'jar'     | ''                | null
+      'some-group' | 'some-artifact' | '3.0'   | 'jar'     | null       | 'jar'     | null              | null
+      'some-group' | 'some-artifact' | '4.0'   | 'jar'     | null       | 'jar'     | 'foo-${BUILD_ID}' | 'foo-1'
   }
 
   @WithoutJenkins

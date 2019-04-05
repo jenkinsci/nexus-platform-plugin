@@ -38,9 +38,10 @@ class ComponentUploaderNxrm3
 {
   @Override
   void maybeCreateTag(@Nullable final String tagName) {
-    if (tagName?.trim()) {
+    def resolvedTagName = envVars.expand(tagName)
+    if (resolvedTagName?.trim()) {
       def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
-      nxrmClient.getTag(tagName).orElseGet({ nxrmClient.createTag(tagName) })
+      nxrmClient.getTag(resolvedTagName).orElseGet({ nxrmClient.createTag(resolvedTagName) })
     }
   }
 
@@ -50,6 +51,8 @@ class ComponentUploaderNxrm3
               @Nullable final String tagName = null)
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
+
+    def resolvedTagName = envVars.expand(tagName)
 
     remoteMavenComponents.each { mavenCoordinate, remoteMavenAssets ->
       try {
@@ -71,7 +74,7 @@ class ComponentUploaderNxrm3
         }
 
         try {
-          nxrmClient.upload(nxrmRepositoryId, mavenComponentBuilder.build(), tagName?.trim() ? tagName : null)
+          nxrmClient.upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
         }
         catch (RepositoryManagerException ex) {
           throw new IOException(ex)
