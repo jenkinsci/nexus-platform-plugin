@@ -248,7 +248,7 @@ class ComponentUploaderNxrm3Test
       def publisher = Mock(NexusPublisher)
       def workspace = GroovyMock(FilePath)
       taskListener.getLogger() >> logger
-      run.getEnvironment() >> new EnvVars([:])
+      run.getEnvironment(_) >> new EnvVars([:])
     when:
       new ComponentUploaderNxrm3(config, run, taskListener).uploadComponents(publisher, workspace)
     then:
