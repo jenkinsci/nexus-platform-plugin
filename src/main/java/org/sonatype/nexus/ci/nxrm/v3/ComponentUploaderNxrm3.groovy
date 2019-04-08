@@ -74,7 +74,8 @@ class ComponentUploaderNxrm3
         }
 
         try {
-          nxrmClient.upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
+          nxrmClient.
+              upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
         }
         catch (RepositoryManagerException ex) {
           throw new IOException(ex)
