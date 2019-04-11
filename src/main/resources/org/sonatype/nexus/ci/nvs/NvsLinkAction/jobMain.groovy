@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.nvs.NvsLinkAction
 
-import org.sonatype.nexus.ci.iq.Messages
-
 def t = namespace(lib.JenkinsTagLib)
 
 def nvsLinkUi = {
@@ -21,11 +19,11 @@ def nvsLinkUi = {
     span('Sonatype is building an application scanner for Jenkins.')
     br()
     a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
-    span(" about what's coming to the Nexus Platform Plugin")
+    span(" about what's coming to the Nexus Platform Plugin.")
   }
 }
 
 table() {
-  t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/sonatype-logo.png', nvsLinkUi)
+  t.summary(icon: '/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png', nvsLinkUi)
 }
 
