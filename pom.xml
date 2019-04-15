@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.2</version>
+    <version>3.35</version>
     <relativePath />
   </parent>
 
@@ -55,7 +55,6 @@
   <properties>
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jenkins.version>2.7</jenkins.version>
-    <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
     <java.level>8</java.level>
@@ -336,7 +335,6 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>${findbugs-maven-plugin.version}</version>
           <configuration>
             <effort>Max</effort>
             <threshold>High</threshold>
@@ -360,7 +358,6 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
-        <version>3.8.0</version>
         <configuration>
           <compilerId>groovy-eclipse-compiler</compilerId>
         </configuration>
