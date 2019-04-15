@@ -15,7 +15,8 @@ package org.sonatype.nexus.ci.nvs.NvsMessageAction
 def t = namespace(lib.JenkinsTagLib)
 
 style('''
-  #nvs-coming-soon {
+  #nexus-plugin-nvs-message {
+    display: none;
     padding-right: 20px;
     padding-top: 10px;
     position: relative;
@@ -33,18 +34,18 @@ style('''
 
 def nvsMessage = {
   div() {
-    span('Sonatype is building an application scanner for Jenkins.')
+    span("Sonatype is building an application scanner for Jenkins.")
     br()
     a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
     span(" about what's coming to the Nexus Platform Plugin.")
     div() {
-      a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideComingSoon(); return false;",
+      a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideNvsMessage(); return false;",
           title: "Close", "x")
     }
   }
 }
 
-table(id: 'nvs-coming-soon') {
+table(id: 'nexus-plugin-nvs-message') {
   t.summary(icon: '/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png', nvsMessage)
 }
 
@@ -53,30 +54,24 @@ script {
     var NexusPluginNVS = (function() {
       'use strict';
 
-      var cookieName = "_nexus_plugin_nvs_coming_soon";
-      var cookie = cookieName + "=true; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT";  // max date
-      var comingSoon = document.getElementById('nvs-coming-soon');
+      var cookieName = '_nexus_plugin_nvs_message';
+      var cookie = cookieName + '=true; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT';  // max date
+      var nvsMessage = document.getElementById('nexus-plugin-nvs-message');
 
-      function shouldHideComingSoon() {
-        return document.cookie.indexOf(cookieName) > -1;
+      function shouldShowNvsMessage() {
+        return document.cookie.indexOf(cookieName) === -1;
       }
 
-      function hideComingSoon() {
-        comingSoon.style.display = 'none';
-        document.cookie = cookie;
-      }
-
-      function showComingSoon() {
-        comingSoon.style.display = 'block';
-      }
-
-      if (shouldHideComingSoon()) {
-        hideComingSoon();
+      if (shouldShowNvsMessage()) {
+        nvsMessage.style.display = 'table';
       }
 
       return {
-        hideComingSoon: hideComingSoon
+        hideNvsMessage: function() {
+          nvsMessage.style.display = 'none';
+          document.cookie = cookie;
+        }
       };
-    }());
+    })();
   ''')
 }
