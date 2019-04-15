@@ -115,14 +115,19 @@ class MoveComponentsStepTest
 
   def 'it successfully completes a move operation based on a tag'() {
     setup:
-      def project = getProject('localhost', 'maven-releases', 'foo')
+      def project = getProject('localhost', 'maven-releases', tag)
 
     when:
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.move('maven-releases', ['tag': 'foo']) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      1 * nxrm3Client.move('maven-releases', ['tag': expectedTag]) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
       jenkinsRule.assertBuildStatus(SUCCESS, build)
+
+    where:
+      tag               | expectedTag
+      'foo'             | 'foo'
+      'foo-${BUILD_ID}' | 'foo-1'
   }
 
   def 'it fails to complete a move operation based on a tag'() {

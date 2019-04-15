@@ -23,7 +23,9 @@ import org.sonatype.nexus.ci.nxrm.v3.DeleteComponentsStep.DescriptorImpl
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
+import hudson.EnvVars
 import hudson.model.Result
+import hudson.slaves.EnvironmentVariablesNodeProperty
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
@@ -63,14 +65,19 @@ class DeleteComponentsStepTest
 
   def 'it successfully completes a delete operation based on a tag'() {
     setup:
-      def project = getProject('localhost', 'foo')
+      def project = getProject('localhost', tag)
 
     when:
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.delete('foo') >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
+      1 * nxrm3Client.delete(expectedTag) >> Arrays.asList(new ComponentInfo("foo", "boo", "1.0"))
       jenkinsRule.assertBuildStatus(SUCCESS, build)
+
+    where:
+      tag               | expectedTag
+      'foo'             | 'foo'
+      'foo-${BUILD_ID}' | 'foo-1'
   }
 
   def 'it fails to complete a delete operation based on a tag'() {
