@@ -117,6 +117,7 @@ class IqPolicyEvaluatorWorkflowStep
       Messages.IqPolicyEvaluation_DisplayName()
     }
 
+
     @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
@@ -129,6 +130,7 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     FormValidation doCheckAdvancedProperties(@QueryParameter String advancedProperties) {
+      // TODO validate that the properties are entered into the correct format?
       FormValidation.ok()
     }
 
