@@ -38,7 +38,8 @@ def nvsMessage = {
     a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
     span(" about what's coming to the Nexus Platform Plugin.")
     div() {
-      a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick:"NexusPluginNVS.hideComingSoon(); return false;", title: "Close", "x")
+      a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideComingSoon(); return false;",
+          title: "Close", "x")
     }
   }
 }

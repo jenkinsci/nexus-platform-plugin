@@ -42,7 +42,9 @@ class GlobalNexusConfiguration
   }
 
   @DataBoundConstructor
-  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs, final List<NxiqConfiguration> iqConfigs, final boolean hideNvsMessage) {
+  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs, final List<NxiqConfiguration> iqConfigs,
+                           final boolean hideNvsMessage)
+  {
     this.nxrmConfigs = nxrmConfigs ?: []
     this.iqConfigs = iqConfigs ?: []
     this.hideNvsMessage = hideNvsMessage

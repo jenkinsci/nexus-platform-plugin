@@ -24,7 +24,9 @@ class GlobalNexusConfigurationTest
   public JenkinsRule jenkins = new JenkinsRule()
 
   List<? extends NxrmConfiguration> nxrmConfiguration
+
   List<NxiqConfiguration> nxiqConfiguration
+
   boolean hideNvsMessage
 
   void setup() {
