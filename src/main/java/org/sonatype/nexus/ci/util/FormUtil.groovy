@@ -29,9 +29,9 @@ import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fr
 
 class FormUtil
 {
-  final static String EMPTY_LIST_BOX_NAME = '-----------'
+  public final static String EMPTY_LIST_BOX_NAME = '-----------'
 
-  final static String EMPTY_LIST_BOX_VALUE = ''
+  public final static String EMPTY_LIST_BOX_VALUE = ''
 
   static FormValidation validateUrl(String url) {
     try {

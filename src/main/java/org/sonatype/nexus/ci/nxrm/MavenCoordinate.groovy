@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import org.sonatype.nexus.ci.nxrm.Coordinate.CoordinateDescriptor
+
 import hudson.Extension
 import org.jenkinsci.Symbol
 import org.kohsuke.stapler.DataBoundConstructor
@@ -38,7 +40,7 @@ class MavenCoordinate
 
   @Extension
   static final class DescriptorImpl
-      extends Coordinate.CoordinateDescriptor<MavenCoordinate>
+      extends CoordinateDescriptor<MavenCoordinate>
   {
     @Override
     String getDisplayName() {

@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import org.sonatype.nexus.ci.nxrm.Asset.AssetDescriptor
+
 import hudson.Extension
 import org.jenkinsci.Symbol
 import org.kohsuke.stapler.DataBoundConstructor
@@ -35,7 +37,7 @@ class MavenAsset
 
   @Extension
   static final class DescriptorImpl
-      extends Asset.AssetDescriptor<MavenAsset>
+      extends AssetDescriptor<MavenAsset>
   {
     @Override
     String getDisplayName() {
