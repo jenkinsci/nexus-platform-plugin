@@ -61,9 +61,11 @@ class IqPolicyEvaluatorUtil
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
+      def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties)
       def remoteScanner = RemoteScannerFactory.
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
-              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
+              advancedProperties)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult)
@@ -101,6 +103,12 @@ class IqPolicyEvaluatorUtil
 
   private static boolean isNetworkError(final Exception throwable) {
     ExceptionUtils.indexOfType(throwable, IOException) >= 0
+  }
+
+  private static Properties getAdvancedProperties(final String s) {
+    Properties advanced = new Properties()
+    advanced.load(new StringReader(s))
+    advanced
   }
 
   private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)

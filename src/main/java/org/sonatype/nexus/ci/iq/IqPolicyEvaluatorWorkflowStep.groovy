@@ -48,6 +48,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   String jobCredentialsId
 
+  String advancedProperties
+
   @DataBoundSetter
   public void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
     this.iqScanPatterns = iqScanPatterns
@@ -66,6 +68,11 @@ class IqPolicyEvaluatorWorkflowStep
   @DataBoundSetter
   public void setJobCredentialsId(final String jobCredentialsId) {
     this.jobCredentialsId = jobCredentialsId
+  }
+
+  @DataBoundSetter
+  void setAdvancedProperties(final String advancedProperties) {
+    this.advancedProperties = advancedProperties
   }
 
   @SuppressWarnings('Instanceof')
@@ -110,6 +117,7 @@ class IqPolicyEvaluatorWorkflowStep
       Messages.IqPolicyEvaluation_DisplayName()
     }
 
+
     @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
@@ -120,6 +128,11 @@ class IqPolicyEvaluatorWorkflowStep
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
+    @Override
+    FormValidation doCheckAdvancedProperties(@QueryParameter String advancedProperties) {
+      // TODO validate that the properties are entered into the correct format?
+      FormValidation.ok()
+    }
 
     @Override
     FormValidation doCheckScanPattern(@QueryParameter final String scanPattern) {
