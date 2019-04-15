@@ -12,7 +12,10 @@
  */
 package org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 
+import org.sonatype.nexus.ci.config.NxiqConfiguration
+
 def f = namespace(lib.FormTagLib)
+def iqConfig = NxiqConfiguration.iqConfig
 
 f.section(title: descriptor.displayName) {
   f.entry(title: _('Nexus Repository Manager Servers')) {
@@ -28,5 +31,11 @@ f.section(title: descriptor.displayName) {
         addCaption: _('Add Nexus IQ Server'),
         oneEach: 'true'
     )
+  }
+
+  if(!iqConfig) {
+    f.block() {
+      f.checkbox(field:"hideNvsMessage", title: 'Hide message about upcoming application scanning feature')
+    }
   }
 }

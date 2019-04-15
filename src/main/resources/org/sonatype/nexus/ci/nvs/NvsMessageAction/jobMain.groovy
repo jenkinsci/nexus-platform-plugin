@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Copyright (c) 2019-present Sonatype, Inc. All rights reserved.
  *
  * This program is licensed to you under the Apache License Version 2.0,
  * and you may not use this file except in compliance with the Apache License Version 2.0.
@@ -10,11 +10,11 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.nvs.NvsLinkAction
+package org.sonatype.nexus.ci.nvs.NvsMessageAction
 
 def t = namespace(lib.JenkinsTagLib)
 
-def nvsLinkUi = {
+def nvsMessage = {
   div() {
     span('Sonatype is building an application scanner for Jenkins.')
     br()
@@ -24,6 +24,5 @@ def nvsLinkUi = {
 }
 
 table() {
-  t.summary(icon: '/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png', nvsLinkUi)
+  t.summary(icon: '/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png', nvsMessage)
 }
-
