@@ -77,6 +77,9 @@
     <staging.serverId>${public.serverId}</staging.serverId>
     <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
     <staging.progressTimeout>15</staging.progressTimeout>
+
+    <findbugs.threshold>High</findbugs.threshold>
+    <findbugs.effort>Max</findbugs.effort>
   </properties>
 
 
@@ -336,8 +339,6 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
           <configuration>
-            <effort>Max</effort>
-            <threshold>High</threshold>
             <xmlOutput>true</xmlOutput>
             <failOnError>true</failOnError>
           </configuration>
@@ -355,23 +356,6 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>findbugs</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>High</threshold>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
