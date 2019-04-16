@@ -22,18 +22,21 @@ class NvsMessageAction
   @CheckForNull
   @Override
   String getIconFileName() {
+    // Returns null to prevent an entry in the Project's sidebar
     return null
   }
 
   @CheckForNull
   @Override
   String getDisplayName() {
+    // Returns null to prevent an entry in the Project's sidebar
     return null
   }
 
   @CheckForNull
   @Override
   String getUrlName() {
+    // Returns null to prevent an entry in the Project's sidebar
     return null
   }
 }
