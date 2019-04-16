@@ -55,7 +55,7 @@
   <properties>
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jenkins.version>2.7</jenkins.version>
-    <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
+    <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
     <java.level>8</java.level>
@@ -314,6 +314,11 @@
     </resources>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.17</version>
+        </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
