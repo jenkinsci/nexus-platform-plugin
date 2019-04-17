@@ -35,7 +35,7 @@ f.section(title: descriptor.displayName) {
 
   if (!iqConfig) {
     f.block() {
-      f.checkbox(field: "hideNvsMessage", title: "Hide messages about what’s coming to the Nexus Platform Plugin")
+      f.checkbox(field: "hideNvsMessage", title: "Hide messages about what's coming to the Nexus Platform Plugin")
     }
   }
 }
