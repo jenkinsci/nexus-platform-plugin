@@ -145,6 +145,28 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'file'  | Kind.OK | '<div/>'
   }
 
+  def 'it validates that advanced properties is not required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when:
+      "validating advanced properties $pattern"
+      def validation = descriptor.doCheckAdvancedProperties(pattern)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      pattern | kind    | message
+      ''      | Kind.OK | '<div/>'
+      null    | Kind.OK | '<div/>'
+      'file'  | Kind.OK | '<div/>'
+  }
+
+
+
   def 'it validates that application items are filled'() {
     setup:
       def descriptor = getSelectedApplication()
