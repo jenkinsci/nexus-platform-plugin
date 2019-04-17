@@ -53,12 +53,13 @@ class ComponentUploaderNxrm3
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 
     remoteMavenComponents.each { mavenCoordinate, remoteMavenAssets ->
-      try {
-        def groupId = envVars.expand(mavenCoordinate.groupId)
-        def artifactId = envVars.expand(mavenCoordinate.artifactId)
-        def version = envVars.expand(mavenCoordinate.version)
-        def packaging = envVars.expand(mavenCoordinate.packaging)
+      def groupId = envVars.expand(mavenCoordinate.groupId)
+      def artifactId = envVars.expand(mavenCoordinate.artifactId)
+      def version = envVars.expand(mavenCoordinate.version)
+      def packaging = envVars.expand(mavenCoordinate.packaging)
+      def resolvedTagName = envVars.expand(tagName)
 
+      try {
         logger.println("Uploading Maven asset with groupId: ${groupId} " +
             "artifactId: ${artifactId} version: ${version} packaging: ${packaging} " +
             "To repository: ${nxrmRepositoryId}")
@@ -77,8 +78,6 @@ class ComponentUploaderNxrm3
               envVars.expand(remoteMavenAsset.Asset.classifier))
         }
 
-        def resolvedTagName = envVars.expand(tagName)
-
         try {
           nxrmClient.
               upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
@@ -89,7 +88,7 @@ class ComponentUploaderNxrm3
       }
       catch (IOException ex) {
         final String uploadFailed = 'Upload of maven component with GAV ' +
-            "[${mavenCoordinate.groupId}:${mavenCoordinate.artifactId}:${mavenCoordinate.version}] failed"
+            "[${groupId}:${artifactId}:${version}] failed"
 
         logger.println(uploadFailed)
         logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
