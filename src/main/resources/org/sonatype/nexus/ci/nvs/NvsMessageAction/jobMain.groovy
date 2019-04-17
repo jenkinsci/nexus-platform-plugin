@@ -12,7 +12,9 @@
  */
 package org.sonatype.nexus.ci.nvs.NvsMessageAction
 
-def t = namespace(lib.JenkinsTagLib)
+import lib.JenkinsTagLib
+
+def t = namespace(JenkinsTagLib)
 
 style('''
   #nexus-plugin-nvs-message {
@@ -38,9 +40,8 @@ def nvsMessage = {
   div() {
     span("Sonatype is making it even easier to ensure your applications are high quality.")
     br()
-    span("Want to ")
-    a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "learn more")
-    span(" about what’s coming to the Nexus Platform Plugin?")
+    a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
+    span(" about what's coming to the Nexus Platform Plugin.")
     div() {
       a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideNvsMessage(); return false;",
           title: "close", "x")
