@@ -14,7 +14,9 @@ package org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
-def f = namespace(lib.FormTagLib)
+import lib.FormTagLib
+
+def f = namespace(FormTagLib)
 def iqConfig = NxiqConfiguration.iqConfig
 
 f.section(title: descriptor.displayName) {
