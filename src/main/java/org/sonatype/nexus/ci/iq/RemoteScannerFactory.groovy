@@ -28,9 +28,11 @@ class RemoteScannerFactory
                                         final FilePath workspace,
                                         final ProprietaryConfig proprietaryConfig,
                                         final Logger log,
-                                        final String instanceId)
+                                        final String instanceId,
+                                        final Properties advancedProperties)
   {
-    new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId)
+    new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId,
+        advancedProperties)
   }
 
   static DirectoryScanner getDirectoryScanner() {
