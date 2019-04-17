@@ -17,9 +17,11 @@ def t = namespace(lib.JenkinsTagLib)
 style('''
   #nexus-plugin-nvs-message {
     display: none;
-    padding-right: 20px;
-    padding-top: 10px;
+    padding: 1em 20px 0 1em;
     position: relative;
+  }
+  #nexus-plugin-nvs-message img {
+    margin-right: 0 !important;
   }
   .nexus-plugin-nvs-hide-link {
     color: gray !important;
@@ -34,13 +36,14 @@ style('''
 
 def nvsMessage = {
   div() {
-    span("Sonatype is building an application scanner for Jenkins.")
+    span("Sonatype is making it even easier to ensure your applications are high quality.")
     br()
-    a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
-    span(" about what's coming to the Nexus Platform Plugin.")
+    span("Want to ")
+    a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "learn more")
+    span(" about what’s coming to the Nexus Platform Plugin?")
     div() {
       a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideNvsMessage(); return false;",
-          title: "Close", "x")
+          title: "close", "x")
     }
   }
 }
