@@ -52,26 +52,32 @@ class ComponentUploaderNxrm3
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 
-    def resolvedTagName = envVars.expand(tagName)
-
     remoteMavenComponents.each { mavenCoordinate, remoteMavenAssets ->
       try {
-        logger.println("Uploading Maven asset with groupId: ${mavenCoordinate.groupId} " +
-            "artifactId: ${mavenCoordinate.artifactId} version: ${mavenCoordinate.version} " +
+        def groupId = envVars.expand(mavenCoordinate.groupId)
+        def artifactId = envVars.expand(mavenCoordinate.artifactId)
+        def version = envVars.expand(mavenCoordinate.version)
+        def packaging = envVars.expand(mavenCoordinate.packaging)
+
+        logger.println("Uploading Maven asset with groupId: ${groupId} " +
+            "artifactId: ${artifactId} version: ${version} packaging: ${packaging} " +
             "To repository: ${nxrmRepositoryId}")
 
         def mavenComponentBuilder = MavenComponentBuilder.create()
-            .withGroupId(envVars.expand(mavenCoordinate.groupId))
-            .withArtifactId(envVars.expand(mavenCoordinate.artifactId))
-            .withVersion(envVars.expand(mavenCoordinate.version))
-            .withPackaging(envVars.expand(mavenCoordinate.packaging))
+            .withGroupId(groupId)
+            .withArtifactId(artifactId)
+            .withVersion(version)
+            .withPackaging(packaging)
 
         remoteMavenAssets.eachWithIndex { remoteMavenAsset, idx ->
           def asset = new DefaultAsset(remoteMavenAsset.RemotePath.getRemote(), remoteMavenAsset.RemotePath.read())
 
-          mavenComponentBuilder.withAsset(asset, envVars.expand(remoteMavenAsset.Asset.extension),
+          mavenComponentBuilder.withAsset(asset,
+              envVars.expand(remoteMavenAsset.Asset.extension),
               envVars.expand(remoteMavenAsset.Asset.classifier))
         }
+
+        def resolvedTagName = envVars.expand(tagName)
 
         try {
           nxrmClient.
