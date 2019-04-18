@@ -16,6 +16,8 @@ import lib.JenkinsTagLib
 
 def t = namespace(JenkinsTagLib)
 
+def link = "https://www.sonatype.com/nvsforjenkins?utm_campaign=jenkins%20for%20nvs&utm_source=Project%20Pages&utm_medium=Project%20Pages&utm_term=April%202019&utm_content=PP"
+
 style('''
   #nexus-plugin-nvs-message {
     display: none;
@@ -40,7 +42,7 @@ def nvsMessage = {
   div() {
     span("Sonatype is making it even easier to ensure your applications are high quality.")
     br()
-    a(href: "https://www.sonatype.com/nvsforjenkins", target: "_blank", "Learn more")
+    a(href: link, target: "_blank", "Learn more")
     span(" about what's coming to the Nexus Platform Plugin.")
     div() {
       a(class: "nexus-plugin-nvs-hide-link", href: "#", onclick: "NexusPluginNVS.hideNvsMessage(); return false;",
@@ -49,8 +51,8 @@ def nvsMessage = {
   }
 }
 
-table(id: 'nexus-plugin-nvs-message') {
-  t.summary(icon: '/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png', nvsMessage)
+table(id: "nexus-plugin-nvs-message") {
+  t.summary(icon: "/plugin/nexus-jenkins-plugin/images/96x96/sonatype-logo.png", nvsMessage)
 }
 
 script {
