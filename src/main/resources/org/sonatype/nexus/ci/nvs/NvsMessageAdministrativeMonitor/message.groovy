@@ -10,30 +10,22 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.nvs
+package org.sonatype.nexus.ci.nvs.NvsMessageAdministrativeMonitor
 
-import javax.annotation.Nonnull
+import lib.FormTagLib
 
-import hudson.Extension
-import hudson.model.Action
-import hudson.model.Job
-import jenkins.model.TransientActionFactory
+def f = namespace(FormTagLib)
 
-@Extension
-class NvsMessageActionFactory
-    extends TransientActionFactory<Job>
-{
-  @Override
-  Class<Job> type() {
-    return Job.class
-  }
+def link = "https://www.sonatype.com/nvsforjenkins?utm_campaign=AP%20NVS%20for%20Jenkins&utm_source=AP%20Pages&utm_medium=AP%20&utm_term=April%202019&utm_content=AP"
 
-  @Nonnull
-  @Override
-  Collection<? extends Action> createFor(Job target) {
-    if (NvsMessageUtil.showMessage()) {
-      return Collections.singleton(new NvsMessageAction())
+div(class: "alert alert-info") {
+  div(style: "float:right;") {
+    f.form(method: "post", action: "${rootURL}/${my.url}/disable") {
+      f.submit(value: "Dismiss")
     }
-    return Collections.emptyList()
   }
+  span("Sonatype is making it even easier to ensure your applications are high quality.")
+  br()
+  a(href: link, target: "_blank", "Learn more")
+  span(" about what's coming to the Nexus Platform Plugin.")
 }

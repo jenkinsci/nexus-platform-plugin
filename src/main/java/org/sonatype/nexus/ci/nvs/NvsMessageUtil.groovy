@@ -12,28 +12,14 @@
  */
 package org.sonatype.nexus.ci.nvs
 
-import javax.annotation.Nonnull
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+import org.sonatype.nexus.ci.config.NxiqConfiguration
 
-import hudson.Extension
-import hudson.model.Action
-import hudson.model.Job
-import jenkins.model.TransientActionFactory
-
-@Extension
-class NvsMessageActionFactory
-    extends TransientActionFactory<Job>
+class NvsMessageUtil
 {
-  @Override
-  Class<Job> type() {
-    return Job.class
-  }
-
-  @Nonnull
-  @Override
-  Collection<? extends Action> createFor(Job target) {
-    if (NvsMessageUtil.showMessage()) {
-      return Collections.singleton(new NvsMessageAction())
-    }
-    return Collections.emptyList()
+  static boolean showMessage() {
+    def isIqConfigured = NxiqConfiguration.getIqConfig() != null
+    def hideNvsMessage = GlobalNexusConfiguration.globalNexusConfiguration?.hideNvsMessage
+    return !isIqConfigured && !hideNvsMessage
   }
 }

@@ -12,21 +12,16 @@
  */
 package org.sonatype.nexus.ci.nvs
 
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NxiqConfiguration
-
-import org.junit.Rule
-import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
 class NvsMessageActionFactoryTest
     extends Specification
 {
-  @Rule
-  public JenkinsRule jenkins = new JenkinsRule()
 
-  def 'it returns a list of one NvsMessageAction'() {
+  def 'createFor returns a list of one NvsMessageAction when showMessage is true'() {
     setup:
+      GroovySpy(NvsMessageUtil, global: true)
+      NvsMessageUtil.showMessage() >> true
       def factory = new NvsMessageActionFactory()
     when:
       def actions = factory.createFor(null)
@@ -35,12 +30,10 @@ class NvsMessageActionFactoryTest
       actions[0] instanceof NvsMessageAction
   }
 
-  def 'it returns an empty list when IQ is configured'() {
+  def 'createFor returns an empty list when showMessage is false'() {
     setup:
-      def iqConfig = new NxiqConfiguration("", "")
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.iqConfigs = [iqConfig]
-      globalConfiguration.save()
+      GroovySpy(NvsMessageUtil, global: true)
+      NvsMessageUtil.showMessage() >> false
       def factory = new NvsMessageActionFactory()
     when:
       def actions = factory.createFor(null)
@@ -48,15 +41,4 @@ class NvsMessageActionFactoryTest
       actions.empty
   }
 
-  def 'it returns an empty list when checkbox to hide NVS message is checked'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.hideNvsMessage = true
-      globalConfiguration.save()
-      def factory = new NvsMessageActionFactory()
-    when:
-      def actions = factory.createFor(null)
-    then:
-      actions.empty
-  }
 }

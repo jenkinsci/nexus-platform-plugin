@@ -12,28 +12,28 @@
  */
 package org.sonatype.nexus.ci.nvs
 
-import javax.annotation.Nonnull
+import spock.lang.Specification
 
-import hudson.Extension
-import hudson.model.Action
-import hudson.model.Job
-import jenkins.model.TransientActionFactory
-
-@Extension
-class NvsMessageActionFactory
-    extends TransientActionFactory<Job>
+class NvsMessageAdministrativeMonitorTest
+    extends Specification
 {
-  @Override
-  Class<Job> type() {
-    return Job.class
+
+  def 'isActivated returns true when showMessage is true'() {
+    setup:
+      GroovySpy(NvsMessageUtil, global: true)
+      NvsMessageUtil.showMessage() >> true
+      def monitor = new NvsMessageAdministrativeMonitor()
+    expect:
+      monitor.isActivated()
   }
 
-  @Nonnull
-  @Override
-  Collection<? extends Action> createFor(Job target) {
-    if (NvsMessageUtil.showMessage()) {
-      return Collections.singleton(new NvsMessageAction())
-    }
-    return Collections.emptyList()
+  def 'isActivated returns false when showMessage is false'() {
+    setup:
+      GroovySpy(NvsMessageUtil, global: true)
+      NvsMessageUtil.showMessage() >> false
+      def monitor = new NvsMessageAdministrativeMonitor()
+    expect:
+      !monitor.isActivated()
   }
+
 }
