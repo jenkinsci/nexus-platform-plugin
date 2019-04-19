@@ -17,7 +17,6 @@ import spock.lang.Specification
 class NvsMessageActionFactoryTest
     extends Specification
 {
-
   def 'createFor returns a list of one NvsMessageAction when showMessage is true'() {
     setup:
       GroovySpy(NvsMessageUtil, global: true)
@@ -40,5 +39,4 @@ class NvsMessageActionFactoryTest
     then:
       actions.empty
   }
-
 }

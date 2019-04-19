@@ -19,10 +19,8 @@ import hudson.model.AdministrativeMonitor
 class NvsMessageAdministrativeMonitor
     extends AdministrativeMonitor
 {
-
   @Override
   boolean isActivated() {
     return NvsMessageUtil.showMessage()
   }
-
 }

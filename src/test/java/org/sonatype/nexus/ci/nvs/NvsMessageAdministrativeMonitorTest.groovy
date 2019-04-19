@@ -17,7 +17,6 @@ import spock.lang.Specification
 class NvsMessageAdministrativeMonitorTest
     extends Specification
 {
-
   def 'isActivated returns true when showMessage is true'() {
     setup:
       GroovySpy(NvsMessageUtil, global: true)
@@ -35,5 +34,4 @@ class NvsMessageAdministrativeMonitorTest
     expect:
       !monitor.isActivated()
   }
-
 }
