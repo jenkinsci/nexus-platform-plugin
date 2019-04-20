@@ -24,8 +24,8 @@ div(class: "alert alert-info") {
       f.submit(value: "Dismiss")
     }
   }
-  span("Sonatype is making it even easier to ensure your applications are high quality.")
+  span("Do you have additional security vulnerabilities hiding in your build artifacts?")
   br()
   a(href: link, target: "_blank", "Learn more")
-  span(" about what's coming to the Nexus Platform Plugin.")
+  span(" about enhancements to the Nexus Platform Plugin that will help you discover and resolve lurking problems.")
 }

@@ -40,7 +40,7 @@ style('''
 
 def nvsMessage = {
   div() {
-    span("Sonatype is making it even easier to ensure your applications are high quality.")
+    span("Sonatype is making it even easier to ensure your applications are high quality and secure.")
     br()
     a(href: link, target: "_blank", "Learn more")
     span(" about what's coming to the Nexus Platform Plugin.")
