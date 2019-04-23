@@ -101,6 +101,54 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
+  def 'Advanced properties are converted to a Java Properties object'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+              stages {
+                stage("Example") {
+                  steps { 
+                    writeFile file: 'dummy.txt', text: 'dummy'
+                    nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                      iqApplication: selectedApplication('app'), iqStage: 'stage',
+                      advancedProperties: 'excludedFiles=target/my-project.jar'
+                  }
+                }
+              }
+          }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      //1 * iqClient.evaluateApplication(*_) >>
+      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+      //1 * iqClient.evaluateApplication('app', 'stage', { it.getScan().getConfiguration().getProperties().get('excludedFiles') == 'target/my-project.jar' }) >>
+      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+      //1 * iqClient.evaluateApplication('app', 'stage', { assert it instanceof ScanResult
+      //      assert it.getScan().getConfiguration().getProperties() != null
+      //      assert it.getScan().getConfiguration().getProperties().size() > 0
+      //      true }) >>
+      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+      1 * iqClient.evaluateApplication('app', 'stage', _) >> { args ->
+        ScanResult scanResult = args[2]
+        assert scanResult.getScan().getConfiguration().getProperties() != null
+        assert scanResult.getScan().getConfiguration().getProperties().size() > 0
+        new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+      }
+
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+
+
   def 'Declarative pipeline build successful with selectedApplication call'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
