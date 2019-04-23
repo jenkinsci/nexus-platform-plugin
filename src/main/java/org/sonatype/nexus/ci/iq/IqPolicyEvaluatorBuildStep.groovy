@@ -110,7 +110,6 @@ class IqPolicyEvaluatorBuildStep
 
     @Override
     FormValidation doCheckAdvancedProperties(@QueryParameter String advancedProperties) {
-      // TODO validate that the properties are entered into the correct format?
       FormValidation.ok()
     }
 

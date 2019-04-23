@@ -125,23 +125,11 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      //1 * iqClient.evaluateApplication(*_) >>
-      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
-      //1 * iqClient.evaluateApplication('app', 'stage', { it.getScan().getConfiguration().getProperties().get('excludedFiles') == 'target/my-project.jar' }) >>
-      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
-      //1 * iqClient.evaluateApplication('app', 'stage', { assert it instanceof ScanResult
-      //      assert it.getScan().getConfiguration().getProperties() != null
-      //      assert it.getScan().getConfiguration().getProperties().size() > 0
-      //      true }) >>
-      //    new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
-      1 * iqClient.evaluateApplication('app', 'stage', _) >> { args ->
-        ScanResult scanResult = args[2]
-        assert scanResult.getScan().getConfiguration().getProperties() != null
-        assert scanResult.getScan().getConfiguration().getProperties().size() > 0
-        new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
-      }
-
+      1 * iqClient.scan(_, _, { it.size() == 1 && it.containsKey('excludedFiles') &&
+          it.get('excludedFiles') == 'target/my-project.jar'}, _, _, _) >>
+          new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)

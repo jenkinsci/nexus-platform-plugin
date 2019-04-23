@@ -68,8 +68,6 @@ class IqPolicyEvaluatorTest
 
   def reportUrl = 'http://server/report'
 
-  def advancedProperties = new Properties()
-
   def setup() {
     GroovyMock(NxiqConfiguration, global: true)
     GroovyMock(GlobalNexusConfiguration, global: true)
@@ -102,7 +100,7 @@ class IqPolicyEvaluatorTest
 
     then: 'performs a remote scan'
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ["*.jar"], [], workspace,
-          proprietaryConfig, _ as Logger, 'instance-id', advancedProperties) >> remoteScanner
+          proprietaryConfig, _ as Logger, 'instance-id', _) >> remoteScanner
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'evaluates the result'
@@ -123,7 +121,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * RemoteScannerFactory.
           getRemoteScanner("appId", "stage", ['/path1/some-scan-pattern/path2/'], _, workspace, _, _ as Logger,
-              'instance-id', advancedProperties) >> remoteScanner
+              'instance-id', _) >> remoteScanner
   }
 
   def 'it ignores when no environment variables set for scan pattern'() {
@@ -139,7 +137,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * RemoteScannerFactory.
           getRemoteScanner("appId", "stage", ['/path1/$NONEXISTENT_SCAN_PATTERN/path2/'], _, workspace, _, _ as Logger,
-              'instance-id', advancedProperties) >> remoteScanner
+              'instance-id', _) >> remoteScanner
   }
 
   def 'it passes module excludes to the remote scanner'() {
