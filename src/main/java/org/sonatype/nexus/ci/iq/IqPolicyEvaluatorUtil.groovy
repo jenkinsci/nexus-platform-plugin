@@ -106,11 +106,11 @@ class IqPolicyEvaluatorUtil
     ExceptionUtils.indexOfType(throwable, IOException) >= 0
   }
 
-  private static Properties getAdvancedProperties(final String s, final LoggerBridge loggerBridge) {
+  private static Properties getAdvancedProperties(final String inputPropertiesString, final LoggerBridge loggerBridge) {
     Properties advanced = new Properties()
-    if (StringUtils.isNotEmpty(s)) {
+    if (StringUtils.isNotEmpty(inputPropertiesString)) {
       try {
-        advanced.load(new StringReader(s))
+        new StringReader(inputPropertiesString).withCloseable {advanced.load(it)}
       } catch (IOException e) {
         loggerBridge.error("Unable to parse advanced properties: ${e.getMessage()}")
       }
