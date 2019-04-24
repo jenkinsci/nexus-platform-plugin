@@ -10,34 +10,22 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-
-import org.sonatype.nexus.ci.config.NxiqConfiguration
+package org.sonatype.nexus.ci.nvs.NvsMessageAdministrativeMonitor
 
 import lib.FormTagLib
 
 def f = namespace(FormTagLib)
-def iqConfig = NxiqConfiguration.iqConfig
 
-f.section(title: descriptor.displayName) {
-  f.entry(title: _('Nexus Repository Manager Servers')) {
-    f.repeatableHeteroProperty(
-        field: 'nxrmConfigs',
-        addCaption: _('Add Nexus Repository Manager Server')
-    )
-  }
+def link = "https://www.sonatype.com/nvsforjenkins?utm_campaign=AP%20NVS%20for%20Jenkins&utm_source=AP%20Pages&utm_medium=AP%20&utm_term=April%202019&utm_content=AP"
 
-  f.entry(title: _('Nexus IQ Server')) {
-    f.repeatableHeteroProperty(
-        field: 'iqConfigs',
-        addCaption: _('Add Nexus IQ Server'),
-        oneEach: 'true'
-    )
-  }
-
-  if (!iqConfig) {
-    f.block() {
-      f.checkbox(field: "hideNvsMessage", title: "Hide messages about what's coming to the Nexus Platform Plugin")
+div(class: "alert alert-info") {
+  div(style: "float:right;") {
+    f.form(method: "post", action: "${rootURL}/${my.url}/disable") {
+      f.submit(value: "Dismiss")
     }
   }
+  span("Do you have additional security vulnerabilities hiding in your build artifacts?")
+  br()
+  a(href: link, target: "_blank", "Learn more")
+  span(" about enhancements to the Nexus Platform Plugin that will help you discover and resolve lurking problems.")
 }
