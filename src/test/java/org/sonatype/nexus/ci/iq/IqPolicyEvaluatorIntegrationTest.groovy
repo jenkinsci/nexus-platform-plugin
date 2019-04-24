@@ -125,9 +125,11 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.scan(_, _, { it.size() == 1 && it.containsKey('excludedFiles') &&
-          it.get('excludedFiles') == 'target/my-project.jar'}, _, _, _) >>
-          new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.scan(_, _,
+          {
+            it.size() == 1 && it.containsKey('excludedFiles') && it.get('excludedFiles') == 'target/my-project.jar'
+          }, _, _, _) >>
+            new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
 

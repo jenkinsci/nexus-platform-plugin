@@ -128,7 +128,7 @@ class IqPolicyEvaluatorTest
     setup:
       def remoteScanner = Mock(RemoteScanner)
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'),
-          [new ScanPattern('/path1/$NONEXISTENT_SCAN_PATTERN/path2/')], [], false, "131-cred", null)
+          [new ScanPattern('/path1/$NONEXISTENT_SCAN_PATTERN/path2/')], [], false, '131-cred', null)
 
     when:
       buildStep.perform(run, workspace, launcher, Mock(TaskListener))

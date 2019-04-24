@@ -23,6 +23,7 @@ import hudson.util.ListBoxModel
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.lang.Unroll
 
 abstract class IqPolicyEvaluatorDescriptorTest
     extends Specification
@@ -145,16 +146,15 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'file'  | Kind.OK | '<div/>'
   }
 
+  @Unroll
   def 'it validates that advanced properties is not required'() {
     setup:
       def descriptor = getDescriptor()
 
-    when:
-      "validating advanced properties $pattern"
+    when: "validating advanced properties $pattern"
       def validation = descriptor.doCheckAdvancedProperties(pattern)
 
-    then:
-      "it returns $kind with message $message"
+    then: "it returns $kind with message $message"
       validation.kind == kind
       validation.renderHtml() == message
 
