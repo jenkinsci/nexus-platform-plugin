@@ -115,7 +115,7 @@ class IqPolicyEvaluatorUtil
         loggerBridge.error("Unable to parse advanced properties: ${e.message}", e)
       }
     }
-    advanced
+    return advanced
   }
 
   private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)
