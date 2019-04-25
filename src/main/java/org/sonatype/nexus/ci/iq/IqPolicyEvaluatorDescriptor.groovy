@@ -24,6 +24,8 @@ interface IqPolicyEvaluatorDescriptor
 
   FormValidation doCheckScanPattern(String scanPattern)
 
+  FormValidation doCheckAdvancedProperties(String advancedProperties)
+
   FormValidation doCheckModuleExclude(String moduleExclude)
 
   FormValidation doCheckFailBuildOnNetworkError(String value)

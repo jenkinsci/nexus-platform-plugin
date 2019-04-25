@@ -101,6 +101,44 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
+  def 'Advanced properties are converted to a Java Properties object'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+              stages {
+                stage("Example") {
+                  steps { 
+                    writeFile file: 'dummy.txt', text: 'dummy'
+                    nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                      iqApplication: selectedApplication('app'), iqStage: 'stage',
+                      advancedProperties: 'excludedFiles=target/my-project.jar'
+                  }
+                }
+              }
+          }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(_, _,
+          {
+            it.size() == 1 && it.containsKey('excludedFiles') && it.get('excludedFiles') == 'target/my-project.jar'
+          }, _, _, _) >>
+            new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+
+
   def 'Declarative pipeline build successful with selectedApplication call'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
@@ -173,7 +211,8 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Freestyle build (happy path)'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -247,7 +286,9 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
+              'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -267,7 +308,8 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Freestyle build should set status to fail when build fails with network error with failBuildOnNetworkError true'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], true, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], true, 'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -315,7 +357,9 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
+              'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -408,7 +452,9 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
+              'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -458,7 +504,9 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
+              'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -475,7 +523,9 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
+              'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -540,7 +590,8 @@ class IqPolicyEvaluatorIntegrationTest
   def 'Manual application without variable substitution'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('app'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('app'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -564,7 +615,8 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.jenkins.getGlobalNodeProperties().add(prop)
 
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('$APP'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('$APP'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     when: 'the build is scheduled'

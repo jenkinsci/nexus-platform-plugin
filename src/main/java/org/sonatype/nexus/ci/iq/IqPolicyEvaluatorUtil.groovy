@@ -24,6 +24,7 @@ import hudson.Launcher
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
+import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.exception.ExceptionUtils
 
 import static com.google.common.base.Preconditions.checkArgument
@@ -61,9 +62,11 @@ class IqPolicyEvaluatorUtil
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
+      def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
       def remoteScanner = RemoteScannerFactory.
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
-              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
+              advancedProperties)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult)
@@ -101,6 +104,18 @@ class IqPolicyEvaluatorUtil
 
   private static boolean isNetworkError(final Exception throwable) {
     ExceptionUtils.indexOfType(throwable, IOException) >= 0
+  }
+
+  private static Properties getAdvancedProperties(final String inputPropertiesString, final LoggerBridge loggerBridge) {
+    Properties advanced = new Properties()
+    if (StringUtils.isNotEmpty(inputPropertiesString)) {
+      try {
+        new StringReader(inputPropertiesString).withCloseable {advanced.load(it)}
+      } catch (IOException e) {
+        loggerBridge.error("Unable to parse advanced properties: ${e.message}", e)
+      }
+    }
+    return advanced
   }
 
   private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)

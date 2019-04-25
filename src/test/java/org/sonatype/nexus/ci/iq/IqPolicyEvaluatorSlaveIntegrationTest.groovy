@@ -86,7 +86,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     and: 'a mock IQ server stub'
@@ -103,7 +104,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     and: 'a mock IQ server stub'
@@ -120,7 +122,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id'))
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
       configureJenkins()
 
     and: 'a mock IQ server stub'

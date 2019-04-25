@@ -45,6 +45,8 @@ class RemoteScanner
 
   private final String instanceId
 
+  private final Properties advancedProperties
+
   @SuppressWarnings('ParameterCount')
   RemoteScanner(final String appId,
                 final String stageId,
@@ -53,7 +55,8 @@ class RemoteScanner
                 final FilePath workspace,
                 final ProprietaryConfig proprietaryConfig,
                 final Logger log,
-                final String instanceId)
+                final String instanceId,
+                final Properties advancedProperties)
   {
     this.appId = appId
     this.stageId = stageId
@@ -63,6 +66,7 @@ class RemoteScanner
     this.proprietaryConfig = proprietaryConfig
     this.log = log
     this.instanceId = instanceId
+    this.advancedProperties = advancedProperties
   }
 
   @Override
@@ -71,7 +75,7 @@ class RemoteScanner
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
-    def scanResult = iqClient.scan(appId, proprietaryConfig, new Properties(), targets, moduleIndices, workDirectory)
+    def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 

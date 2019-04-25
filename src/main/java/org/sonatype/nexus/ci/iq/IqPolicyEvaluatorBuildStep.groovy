@@ -53,6 +53,8 @@ class IqPolicyEvaluatorBuildStep
 
   String jobCredentialsId
 
+  String advancedProperties
+
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
@@ -60,7 +62,8 @@ class IqPolicyEvaluatorBuildStep
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> iqModuleExcludes,
                              final Boolean failBuildOnNetworkError,
-                             final String jobCredentialsId)
+                             final String jobCredentialsId,
+                             final String advancedProperties)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
@@ -68,6 +71,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqModuleExcludes = iqModuleExcludes
     this.iqStage = iqStage
     this.iqApplication = iqApplication
+    this.advancedProperties = advancedProperties
   }
 
   @Override
@@ -102,6 +106,11 @@ class IqPolicyEvaluatorBuildStep
     ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       // JobCredentialsId is an empty String if not set
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
+    }
+
+    @Override
+    FormValidation doCheckAdvancedProperties(@QueryParameter String advancedProperties) {
+      FormValidation.ok()
     }
 
     @Override

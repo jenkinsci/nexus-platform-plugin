@@ -79,6 +79,10 @@ f.section(title: descriptor.displayName) {
         c.select(context:app, includeUser:false, expressionAllowed:false)
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_AdvancedProperties()), field: 'advancedProperties') {
+        f.textarea()
+      }
+
       f.block() {
         f.validateButton(
             title: _(org.sonatype.nexus.ci.config.Messages.Configuration_TestConnection()),

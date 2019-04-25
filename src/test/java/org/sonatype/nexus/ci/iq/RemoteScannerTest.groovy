@@ -57,7 +57,7 @@ class RemoteScannerTest
   def "creates a list of targets from the result of a directory scan"() {
     setup:
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
-          "instance-id")
+          "instance-id", null)
       directoryScanner.getIncludedDirectories() >> matchedDirs.toArray(new String[matchedDirs.size()])
       directoryScanner.getIncludedFiles() >> matchedFiles.toArray(new String[matchedFiles.size()])
 
@@ -82,7 +82,7 @@ class RemoteScannerTest
   def 'creates a list of module indices from the results of a directory scan'() {
     setup:
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
-          "instance-id")
+          "instance-id", null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> matchedModuleIndices.toArray(new String[matchedModuleIndices.size()])
 
@@ -106,7 +106,7 @@ class RemoteScannerTest
     setup:
       GroovyMock(IqClientFactory, global: true)
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], new FilePath(new File('/file/path')),
-          proprietaryConfig, log, 'instance-id')
+          proprietaryConfig, log, 'instance-id', null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
 
@@ -132,7 +132,7 @@ class RemoteScannerTest
     setup:
       def workspaceFile = new File('/file/path')
       final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
-          proprietaryConfig, log, 'instanceId')
+          proprietaryConfig, log, 'instanceId', null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
 
@@ -149,7 +149,7 @@ class RemoteScannerTest
     setup:
       def workspaceFile = new File('/file/path')
       final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
-          proprietaryConfig, log, 'instanceId')
+          proprietaryConfig, log, 'instanceId', null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
 
@@ -167,7 +167,7 @@ class RemoteScannerTest
       def moduleExcludes = ['/file/path/module.xml']
       def workspaceFile = new File('/file/path')
       final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
-          proprietaryConfig, log, 'instanceId')
+          proprietaryConfig, log, 'instanceId', null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
 

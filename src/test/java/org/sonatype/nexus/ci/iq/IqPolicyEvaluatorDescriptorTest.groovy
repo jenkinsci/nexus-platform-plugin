@@ -23,6 +23,7 @@ import hudson.util.ListBoxModel
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
+import spock.lang.Unroll
 
 abstract class IqPolicyEvaluatorDescriptorTest
     extends Specification
@@ -145,6 +146,27 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'file'  | Kind.OK | '<div/>'
   }
 
+  @Unroll
+  def 'it validates that advanced properties are not required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when: "validating advanced properties $pattern"
+      def validation = descriptor.doCheckAdvancedProperties(pattern)
+
+    then: "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      pattern | kind    | message
+      ''      | Kind.OK | '<div/>'
+      null    | Kind.OK | '<div/>'
+      'file'  | Kind.OK | '<div/>'
+  }
+
+
+
   def 'it validates that application items are filled'() {
     setup:
       def descriptor = getSelectedApplication()
@@ -241,7 +263,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
 
     when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId')
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId', null)
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'

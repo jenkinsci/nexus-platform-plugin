@@ -25,4 +25,6 @@ interface IqPolicyEvaluator
   Boolean getFailBuildOnNetworkError()
 
   String getJobCredentialsId()
+
+  String getAdvancedProperties()
 }
