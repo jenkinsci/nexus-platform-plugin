@@ -147,7 +147,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
   }
 
   @Unroll
-  def 'it validates that advanced properties is not required'() {
+  def 'it validates that advanced properties are not required'() {
     setup:
       def descriptor = getDescriptor()
 
