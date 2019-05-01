@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.2</version>
+    <version>3.35</version>
     <relativePath />
   </parent>
 
@@ -55,7 +55,6 @@
   <properties>
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jenkins.version>2.7</jenkins.version>
-    <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
     <java.level>8</java.level>
@@ -78,6 +77,9 @@
     <staging.serverId>${public.serverId}</staging.serverId>
     <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
     <staging.progressTimeout>15</staging.progressTimeout>
+
+    <findbugs.threshold>High</findbugs.threshold>
+    <findbugs.effort>Max</findbugs.effort>
   </properties>
 
 
@@ -334,17 +336,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>${findbugs-maven-plugin.version}</version>
-          <configuration>
-            <effort>Max</effort>
-            <threshold>High</threshold>
-            <xmlOutput>true</xmlOutput>
-            <failOnError>true</failOnError>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
@@ -360,7 +351,6 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
-        <version>3.1</version>
         <configuration>
           <compilerId>groovy-eclipse-compiler</compilerId>
         </configuration>
