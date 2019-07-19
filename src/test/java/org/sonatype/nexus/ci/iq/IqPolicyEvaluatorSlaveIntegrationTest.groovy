@@ -34,7 +34,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get
 import static com.github.tomakehurst.wiremock.client.WireMock.givenThat
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson
 import static com.github.tomakehurst.wiremock.client.WireMock.post
-import static com.github.tomakehurst.wiremock.client.WireMock.put
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 
@@ -59,12 +58,35 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     WireMock.configureFor("localhost", wireMockRule.port())
     givenThat(get(urlMatching('/rest/config/proprietary\\?.*'))
         .willReturn(okJson('{}')))
-    givenThat(put(urlMatching('/rest/ci/scan/.*'))
-        .willReturn(okJson('{"scanId":"scanId"}')))
-    givenThat(post(urlMatching('/rest/policy/.*'))
-        .willReturn(okJson('{}')))
     givenThat(post(urlMatching('/rest/integration/applications/verifyOrCreate/.*'))
         .willReturn(okJson('true')))
+    givenThat(post(urlMatching('/rest/integration/applications/app/evaluations/ci/stages/.*'))
+        .willReturn(okJson('{"statusId": "statusId"}')))
+    givenThat(get(urlMatching('/rest/integration/applications/app/evaluations/status/statusId'))
+        .willReturn(okJson('''{
+        "status": "COMPLETED",
+        "reason": null,
+        "result": {
+        "alerts": [],
+        "affectedComponentCount": 33,
+        "criticalComponentCount": 20,
+        "severeComponentCount": 12,
+        "moderateComponentCount": 1,
+        "criticalPolicyViolationCount": 46,
+        "severePolicyViolationCount": 54,
+        "moderatePolicyViolationCount": 3,
+        "grandfatheredPolicyViolationCount": 0
+        },
+        "scanReceipt": {
+        "scanId": "scanId",
+        "timeToReport": 6,
+        "reportUrl": "ui/links/application/app/report/scanId",
+        "pdfUrl": "ui/links/application/app/report/scanId/pdf",
+        "dataUrl": "api/v2/applications/app/reports/scanId/raw",
+        "reportTimeoutInSeconds": 350
+        },
+        "nextPollingIntervalInSeconds": 0
+        }''')))
     givenThat(get(urlMatching('/rest/product/version'))
         .willReturn(okJson("""{"tag": "1e64d778447fc30e4f509f9ca965c5bbe7aa8fd3",
         "version": "${serverVersion}",
