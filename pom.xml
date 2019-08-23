@@ -25,7 +25,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.6-SNAPSHOT</version>
+  <version>3.7-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>Nexus Platform Plugin</name>
@@ -88,7 +88,7 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.7.20190717-153103.2936725</version>
+        <version>3.8.20190821-172053.8894a6d</version>
         <classifier>internal</classifier>
       </dependency>
       
