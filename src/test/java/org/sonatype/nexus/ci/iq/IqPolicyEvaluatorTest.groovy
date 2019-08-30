@@ -23,6 +23,7 @@ import com.sonatype.nexus.api.iq.scan.ScanResult
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
+import hudson.AbortException
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
@@ -384,5 +385,20 @@ class IqPolicyEvaluatorTest
       0 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
           'Summary of policy violations: 0 critical, 0 severe, 0 moderate')
+  }
+
+  def 'prints an error message if not in node context'() {
+    setup:
+      def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'),
+          [new ScanPattern("*.jar")], [],false, null, null)
+      TaskListener listener = Mock()
+
+    when:
+      buildStep.perform(run, workspace, null, listener)
+
+    then:
+      thrown AbortException
+      1 * run.setResult(Result.FAILURE)
+      1 * listener.error('nexusPolicyEvaluation step requires a node context. Please specify an agent or a node block')
   }
 }

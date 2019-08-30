@@ -18,6 +18,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
+import hudson.AbortException
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
@@ -40,6 +41,8 @@ class IqPolicyEvaluatorUtil
                                                     final Launcher launcher,
                                                     final TaskListener listener)
   {
+    ensureInNodeContext(run, workspace, launcher, listener)
+
     try {
       EnvVars envVars = run.getEnvironment(listener)
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
@@ -146,6 +149,21 @@ class IqPolicyEvaluatorUtil
     }
     else {
       return Result.SUCCESS
+    }
+  }
+
+  private static ensureInNodeContext(
+      final Run run,
+      final FilePath workspace,
+      final Launcher launcher,
+      final TaskListener listener
+  ) {
+    if (!(launcher && workspace)) {
+      run.setResult(Result.FAILURE)
+      if (listener) {
+        listener.error(Messages.IqPolicyEvaluation_NodeContextRequired())
+      }
+      throw new AbortException(Messages.IqPolicyEvaluation_NodeContextRequired())
     }
   }
 }
