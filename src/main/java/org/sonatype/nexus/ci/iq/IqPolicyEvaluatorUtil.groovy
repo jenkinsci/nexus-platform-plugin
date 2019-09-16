@@ -69,7 +69,8 @@ class IqPolicyEvaluatorUtil
               advancedProperties)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult)
+      File workDirectory = new File(workspace.getRemote())
+      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
 
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
