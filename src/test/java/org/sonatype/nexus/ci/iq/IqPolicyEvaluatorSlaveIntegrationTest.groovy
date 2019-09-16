@@ -93,6 +93,13 @@ class IqPolicyEvaluatorSlaveIntegrationTest
         "name": "sonatype-clm-server",
         "timestamp": "201807111516",
         "build": "build-number"}""")))
+    givenThat(post(urlMatching('/api/v2/sourceControl.*'))
+        .willReturn(okJson("""{"id": "id",
+            "ownerId" : "",
+            "repositoryUrl": "",
+            "token": "",
+            "provider": ""
+            }""")))
   }
 
   def configureJenkins() {
