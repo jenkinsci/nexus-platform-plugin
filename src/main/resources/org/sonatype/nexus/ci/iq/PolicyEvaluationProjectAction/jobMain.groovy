@@ -15,8 +15,14 @@ package org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
+import lib.JenkinsTagLib
+import lib.LayoutTagLib
 
-def t = namespace(lib.JenkinsTagLib)
+def t = namespace(JenkinsTagLib.class)
+def l = namespace(LayoutTagLib.class)
+
+def pluginId = org.sonatype.nexus.ci.config.Messages.NxiqConfiguration_PluginId()
+def pluginResourcePath = "${rootURL}/plugin/${pluginId}"
 
 def projectAction = (PolicyEvaluationProjectAction) it
 def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
@@ -112,5 +118,14 @@ if (action) {
 
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png', policyUI << policyCss)
+  }
+
+  table(class: 'iq-job-main-table') {
+    l.main_panel() {
+      div(id: 'iqChart')
+      script(src: "${pluginResourcePath}/src/chart/apexcharts.js")
+      script(src: "${pluginResourcePath}/src/chart/iqChart.js",
+          chartTitle: Messages.IqPolicyEvaluation_ChartName())
+    }
   }
 }
