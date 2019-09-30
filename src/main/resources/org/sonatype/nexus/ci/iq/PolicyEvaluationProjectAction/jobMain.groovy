@@ -15,6 +15,8 @@ package org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
+
+import groovy.json.JsonBuilder
 import lib.JenkinsTagLib
 import lib.LayoutTagLib
 
@@ -26,6 +28,18 @@ def pluginResourcePath = "${rootURL}/plugin/${pluginId}"
 
 def projectAction = (PolicyEvaluationProjectAction) it
 def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
+
+def policyEvaluations = projectAction.getJob().getBuilds().stream()
+    .filter{!it.isBuilding()}
+    .map{
+      def healthActions = it.getActions(PolicyEvaluationHealthAction.class)
+      // getActions returns only 1 or empty collection, see PolicyEvaluationHealthAction#getProjectActions
+      return healthActions ? healthActions.get(0) : null
+    }
+    .filter{Objects.nonNull(it)}
+    .map{new Summary(it as PolicyEvaluationHealthAction)}
+    .sorted{a, b -> (a.buildNumber <=> b.buildNumber) }
+    .collect()
 
 // there could be multiple policy evaluations so we need to find the specific health action that corresponds
 // to the given project action
@@ -125,7 +139,25 @@ if (action) {
       div(id: 'iqChart')
       script(src: "${pluginResourcePath}/src/chart/apexcharts.js")
       script(src: "${pluginResourcePath}/src/chart/iqChart.js",
-          chartTitle: Messages.IqPolicyEvaluation_ChartName())
+          chartTitle: Messages.IqPolicyEvaluation_ChartName(),
+          policyEvaluations: new JsonBuilder(policyEvaluations).toString())
     }
+  }
+}
+
+/**
+ * Nexus IQ policy evaluation summary which is used for Nexus IQ chart
+ */
+class Summary {
+  int buildNumber
+  int criticalCount
+  int severeCount
+  int moderateCount
+
+  Summary(PolicyEvaluationHealthAction action) {
+    this.buildNumber = action.getBuildNumber()
+    this.criticalCount = action.getCriticalComponentCount()
+    this.severeCount = action.getSevereComponentCount()
+    this.moderateCount = action.getModerateComponentCount()
   }
 }

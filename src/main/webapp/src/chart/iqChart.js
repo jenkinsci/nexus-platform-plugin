@@ -26,24 +26,26 @@ const ChartColor = {
   MODERATE : '#f5c648'
 };
 
+const policyEvaluations = JSON.parse(document.currentScript.getAttribute('policyEvaluations'));
+
 function getChartTitle() {
   return document.currentScript.getAttribute('chartTitle');
 }
 
 function getCriticalValues() {
-  return [];
+  return policyEvaluations.map(value => value.criticalCount);
 }
 
 function getSevereValues() {
-  return [];
+  return policyEvaluations.map(value => value.severeCount);
 }
 
 function getModerateValues() {
-  return [];
+  return policyEvaluations.map(value => value.moderateCount);
 }
 
 function getXAxisLabels() {
-  return [];
+  return policyEvaluations.map(value => value.buildNumber);
 }
 
 const options = {
@@ -96,6 +98,13 @@ const options = {
     labels: {
       formatter: function (value) {
         return '#' + value;
+      }
+    }
+  },
+  yaxis: {
+    labels: {
+      formatter: function (value) {
+        return value;
       }
     }
   },
