@@ -116,4 +116,3 @@ const iqChart = new ApexCharts(
 );
 
 iqChart.render();
-
