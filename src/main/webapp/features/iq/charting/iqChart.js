@@ -59,6 +59,9 @@ const options = {
         const buildNumber = getXAxisLabels()[dataPoint.dataPointIndex];
         window.location.href = buildNumber.toString();
       }
+    },
+    toolbar: {
+      show: false
     }
   },
   colors: [ChartColor.CRITICAL, ChartColor.SEVERE, ChartColor.MODERATE],
@@ -97,21 +100,36 @@ const options = {
       formatter: function (value) {
         return '#' + value;
       }
+    },
+    tooltip: {
+      enabled: false
+    }
+  },
+  yaxis: {
+    labels: {
+      formatter: function (value) {
+        return value;
+      }
     }
   },
   markers: {
     size: 5,
-    shape: "circle"
+    shape: 'circle'
   },
   legend: {
     position: 'bottom',
     horizontalAlign: 'center'
+  },
+  tooltip: {
+    theme: 'light',
+    style: {
+      fontSize: '14px',
+    }
   }
 };
 
-
 const iqChart = new ApexCharts(
-    document.querySelector("#iqChart"),
+    document.querySelector('#iqChart'),
     options
 );
 

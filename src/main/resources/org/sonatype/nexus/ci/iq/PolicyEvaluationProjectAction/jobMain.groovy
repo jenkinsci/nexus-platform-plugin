@@ -23,8 +23,6 @@ import lib.LayoutTagLib
 def t = namespace(JenkinsTagLib.class)
 def l = namespace(LayoutTagLib.class)
 
-def pluginResourcePath = "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin"
-
 def projectAction = (PolicyEvaluationProjectAction) it
 def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
 
@@ -124,8 +122,10 @@ if (action) {
   table(class: 'iq-job-main-table') {
     l.main_panel() {
       div(id: 'iqChart')
-      script(src: "${pluginResourcePath}/lib/apexcharts.js")
-      script(src: "${pluginResourcePath}/features/iq/charting/iqChart.js",
+      link(rel: "stylesheet",
+          href: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/styles.css")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/lib/apexcharts.js")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/iqChart.js",
           chartTitle: Messages.IqPolicyEvaluation_ChartName())
     }
   }
