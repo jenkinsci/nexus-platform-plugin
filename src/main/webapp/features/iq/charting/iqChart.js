@@ -114,13 +114,6 @@ const options = {
       }
     }
   },
-  yaxis: {
-    labels: {
-      formatter: function (value) {
-        return value;
-      }
-    }
-  },
   markers: {
     size: 5,
     shape: 'circle'

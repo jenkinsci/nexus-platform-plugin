@@ -16,9 +16,13 @@ import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 
+import jenkins.model.Jenkins
 import groovy.json.JsonBuilder
 import lib.JenkinsTagLib
 import lib.LayoutTagLib
+
+// number of last recent builds
+final MAX_BUILDS_TO_GRAPH = 5;
 
 def t = namespace(JenkinsTagLib.class)
 def l = namespace(LayoutTagLib.class)
@@ -35,7 +39,8 @@ def policyEvaluations = projectAction.getJob().getBuilds().stream()
     }
     .filter{Objects.nonNull(it)}
     .map{new Summary(it as PolicyEvaluationHealthAction)}
-    .sorted{a, b -> (a.buildNumber <=> b.buildNumber) }
+    .limit(MAX_BUILDS_TO_GRAPH)
+    .sorted{a, b -> (a.buildNumber <=> b.buildNumber)}
     .collect()
 
 // there could be multiple policy evaluations so we need to find the specific health action that corresponds
@@ -138,7 +143,8 @@ if (action) {
           href: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/styles.css")
       script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/lib/apexcharts.js")
       script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/iqChart.js",
-          chartTitle: Messages.IqPolicyEvaluation_ChartName())
+          chartTitle: Messages.IqPolicyEvaluation_ChartName(),
+          policyEvaluations: new JsonBuilder(policyEvaluations).toString())
     }
   }
 }
