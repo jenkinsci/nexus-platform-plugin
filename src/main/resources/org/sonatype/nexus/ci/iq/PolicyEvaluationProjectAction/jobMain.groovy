@@ -23,9 +23,6 @@ import lib.LayoutTagLib
 def t = namespace(JenkinsTagLib.class)
 def l = namespace(LayoutTagLib.class)
 
-def pluginId = org.sonatype.nexus.ci.config.Messages.NxiqConfiguration_PluginId()
-def pluginResourcePath = "${rootURL}/plugin/${pluginId}"
-
 def projectAction = (PolicyEvaluationProjectAction) it
 def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
 
@@ -137,10 +134,11 @@ if (action) {
   table(class: 'iq-job-main-table') {
     l.main_panel() {
       div(id: 'iqChart')
-      script(src: "${pluginResourcePath}/src/chart/apexcharts.js")
-      script(src: "${pluginResourcePath}/src/chart/iqChart.js",
-          chartTitle: Messages.IqPolicyEvaluation_ChartName(),
-          policyEvaluations: new JsonBuilder(policyEvaluations).toString())
+      link(rel: "stylesheet",
+          href: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/styles.css")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/lib/apexcharts.js")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/iqChart.js",
+          chartTitle: Messages.IqPolicyEvaluation_ChartName())
     }
   }
 }
