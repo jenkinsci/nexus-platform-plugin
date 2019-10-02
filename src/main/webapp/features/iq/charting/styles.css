@@ -1,0 +1,10 @@
+.apexcharts-tooltip.light {
+  background: white;
+  color: black;
+}
+
+.apexcharts-tooltip.light .apexcharts-tooltip-title {
+  background: black;
+  font-weight: bold;
+  color: white;
+}
