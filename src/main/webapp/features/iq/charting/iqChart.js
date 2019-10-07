@@ -26,24 +26,36 @@ const ChartColor = {
   MODERATE : '#f5c648'
 };
 
+function getPolicyEvaluations() {
+  try {
+    return JSON.parse(document.currentScript.getAttribute('policyEvaluations'));
+  }
+  catch (e) {
+    console.log(`Cannot parse data for a chart: ${e.message}`);
+    return undefined;
+  }
+}
+
+const policyEvaluations = getPolicyEvaluations();
+
 function getChartTitle() {
   return document.currentScript.getAttribute('chartTitle');
 }
 
 function getCriticalValues() {
-  return [];
+  return policyEvaluations ? policyEvaluations.map(value => value.criticalCount) : [];
 }
 
 function getSevereValues() {
-  return [];
+  return policyEvaluations ? policyEvaluations.map(value => value.severeCount) : [];
 }
 
 function getModerateValues() {
-  return [];
+  return policyEvaluations ? policyEvaluations.map(value => value.moderateCount) : [];
 }
 
 function getXAxisLabels() {
-  return [];
+  return policyEvaluations ? policyEvaluations.map(value => value.buildNumber) : [];
 }
 
 const options = {
@@ -128,9 +140,15 @@ const options = {
   }
 };
 
-const iqChart = new ApexCharts(
-    document.querySelector('#iqChart'),
-    options
-);
+function showChart() {
+  if (policyEvaluations) {
+    const iqChart = new ApexCharts(
+        document.querySelector('#iqChart'),
+        options
+    );
 
-iqChart.render();
+    iqChart.render();
+  }
+}
+
+showChart();
