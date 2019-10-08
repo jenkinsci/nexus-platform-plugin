@@ -135,7 +135,9 @@ if (action) {
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png', policyUI << policyCss)
   }
+}
 
+if (policyEvaluations.size() > 0) {
   table(class: 'iq-job-main-table') {
     l.main_panel() {
       div(id: 'iqChart')
