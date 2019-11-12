@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout title="Project Statistics">
+    <l:main-panel>
+      <h1>
+        Project Statistics
+      </h1>
+      <ul>
+        <li>
+          Build Steps:
+<!--          Build Steps: ${it.buildStepsCount}-->
+        </li>
+        <li>
+          Post-Build Steps:
+<!--          Post-Build Steps: ${it.postBuildStepsCount}-->
+        </li>
+      </ul>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
