@@ -399,7 +399,7 @@
           </div>
         </div>
 
-      <j:forEach items="${it.getReport()}" var="comp" indexVar="i">
+      <j:forEach items="${it.getReport().components}" var="comp" indexVar="i">
         <div class="violations-header">
           <div class="component-name">${comp.componentName}</div>
         </div>
