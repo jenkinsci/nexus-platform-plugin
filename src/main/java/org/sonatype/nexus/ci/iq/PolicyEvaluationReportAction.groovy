@@ -29,6 +29,12 @@ class PolicyEvaluationReportAction
 
   private static final String CI_A_NAME_FORMAT = "a-name"
 
+  private static final String ICON_NAME = '/plugin/nexus-jenkins-plugin/images/24x24/nexus-iq.png'
+
+  private static final String IQ_REPORT_NAME = 'iqreport'
+
+  private static final String MENU_REPORT_TITLE = 'report will be here'
+
   private transient Run run
 
   private ApplicationPolicyEvaluation policyEvaluationResult
@@ -209,26 +215,26 @@ class PolicyEvaluationReportAction
 
   @Override
   String getIconFileName() {
-    return '/plugin/nexus-jenkins-plugin/images/24x24/nexus-iq.png'
+    return ICON_NAME
   }
 
   @Override
   String getDisplayName() {
-    return 'report will be here'
+    return MENU_REPORT_TITLE
   }
 
   @Override
   String getUrlName() {
-    return 'iqreport'
+    return IQ_REPORT_NAME
   }
 
   @Override
-  void onAttached(final Run<?, ?> r) {
+  void onAttached(final Run r) {
     this.run = run
   }
 
   @Override
-  void onLoad(final Run<?, ?> r) {
+  void onLoad(final Run r) {
     this.run = run;
   }
 }
