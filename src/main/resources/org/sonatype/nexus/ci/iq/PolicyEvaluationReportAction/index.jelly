@@ -340,6 +340,7 @@
       }
     </style>
     <l:main-panel>
+      <j:set var="report" value="${it.getReport()}" />
       <div id="nexusIqParent" class="report-parent">
         <div class="title">
           <div class="main-title">Nexus IQ Build Failure Report</div>
@@ -378,8 +379,8 @@
             </svg>
           </div>
           <div class="iq-summary-fail">
-            <p>2 Build Failures</p>
-            <p>caused by 3 components ${it.getActionIcon}</p>
+            <p>${report.failedActionViolations} Build Failures</p>
+            <p>caused by ${report.failedActionComponents} components</p>
           </div>
           <div class="iq-summary-warn-icon">
             <svg class="iq-warning-icon" height="18" viewBox="0 0 576 512" width="16"
@@ -394,12 +395,14 @@
             </svg>
           </div>
           <div class="iq-summary-warn">
-            <p>3 Warnings</p>
-            <p>caused by 3 components</p>
+            <p>${report.warnActionViolations} Warnings</p>
+            <p>caused by ${report.warnActionComponents} components</p>
           </div>
         </div>
 
-      <j:forEach items="${it.getReport().components}" var="comp" indexVar="i">
+
+
+      <j:forEach items="${report.components}" var="comp" indexVar="i">
         <div class="violations-header">
           <div class="component-name">${comp.componentName}</div>
         </div>

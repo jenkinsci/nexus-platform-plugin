@@ -85,8 +85,9 @@ class PolicyEvaluationReportAction
     return this.policyEvaluationResult.policyAlerts
   }
 
-  List<ReportComponent> getReport() {
-    Map<String, ReportComponent> report = new HashMap<>()
+  Report getReport() {
+    Report report = new Report()
+    Map<String, ReportComponent> componentsMap = new HashMap<>()
 
     for (PolicyAlert alert : this.policyEvaluationResult.policyAlerts) {
       if (alert.actions?.size() == 0) {
@@ -98,20 +99,39 @@ class PolicyEvaluationReportAction
       component.policyLevel = alert.trigger.threatLevel
       component.constraints = new ArrayList<>()
 
+      int failedCurrent = 0
+      int warnCurrent = 0
       for (ComponentFact fact : alert.trigger.componentFacts) {
         if (fact.componentIdentifier) {
           component.componentName = getComponentName(fact);
         }
+
         for (ConstraintFact constraintFact : fact.constraintFacts) {
           Constraint constraint = new Constraint(constraintFact.constraintName,
               component.policyName, component.policyLevel, alert.actions[0]?.actionTypeId)
+          if (constraint.action == 'fail') {
+            failedCurrent++
+          }
+          if (constraint.action == 'warn') {
+            warnCurrent++
+          }
+
           for (ConditionFact conditionFact : constraintFact.conditionFacts) {
             constraint.conditions.add(new Condition(conditionFact.summary, conditionFact.reason))
           }
           component.constraints.add(constraint)
         }
+
       }
-      ReportComponent comp = report.get(component.getComponentName())
+      if (failedCurrent != 0) {
+        report.failedActionComponents++
+      }
+      if (warnCurrent != 0) {
+        report.warnActionComponents++
+      }
+      report.failedActionViolations += failedCurrent
+      report.warnActionViolations += warnCurrent
+      ReportComponent comp = componentsMap.get(component.getComponentName())
       if (comp) {
         comp.getConstraints().addAll(component.getConstraints())
         if (comp.policyLevel < component.policyLevel) {
@@ -119,24 +139,13 @@ class PolicyEvaluationReportAction
         }
       }
       else {
-        report.put(component.getComponentName(), component)
+        componentsMap.put(component.getComponentName(), component)
       }
     }
 
-    return report.values().sort { -it.policyLevel }
+    report.components = componentsMap.values().sort { -it.policyLevel }
+    return report
   }
-
-  //private void addComponent(List<ReportComponent> components, ReportComponent component) {
-  //  Integer elIndex = components?.findIndexOf { it.componentName == component.componentName}
-  //
-  //  if (elIndex == null || elIndex < 0) {
-  //    components.add(component)
-  //  } else {
-  //    if (components.get(elIndex).policyLevel < component.policyLevel) {
-  //      components.get(elIndex).policyLevel = component.policyLevel
-  //    }
-  //  }
-  //}
 
   private String getComponentName(ComponentFact fact) {
     if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
@@ -148,6 +157,19 @@ class PolicyEvaluationReportAction
     }
 
     return "Unknown Component with Unknown Format"
+  }
+
+  class Report
+  {
+    Integer failedActionComponents = 0
+
+    Integer failedActionViolations = 0
+
+    Integer warnActionComponents = 0
+
+    Integer warnActionViolations = 0
+
+    List<ReportComponent> components
   }
 
   class ReportComponent
