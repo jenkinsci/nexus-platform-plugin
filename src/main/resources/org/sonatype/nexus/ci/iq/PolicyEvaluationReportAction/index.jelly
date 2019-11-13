@@ -130,7 +130,7 @@
       }
 
       .iq-summary-fail, .iq-summary-warn {
-        width: 150px;
+        width: 180px;
         margin-left: 10px;
       }
 
@@ -356,8 +356,8 @@
         </div>
 
         <div class="sub-general-info">
-          <div class="application">put app id here</div>
-          <div class="stage">put stage here</div>
+          <div class="application">${it.getApplicationId()}</div>
+          <div class="stage">${it.getIqStage()}</div>
           <div class="ide-support">
             <a href="https://help.sonatype.com/integrations/iq-server-and-ides/iq-for-idea">IDEA</a>
             <a href="https://help.sonatype.com/integrations/iq-server-and-ides/iq-for-visual-studio">Visual Studio</a>

@@ -41,7 +41,14 @@ class PolicyEvaluationReportAction
 
   private Project project
 
-  PolicyEvaluationReportAction(Run run, final ApplicationPolicyEvaluation policyEvaluationResult) {
+  private final String applicationId
+
+  private final String iqStage
+
+  PolicyEvaluationReportAction(final String applicationId, final String iqStage, final Run run,
+                               final ApplicationPolicyEvaluation policyEvaluationResult) {
+    this.applicationId = applicationId
+    this.iqStage = iqStage
     this.run = run
     this.policyEvaluationResult = policyEvaluationResult
   }
@@ -50,16 +57,12 @@ class PolicyEvaluationReportAction
     return run;
   }
 
-  int getBuildStepsCount() {
-    return project.getBuilders().size()
+  def getApplicationId() {
+    return this.applicationId
   }
 
-  int getPostBuildStepsCount() {
-    return project.getPublishersList().size()
-  }
-
-  int getCount() {
-    return this.policyEvaluationResult.getAffectedComponentCount()
+  def getIqStage() {
+    return this.iqStage
   }
 
   String getUrl() {
@@ -153,18 +156,6 @@ class PolicyEvaluationReportAction
     report.components = componentsMap.values().sort { -it.policyLevel }
     return report
   }
-
-  //private void addComponent(List<ReportComponent> components, ReportComponent component) {
-  //  Integer elIndex = components?.findIndexOf { it.componentName == component.componentName}
-  //
-  //  if (elIndex == null || elIndex < 0) {
-  //    components.add(component)
-  //  } else {
-  //    if (components.get(elIndex).policyLevel < component.policyLevel) {
-  //      components.get(elIndex).policyLevel = component.policyLevel
-  //    }
-  //  }
-  //}
 
   private static String getComponentName(ComponentFact fact) {
     if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
