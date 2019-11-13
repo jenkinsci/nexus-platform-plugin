@@ -68,8 +68,9 @@ class PolicyEvaluationReportAction implements HealthReportingAction {
     return this.policyEvaluationResult.policyAlerts
   }
 
-  List<ReportComponent> getReport() {
-    Map<String, ReportComponent> report = new HashMap<>()
+  Report getReport() {
+    Report report = new Report()
+    Map<String, ReportComponent> componentsMap = new HashMap<>()
 
     for (PolicyAlert alert: this.policyEvaluationResult.policyAlerts) {
       if (alert.actions?.size() == 0) {
@@ -94,18 +95,19 @@ class PolicyEvaluationReportAction implements HealthReportingAction {
           component.constraints.add(constraint)
         }
       }
-      ReportComponent comp = report.get(component.getComponentName())
+      ReportComponent comp = componentsMap.get(component.getComponentName())
       if (comp) {
         comp.getConstraints().addAll(component.getConstraints())
         if (comp.policyLevel < component.policyLevel) {
           comp.policyLevel = component.policyLevel
         }
       } else {
-        report.put(component.getComponentName(), component)
+        componentsMap.put(component.getComponentName(), component)
       }
     }
 
-    return report.values().sort{-it.policyLevel}
+    report.components = componentsMap.values().sort{-it.policyLevel}
+    return report
   }
 
   //private void addComponent(List<ReportComponent> components, ReportComponent component) {
@@ -129,6 +131,14 @@ class PolicyEvaluationReportAction implements HealthReportingAction {
     }
 
     return "Unknown Component with Unknown Format"
+  }
+
+  class Report {
+    Integer failedActionComponents = 0
+    Integer failedActionViolations = 0
+    Integer warnActionComponents = 0
+    Integer warnActionViolations = 0
+    List<ReportComponent> components
   }
 
   class ReportComponent {
