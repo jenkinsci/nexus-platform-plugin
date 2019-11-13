@@ -109,7 +109,7 @@ class PolicyEvaluationReportAction
       int warnCurrent = 0
       for (ComponentFact fact : alert.trigger.componentFacts) {
         if (fact.componentIdentifier) {
-          component.componentName = getComponentName(fact);
+          component.componentName = getComponentName(fact)
         }
 
         for (ConstraintFact constraintFact : fact.constraintFacts) {
@@ -129,12 +129,7 @@ class PolicyEvaluationReportAction
         }
 
       }
-      if (failedCurrent != 0) {
-        report.failedActionComponents++
-      }
-      if (warnCurrent != 0) {
-        report.warnActionComponents++
-      }
+
       report.failedActionViolations += failedCurrent
       report.warnActionViolations += warnCurrent
       ReportComponent comp = componentsMap.get(component.getComponentName())
@@ -146,6 +141,12 @@ class PolicyEvaluationReportAction
       }
       else {
         componentsMap.put(component.getComponentName(), component)
+        if (failedCurrent > 0) {
+          report.failedActionComponents++
+        }
+        if (warnCurrent > 0) {
+          report.warnActionComponents++
+        }
       }
     }
 
