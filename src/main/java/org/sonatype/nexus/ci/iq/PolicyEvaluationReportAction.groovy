@@ -144,7 +144,7 @@ class PolicyEvaluationReportAction
   //  }
   //}
 
-  private String getComponentName(ComponentFact fact) {
+  private static String getComponentName(ComponentFact fact) {
     if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
       return "$fact.componentIdentifier.coordinates.groupId : $fact.componentIdentifier.coordinates.artifactId : " +
           "$fact.componentIdentifier.coordinates.version"
