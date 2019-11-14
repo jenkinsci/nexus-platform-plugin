@@ -35,6 +35,15 @@ class PolicyEvaluationReportAction
 
   private static final String MENU_REPORT_TITLE = 'report will be here'
 
+  private static final String IQ_SPACE_SHIP_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-rocketship.png';
+  private static final String IQ_SPACE_SHIP_SUCCESS_MESSAGE = 'We\'re all clear!';
+  private static final String SPACE_SHIP_ALT = 'A Space Ship';
+
+  private static final String IQ_BOAT_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-boat.png';
+  private static final String IQ_BOAT_SUCCESS_MESSAGE = 'We\'re smooth sailing!';
+  private static final String BOAT_ALT = 'A Boat';
+
+
   private transient Run run
 
   private ApplicationPolicyEvaluation policyEvaluationResult
@@ -167,6 +176,33 @@ class PolicyEvaluationReportAction
     }
 
     return "Unknown Component with Unknown Format"
+  }
+
+  SuccessResult getSuccessReesult() {
+    if (Math.random() > 0.5){
+      return new SuccessResult(SPACE_SHIP_ALT, IQ_SPACE_SHIP_PNG, IQ_SPACE_SHIP_SUCCESS_MESSAGE)
+    }
+    else {
+      return new SuccessResult(BOAT_ALT, IQ_BOAT_PNG, IQ_BOAT_SUCCESS_MESSAGE)
+    }
+  }
+
+  class SuccessResult
+  {
+    String alt
+
+    String image
+
+    String message
+
+    SuccessResult() {
+    }
+
+    SuccessResult(final String alt, final String image, final String message) {
+      this.alt = alt
+      this.image = image
+      this.message = message
+    }
   }
 
   class Report

@@ -400,64 +400,70 @@
           </div>
         </div>
 
-
-
-      <j:forEach items="${report.components}" var="comp" indexVar="i">
-        <div class="violations-header">
-          <div class="component-name">${comp.componentName}</div>
-        </div>
-          <div class="violations-details">
-            <div class="header">
-              <div class="col1">THREAT / POLICY NAME</div>
-              <div class="col2">ACTION</div>
-              <div class="col3">CONSTRAINT</div>
-              <div class="col4">CONDITION</div>
-            </div>
-            <j:forEach items="${comp.constraints}" var="constraint" indexVar="constraintIndex">
-              <div class="content">
-                <div class="col1">
-                  <div class="stripe ${it.getColor(constraint.policyLevel)}"></div>
-                  <div class="text">${constraint.policyLevel} ${constraint.policyName}</div>
-                </div>
-
-                <div class="col2">
-                  <j:choose>
-                    <j:when test="${constraint.action.equalsIgnoreCase('warn')}">
-                      <svg class="iq-warning-icon" height="18" viewBox="0 0 576 512" width="16" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                        <path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937
-                       0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288
-                       354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418
-                       136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982
-                       11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z" fill="#f4861d">
-                        </path>
-                      </svg>
-                    </j:when>
-                    <j:otherwise>
-                      <svg class="iq-failed-icon" height="16" viewBox="0 0 512 512" width="16"
-                           xmlns="http://www.w3.org/2000/svg" focusable="false">
-                        <path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8
-                          256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595
-                          46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982
-                          11.346h48.546c6.373 0 11.635-4.982
-                          11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
-                            fill="#bc012f">
-                        </path>
-                      </svg>
-                    </j:otherwise>
-                  </j:choose>
-                  <div class="policy-action">${constraint.action}</div>
-                </div>
-
-                <div class="col3"> ${constraint.name} </div>
-                <div class="col4">
-                  <j:forEach items="${constraint.conditions}" var="condition" indexVar="conditionIndex">
-                    <p>${condition.summary}</p>
-                  </j:forEach>
-                </div>
-              </div>
-            </j:forEach>
+        <j:if test="${report.components == null || report.components.size() == 0 }">
+          <j:set var="ssResult" value="${it.getSuccessReesult()}" />
+          <div class="iq-space-ship">
+            <img alt="${ssResult.alt}" src="${rootURL}${ssResult.image}"/>
+            <p>${ssResult.message}</p>
           </div>
-      </j:forEach>
+        </j:if>
+
+        <j:forEach items="${report.components}" var="comp" indexVar="i">
+          <div class="violations-header">
+            <div class="component-name">${comp.componentName}</div>
+          </div>
+            <div class="violations-details">
+              <div class="header">
+                <div class="col1">THREAT / POLICY NAME</div>
+                <div class="col2">ACTION</div>
+                <div class="col3">CONSTRAINT</div>
+                <div class="col4">CONDITION</div>
+              </div>
+              <j:forEach items="${comp.constraints}" var="constraint" indexVar="constraintIndex">
+                <div class="content">
+                  <div class="col1">
+                    <div class="stripe ${it.getColor(constraint.policyLevel)}"></div>
+                    <div class="text">${constraint.policyLevel} ${constraint.policyName}</div>
+                  </div>
+
+                  <div class="col2">
+                    <j:choose>
+                      <j:when test="${constraint.action.equalsIgnoreCase('warn')}">
+                        <svg class="iq-warning-icon" height="18" viewBox="0 0 576 512" width="16" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                          <path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937
+                         0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288
+                         354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418
+                         136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982
+                         11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z" fill="#f4861d">
+                          </path>
+                        </svg>
+                      </j:when>
+                      <j:otherwise>
+                        <svg class="iq-failed-icon" height="16" viewBox="0 0 512 512" width="16"
+                             xmlns="http://www.w3.org/2000/svg" focusable="false">
+                          <path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8
+                            256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595
+                            46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982
+                            11.346h48.546c6.373 0 11.635-4.982
+                            11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+                              fill="#bc012f">
+                          </path>
+                        </svg>
+                      </j:otherwise>
+                    </j:choose>
+                    <div class="policy-action">${constraint.action}</div>
+                  </div>
+
+                  <div class="col3"> ${constraint.name} </div>
+                  <div class="col4">
+                    <j:forEach items="${constraint.conditions}" var="condition" indexVar="conditionIndex">
+                      <p>${condition.summary}</p>
+                    </j:forEach>
+                  </div>
+                </div>
+              </j:forEach>
+            </div>
+        </j:forEach>
       </div>
     </l:main-panel>
   </l:layout>
