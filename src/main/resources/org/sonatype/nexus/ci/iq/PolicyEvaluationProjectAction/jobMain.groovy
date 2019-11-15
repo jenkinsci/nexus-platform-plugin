@@ -16,10 +16,32 @@ import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 
-def t = namespace(lib.JenkinsTagLib)
+import jenkins.model.Jenkins
+import groovy.json.JsonBuilder
+import lib.JenkinsTagLib
+import lib.LayoutTagLib
+
+// number of last recent builds
+final MAX_BUILDS_TO_GRAPH = 5;
+
+def t = namespace(JenkinsTagLib.class)
+def l = namespace(LayoutTagLib.class)
 
 def projectAction = (PolicyEvaluationProjectAction) it
 def actions = projectAction.getJob().lastCompletedBuild.getActions(PolicyEvaluationHealthAction.class)
+
+def policyEvaluations = projectAction.getJob().getBuilds().stream()
+    .filter{!it.isBuilding()}
+    .map{
+      def healthActions = it.getActions(PolicyEvaluationHealthAction.class)
+      // getActions returns only 1 or empty collection, see PolicyEvaluationHealthAction#getProjectActions
+      return healthActions ? healthActions.get(0) : null
+    }
+    .filter{Objects.nonNull(it)}
+    .map{new Summary(it as PolicyEvaluationHealthAction)}
+    .limit(MAX_BUILDS_TO_GRAPH)
+    .sorted{a, b -> (a.buildNumber <=> b.buildNumber)}
+    .collect()
 
 // there could be multiple policy evaluations so we need to find the specific health action that corresponds
 // to the given project action
@@ -112,5 +134,36 @@ if (action) {
 
   table(class: 'iq-job-main-table') {
     t.summary(icon: '/plugin/nexus-jenkins-plugin/images/48x48/nexus-iq.png', policyUI << policyCss)
+  }
+}
+
+if (policyEvaluations.size() > 0) {
+  table(class: 'iq-job-main-table') {
+    l.main_panel() {
+      div(id: 'iqChart')
+      link(rel: "stylesheet",
+          href: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/styles.css")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/lib/apexcharts.js")
+      script(src: "${Jenkins.instance.rootUrl}/plugin/nexus-jenkins-plugin/features/iq/charting/iqChart.js",
+          chartTitle: Messages.IqPolicyEvaluation_ChartName(),
+          policyEvaluations: new JsonBuilder(policyEvaluations).toString())
+    }
+  }
+}
+
+/**
+ * Nexus IQ policy evaluation summary which is used for Nexus IQ chart
+ */
+class Summary {
+  int buildNumber
+  int criticalCount
+  int severeCount
+  int moderateCount
+
+  Summary(PolicyEvaluationHealthAction action) {
+    this.buildNumber = action.getBuildNumber()
+    this.criticalCount = action.getCriticalComponentCount()
+    this.severeCount = action.getSevereComponentCount()
+    this.moderateCount = action.getModerateComponentCount()
   }
 }

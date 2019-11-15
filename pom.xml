@@ -410,6 +410,7 @@
             <exclude>**/.*/**</exclude>
             <exclude>**/release.properties</exclude>
             <exclude>**/META-INF/services/**</exclude>
+            <exclude>**/webapp/lib/**</exclude>
           </excludes>
           <mapping>
             <groovy>SLASHSTAR_STYLE</groovy>
