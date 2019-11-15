@@ -178,7 +178,7 @@ class PolicyEvaluationReportAction
     return "Unknown Component with Unknown Format"
   }
 
-  SuccessResult getSuccessReesult() {
+  SuccessResult getSuccessResult() {
     if (Math.random() > 0.5){
       return new SuccessResult(SPACE_SHIP_ALT, IQ_SPACE_SHIP_PNG, IQ_SPACE_SHIP_SUCCESS_MESSAGE)
     }
@@ -288,6 +288,6 @@ class PolicyEvaluationReportAction
 
   @Override
   void onLoad(final Run r) {
-    this.run = run;
+    this.run = run
   }
 }

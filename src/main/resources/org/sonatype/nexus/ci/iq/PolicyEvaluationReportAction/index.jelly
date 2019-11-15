@@ -401,7 +401,7 @@
         </div>
 
         <j:if test="${report.components == null || report.components.size() == 0 }">
-          <j:set var="ssResult" value="${it.getSuccessReesult()}" />
+          <j:set var="ssResult" value="${it.getSuccessResult()}" />
           <div class="iq-space-ship">
             <img alt="${ssResult.alt}" src="${rootURL}${ssResult.image}"/>
             <p>${ssResult.message}</p>
