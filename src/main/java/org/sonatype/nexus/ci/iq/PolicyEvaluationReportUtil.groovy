@@ -1,0 +1,157 @@
+package org.sonatype.nexus.ci.iq
+
+import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.api.iq.ComponentFact
+import com.sonatype.nexus.api.iq.ConditionFact
+import com.sonatype.nexus.api.iq.ConstraintFact
+import com.sonatype.nexus.api.iq.PolicyAlert
+
+class PolicyEvaluationReportUtil
+{
+
+  private static final String CI_MAVEN_FORMAT = 'maven'
+  private static final String CI_A_NAME_FORMAT = 'a-name'
+
+  static Report parseApplicationPolicyEvaluation(ApplicationPolicyEvaluation policyEvaluationResult) {
+    Report report = new Report()
+    Map<String, ReportComponent> componentsMap = [:]
+
+    for (PolicyAlert alert : policyEvaluationResult.policyAlerts) {
+      if (alert.actions?.size() == 0) {
+        continue
+      }
+
+      ReportComponent component = new ReportComponent()
+      component.policyName = alert.trigger.policyName
+      component.policyLevel = alert.trigger.threatLevel
+      component.constraints = getConstraints(component, alert)
+
+      addComponent(componentsMap, component)
+    }
+
+    report.components = componentsMap.values().sort { -it.policyLevel }
+    calculateViolations(report)
+    return report
+  }
+
+  private static void calculateViolations(Report report) {
+    for (ReportComponent comp: report.components) {
+      int failedCurrent = 0
+      int warnCurrent = 0
+
+      for (Constraint constraint: comp.constraints) {
+        if (constraint.action == 'warn') {
+          warnCurrent++
+        } else {
+          failedCurrent++
+        }
+
+      }
+
+      if (failedCurrent > 0) {
+        report.failedActionComponents++
+      }
+
+      if (warnCurrent > 0) {
+        report.warnActionComponents++
+      }
+
+      report.warnActionViolations += warnCurrent
+      report.failedActionViolations += failedCurrent
+    }
+  }
+
+  private static List<Condition> getConditions(List<ConditionFact> facts) {
+    List<Condition> conditions = []
+    for (ConditionFact conditionFact: facts) {
+      conditions.add(new Condition(conditionFact.summary, conditionFact.reason))
+    }
+    return conditions
+  }
+
+  private static List<Constraint> getConstraints(ReportComponent component, PolicyAlert alert) {
+    List<Constraint> constraints = []
+    for (ComponentFact fact : alert.trigger.componentFacts) {
+      if (fact.componentIdentifier) {
+        component.componentName = getComponentName(fact)
+      }
+
+      for (ConstraintFact constraintFact : fact.constraintFacts) {
+        Constraint constraint = new Constraint(constraintFact.constraintName,
+            component.policyName, component.policyLevel, alert.actions[0]?.actionTypeId)
+        constraint.conditions = getConditions(constraintFact.getConditionFacts())
+        constraints.add(constraint)
+      }
+    }
+    return constraints
+  }
+
+  private static void addComponent(Map<String, ReportComponent> componentsMap, ReportComponent component) {
+    ReportComponent comp = componentsMap.get(component.getComponentName())
+    if (comp) {
+      comp.getConstraints().addAll(component.getConstraints())
+      if (comp.policyLevel < component.policyLevel) {
+        comp.policyLevel = component.policyLevel
+      }
+    }
+    else {
+      componentsMap.put(component.getComponentName(), component)
+    }
+  }
+
+  private static String getComponentName(ComponentFact fact) {
+    if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
+      return "${fact.componentIdentifier.coordinates.groupId} : ${fact.componentIdentifier.coordinates.artifactId} : " +
+          fact.componentIdentifier.coordinates.version
+    }
+    else if (fact.componentIdentifier.format == CI_A_NAME_FORMAT) {
+      return fact.componentIdentifier.coordinates.name
+    }
+
+    return 'Unknown Component with Unknown Format'
+  }
+
+  static class Report
+  {
+    Integer failedActionComponents = 0
+    Integer failedActionViolations = 0
+    Integer warnActionComponents = 0
+    Integer warnActionViolations = 0
+    List<ReportComponent> components = []
+  }
+
+  static class ReportComponent
+  {
+    String componentName
+    String policyName
+    Integer policyLevel
+    List<Constraint> constraints = []
+  }
+
+  static class Condition
+  {
+    String summary
+    String reason
+
+    Condition(final String summary, final String reason) {
+      this.summary = summary
+      this.reason = reason
+    }
+  }
+
+  static class Constraint
+  {
+    String name
+    String policyName
+    Integer policyLevel
+    String action
+    List<Condition> conditions = []
+
+    Constraint(final String name, final String policyName, final Integer policyLevel, final String action) {
+      this.name = name
+      this.policyName = policyName
+      this.policyLevel = policyLevel
+      this.action = action
+    }
+  }
+}

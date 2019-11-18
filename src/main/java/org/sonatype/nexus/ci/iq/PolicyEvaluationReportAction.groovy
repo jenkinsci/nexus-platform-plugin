@@ -15,21 +15,13 @@ package org.sonatype.nexus.ci.iq
 import java.security.SecureRandom
 
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
-import com.sonatype.nexus.api.iq.ComponentFact
-import com.sonatype.nexus.api.iq.ConditionFact
-import com.sonatype.nexus.api.iq.ConstraintFact
-import com.sonatype.nexus.api.iq.PolicyAlert
 
 import hudson.model.Run
 import jenkins.model.RunAction2
 
 class PolicyEvaluationReportAction
-    implements RunAction2
+    implements RunAction2, Serializable
 {
-  private static final String CI_MAVEN_FORMAT = 'maven'
-
-  private static final String CI_A_NAME_FORMAT = 'a-name'
-
   private static final String ICON_NAME = '/plugin/nexus-jenkins-plugin/images/24x24/nexus-iq.png'
 
   private static final String IQ_REPORT_NAME = 'iqreport'
@@ -44,10 +36,9 @@ class PolicyEvaluationReportAction
   private static final String IQ_BOAT_SUCCESS_MESSAGE = 'We\'re smooth sailing!'
   private static final String BOAT_ALT = 'A Boat'
 
-
   private transient Run run
 
-  private ApplicationPolicyEvaluation policyEvaluationResult
+  private final ApplicationPolicyEvaluation policyEvaluationResult
 
   private final String applicationId
 
@@ -98,87 +89,12 @@ class PolicyEvaluationReportAction
     return 'lightblue'
   }
 
-  List<PolicyAlert> getAlerts() {
-    return this.policyEvaluationResult.policyAlerts
-  }
-
-  Report getReport() {
-    Report report = new Report()
-    Map<String, ReportComponent> componentsMap = [:]
-
-    for (PolicyAlert alert : this.policyEvaluationResult.policyAlerts) {
-      if (alert.actions?.size() == 0) {
-        continue
-      }
-
-      ReportComponent component = new ReportComponent()
-      component.policyName = alert.trigger.policyName
-      component.policyLevel = alert.trigger.threatLevel
-      component.constraints = []
-
-      int failedCurrent = 0
-      int warnCurrent = 0
-      for (ComponentFact fact : alert.trigger.componentFacts) {
-        if (fact.componentIdentifier) {
-          component.componentName = getComponentName(fact)
-        }
-
-        for (ConstraintFact constraintFact : fact.constraintFacts) {
-          Constraint constraint = new Constraint(constraintFact.constraintName,
-              component.policyName, component.policyLevel, alert.actions[0]?.actionTypeId)
-          if (constraint.action == 'fail') {
-            failedCurrent++
-          }
-          if (constraint.action == 'warn') {
-            warnCurrent++
-          }
-
-          for (ConditionFact conditionFact : constraintFact.conditionFacts) {
-            constraint.conditions.add(new Condition(conditionFact.summary, conditionFact.reason))
-          }
-          component.constraints.add(constraint)
-        }
-
-      }
-
-      report.failedActionViolations += failedCurrent
-      report.warnActionViolations += warnCurrent
-      ReportComponent comp = componentsMap.get(component.getComponentName())
-      if (comp) {
-        comp.getConstraints().addAll(component.getConstraints())
-        if (comp.policyLevel < component.policyLevel) {
-          comp.policyLevel = component.policyLevel
-        }
-      }
-      else {
-        componentsMap.put(component.getComponentName(), component)
-        if (failedCurrent > 0) {
-          report.failedActionComponents++
-        }
-        if (warnCurrent > 0) {
-          report.warnActionComponents++
-        }
-      }
-    }
-
-    report.components = componentsMap.values().sort { -it.policyLevel }
-    return report
-  }
-
-  private static String getComponentName(ComponentFact fact) {
-    if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
-      return "${fact.componentIdentifier.coordinates.groupId} : ${fact.componentIdentifier.coordinates.artifactId} : " +
-          fact.componentIdentifier.coordinates.version
-    }
-    else if (fact.componentIdentifier.format == CI_A_NAME_FORMAT) {
-      return fact.componentIdentifier.coordinates.name
-    }
-
-    return 'Unknown Component with Unknown Format'
+  def getReport() {
+    return PolicyEvaluationReportUtil.parseApplicationPolicyEvaluation(this.policyEvaluationResult)
   }
 
   SuccessResult getSuccessResult() {
-    if (new SecureRandom().nextInt(100) > 50){
+    if (new SecureRandom().nextInt(100) > 50) {
       return new SuccessResult(SPACE_SHIP_ALT, IQ_SPACE_SHIP_PNG, IQ_SPACE_SHIP_SUCCESS_MESSAGE)
     }
     else {
@@ -194,74 +110,10 @@ class PolicyEvaluationReportAction
 
     String message
 
-    SuccessResult() {
-    }
-
     SuccessResult(final String alt, final String image, final String message) {
       this.alt = alt
       this.image = image
       this.message = message
-    }
-  }
-
-  class Report
-  {
-    Integer failedActionComponents = 0
-
-    Integer failedActionViolations = 0
-
-    Integer warnActionComponents = 0
-
-    Integer warnActionViolations = 0
-
-    List<ReportComponent> components
-  }
-
-  class ReportComponent
-  {
-    String componentName
-
-    String policyName
-
-    Integer policyLevel
-
-    List<Constraint> constraints
-  }
-
-  class Condition
-  {
-    String summary
-
-    String reason
-
-    Condition() {}
-
-    Condition(final String summary, final String reason) {
-      this.summary = summary
-      this.reason = reason
-    }
-  }
-
-  class Constraint
-  {
-    String name
-
-    String policyName
-
-    Integer policyLevel
-
-    String action
-
-    List<Condition> conditions
-
-    Constraint() {}
-
-    Constraint(final String name, final String policyName, final Integer policyLevel, final String action) {
-      this.name = name
-      this.policyName = policyName
-      this.policyLevel = policyLevel
-      this.action = action
-      this.conditions = []
     }
   }
 
