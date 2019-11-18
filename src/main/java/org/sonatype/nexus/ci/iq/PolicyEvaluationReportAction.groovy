@@ -12,22 +12,23 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.security.SecureRandom
+
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.ComponentFact
 import com.sonatype.nexus.api.iq.ConditionFact
 import com.sonatype.nexus.api.iq.ConstraintFact
 import com.sonatype.nexus.api.iq.PolicyAlert
 
-import hudson.model.Project
 import hudson.model.Run
 import jenkins.model.RunAction2
 
 class PolicyEvaluationReportAction
     implements RunAction2
 {
-  private static final String CI_MAVEN_FORMAT = "maven"
+  private static final String CI_MAVEN_FORMAT = 'maven'
 
-  private static final String CI_A_NAME_FORMAT = "a-name"
+  private static final String CI_A_NAME_FORMAT = 'a-name'
 
   private static final String ICON_NAME = '/plugin/nexus-jenkins-plugin/images/24x24/nexus-iq.png'
 
@@ -35,20 +36,18 @@ class PolicyEvaluationReportAction
 
   private static final String MENU_REPORT_TITLE = 'Nexus IQ Build Failure Report'
 
-  private static final String IQ_SPACE_SHIP_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-rocketship.png';
-  private static final String IQ_SPACE_SHIP_SUCCESS_MESSAGE = 'We\'re all clear!';
-  private static final String SPACE_SHIP_ALT = 'A Space Ship';
+  private static final String IQ_SPACE_SHIP_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-rocketship.png'
+  private static final String IQ_SPACE_SHIP_SUCCESS_MESSAGE = 'We\'re all clear!'
+  private static final String SPACE_SHIP_ALT = 'A Space Ship'
 
-  private static final String IQ_BOAT_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-boat.png';
-  private static final String IQ_BOAT_SUCCESS_MESSAGE = 'We\'re smooth sailing!';
-  private static final String BOAT_ALT = 'A Boat';
+  private static final String IQ_BOAT_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-boat.png'
+  private static final String IQ_BOAT_SUCCESS_MESSAGE = 'We\'re smooth sailing!'
+  private static final String BOAT_ALT = 'A Boat'
 
 
   private transient Run run
 
   private ApplicationPolicyEvaluation policyEvaluationResult
-
-  private Project project
 
   private final String applicationId
 
@@ -63,7 +62,7 @@ class PolicyEvaluationReportAction
   }
 
   Run getRun() {
-    return run;
+    return run
   }
 
   def getApplicationId() {
@@ -105,7 +104,7 @@ class PolicyEvaluationReportAction
 
   Report getReport() {
     Report report = new Report()
-    Map<String, ReportComponent> componentsMap = new HashMap<>()
+    Map<String, ReportComponent> componentsMap = [:]
 
     for (PolicyAlert alert : this.policyEvaluationResult.policyAlerts) {
       if (alert.actions?.size() == 0) {
@@ -115,7 +114,7 @@ class PolicyEvaluationReportAction
       ReportComponent component = new ReportComponent()
       component.policyName = alert.trigger.policyName
       component.policyLevel = alert.trigger.threatLevel
-      component.constraints = new ArrayList<>()
+      component.constraints = []
 
       int failedCurrent = 0
       int warnCurrent = 0
@@ -168,18 +167,18 @@ class PolicyEvaluationReportAction
 
   private static String getComponentName(ComponentFact fact) {
     if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
-      return "$fact.componentIdentifier.coordinates.groupId : $fact.componentIdentifier.coordinates.artifactId : " +
-          "$fact.componentIdentifier.coordinates.version"
+      return "${fact.componentIdentifier.coordinates.groupId} : ${fact.componentIdentifier.coordinates.artifactId} : " +
+          fact.componentIdentifier.coordinates.version
     }
     else if (fact.componentIdentifier.format == CI_A_NAME_FORMAT) {
       return fact.componentIdentifier.coordinates.name
     }
 
-    return "Unknown Component with Unknown Format"
+    return 'Unknown Component with Unknown Format'
   }
 
   SuccessResult getSuccessResult() {
-    if (Math.random() > 0.5){
+    if (new SecureRandom().nextInt(100) > 50){
       return new SuccessResult(SPACE_SHIP_ALT, IQ_SPACE_SHIP_PNG, IQ_SPACE_SHIP_SUCCESS_MESSAGE)
     }
     else {
@@ -262,7 +261,7 @@ class PolicyEvaluationReportAction
       this.policyName = policyName
       this.policyLevel = policyLevel
       this.action = action
-      this.conditions = new ArrayList<>()
+      this.conditions = []
     }
   }
 
