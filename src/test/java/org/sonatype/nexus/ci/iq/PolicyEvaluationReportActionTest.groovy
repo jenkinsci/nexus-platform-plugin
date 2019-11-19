@@ -48,12 +48,6 @@ class PolicyEvaluationReportActionTest
       buildNumber == 3
   }
 
-  def "GetApplicationId"() {
-  }
-
-  def "GetIqStage"() {
-  }
-
   def "GetUrl"() {
     setup:
       def reportLink = 'http://localhost/reportLink'
