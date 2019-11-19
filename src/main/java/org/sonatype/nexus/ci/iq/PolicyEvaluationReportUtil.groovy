@@ -33,9 +33,8 @@ class PolicyEvaluationReportUtil
         continue
       }
 
-      ReportComponent component = new ReportComponent()
-      component.policyName = alert.trigger.policyName
-      component.policyLevel = alert.trigger.threatLevel
+      ReportComponent component =
+          new ReportComponent(policyName: alert.trigger.policyName, policyLevel: alert.trigger.threatLevel)
       component.constraints = getConstraints(component, alert)
 
       addComponent(componentsMap, component)
@@ -57,7 +56,6 @@ class PolicyEvaluationReportUtil
         } else {
           failedCurrent++
         }
-
       }
 
       if (failedCurrent > 0) {
@@ -76,7 +74,7 @@ class PolicyEvaluationReportUtil
   private static List<Condition> getConditions(List<ConditionFact> facts) {
     List<Condition> conditions = []
     for (ConditionFact conditionFact: facts) {
-      conditions.add(new Condition(conditionFact.summary, conditionFact.reason))
+      conditions.add(new Condition(summary: conditionFact.summary, reason: conditionFact.reason))
     }
     return conditions
   }
@@ -89,8 +87,8 @@ class PolicyEvaluationReportUtil
       }
 
       for (ConstraintFact constraintFact : fact.constraintFacts) {
-        Constraint constraint = new Constraint(constraintFact.constraintName,
-            component.policyName, component.policyLevel, alert.actions[0]?.actionTypeId)
+        Constraint constraint = new Constraint(name: constraintFact.constraintName, policyName: component.policyName,
+            policyLevel: component.policyLevel, action: alert.actions[0]?.actionTypeId)
         constraint.conditions = getConditions(constraintFact.getConditionFacts())
         constraints.add(constraint)
       }
@@ -144,11 +142,6 @@ class PolicyEvaluationReportUtil
   {
     String summary
     String reason
-
-    Condition(final String summary, final String reason) {
-      this.summary = summary
-      this.reason = reason
-    }
   }
 
   static class Constraint
@@ -158,12 +151,5 @@ class PolicyEvaluationReportUtil
     Integer policyLevel
     String action
     List<Condition> conditions = []
-
-    Constraint(final String name, final String policyName, final Integer policyLevel, final String action) {
-      this.name = name
-      this.policyName = policyName
-      this.policyLevel = policyLevel
-      this.action = action
-    }
   }
 }
