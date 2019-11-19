@@ -95,26 +95,18 @@ class PolicyEvaluationReportAction
 
   SuccessResult getSuccessResult() {
     if (new SecureRandom().nextInt(100) > 50) {
-      return new SuccessResult(SPACE_SHIP_ALT, IQ_SPACE_SHIP_PNG, IQ_SPACE_SHIP_SUCCESS_MESSAGE)
+      return new SuccessResult(alt: SPACE_SHIP_ALT, image: IQ_SPACE_SHIP_PNG, message: IQ_SPACE_SHIP_SUCCESS_MESSAGE)
     }
     else {
-      return new SuccessResult(BOAT_ALT, IQ_BOAT_PNG, IQ_BOAT_SUCCESS_MESSAGE)
+      return new SuccessResult(alt: BOAT_ALT, image:  IQ_BOAT_PNG, message:  IQ_BOAT_SUCCESS_MESSAGE)
     }
   }
 
   class SuccessResult
   {
     String alt
-
     String image
-
     String message
-
-    SuccessResult(final String alt, final String image, final String message) {
-      this.alt = alt
-      this.image = image
-      this.message = message
-    }
   }
 
   @Override
