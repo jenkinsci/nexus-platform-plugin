@@ -33,8 +33,8 @@ class PolicyEvaluationReportUtil
         continue
       }
 
-      ReportComponent component =
-          new ReportComponent(policyName: alert.trigger.policyName, policyLevel: alert.trigger.threatLevel)
+      ReportComponent component = new ReportComponent(componentName: 'Unknown Component',
+          policyName: alert.trigger.policyName, policyLevel: alert.trigger.threatLevel)
       component.constraints = getConstraints(component, alert)
 
       addComponent(componentsMap, component)
