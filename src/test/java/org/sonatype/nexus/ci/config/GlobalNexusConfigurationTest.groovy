@@ -24,15 +24,11 @@ class GlobalNexusConfigurationTest
   public JenkinsRule jenkins = new JenkinsRule()
 
   List<? extends NxrmConfiguration> nxrmConfiguration
-
   List<NxiqConfiguration> nxiqConfiguration
-
-  boolean hideNvsMessage
 
   void setup() {
     nxrmConfiguration = [new Nxrm2Configuration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id')]
     nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'creds-id')]
-    hideNvsMessage = true
   }
 
   def 'new instance ID is generated and loaded from configuration file'() {
@@ -52,11 +48,10 @@ class GlobalNexusConfigurationTest
   @WithoutJenkins
   def 'DataBoundConstructor initialises fields'() {
     when:
-      def globalNexusConfiguration = new GlobalNexusConfiguration(nxrmConfiguration, nxiqConfiguration, hideNvsMessage)
+      def globalNexusConfiguration = new GlobalNexusConfiguration(nxrmConfiguration, nxiqConfiguration)
 
     then:
       globalNexusConfiguration.iqConfigs == nxiqConfiguration
       globalNexusConfiguration.nxrmConfigs == nxrmConfiguration
-      globalNexusConfiguration.hideNvsMessage == hideNvsMessage
   }
 }

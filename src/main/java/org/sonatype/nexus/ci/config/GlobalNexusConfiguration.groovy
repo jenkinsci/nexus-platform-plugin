@@ -29,8 +29,6 @@ class GlobalNexusConfiguration
 
   List<NxiqConfiguration> iqConfigs
 
-  boolean hideNvsMessage
-
   String instanceId
 
   GlobalNexusConfiguration() {
@@ -42,12 +40,9 @@ class GlobalNexusConfiguration
   }
 
   @DataBoundConstructor
-  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs, final List<NxiqConfiguration> iqConfigs,
-                           final boolean hideNvsMessage)
-  {
+  GlobalNexusConfiguration(final List<NxrmConfiguration> nxrmConfigs, final List<NxiqConfiguration> iqConfigs) {
     this.nxrmConfigs = nxrmConfigs ?: []
     this.iqConfigs = iqConfigs ?: []
-    this.hideNvsMessage = hideNvsMessage
   }
 
   @Override
@@ -55,7 +50,6 @@ class GlobalNexusConfiguration
     def globalConfiguration = req.bindJSON(GlobalNexusConfiguration, json)
     this.nxrmConfigs = globalConfiguration.nxrmConfigs
     this.iqConfigs = globalConfiguration.iqConfigs
-    this.hideNvsMessage = globalConfiguration.hideNvsMessage
     save()
     return true
   }
