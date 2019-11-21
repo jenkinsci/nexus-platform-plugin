@@ -21,8 +21,9 @@ import com.sonatype.nexus.api.iq.PolicyAlert
 class PolicyEvaluationReportUtil
 {
 
-  private static final String CI_MAVEN_FORMAT = 'maven'
-  private static final String CI_A_NAME_FORMAT = 'a-name'
+  public static final String IQ_FORMAT_MAVEN = 'maven'
+  public static final String IQ_FORMAT_NPM = 'npm'
+  public static final String IQ_FORMAT_NUGET = "nuget"
 
   static Report parseApplicationPolicyEvaluation(ApplicationPolicyEvaluation policyEvaluationResult) {
     Report report = new Report()
@@ -33,7 +34,7 @@ class PolicyEvaluationReportUtil
         continue
       }
 
-      ReportComponent component = new ReportComponent(componentName: 'Unknown Component',
+      ReportComponent component = new ReportComponent(componentName: 'Component-Unknown',
           policyName: alert.trigger.policyName, policyLevel: alert.trigger.threatLevel)
       component.constraints = getConstraints(component, alert)
 
@@ -110,15 +111,16 @@ class PolicyEvaluationReportUtil
   }
 
   private static String getComponentName(ComponentFact fact) {
-    if (fact.componentIdentifier.format == CI_MAVEN_FORMAT) {
+    if (fact.componentIdentifier.format == IQ_FORMAT_MAVEN) {
       return "${fact.componentIdentifier.coordinates.groupId} : ${fact.componentIdentifier.coordinates.artifactId} : " +
           fact.componentIdentifier.coordinates.version
     }
-    else if (fact.componentIdentifier.format == CI_A_NAME_FORMAT) {
-      return fact.componentIdentifier.coordinates.name
+    else if (fact.componentIdentifier.format == IQ_FORMAT_NPM || fact.componentIdentifier.format == IQ_FORMAT_NUGET) {
+      return "${fact.componentIdentifier.coordinates.packageId} ${fact.componentIdentifier.coordinates.version}"
     }
-
-    return 'Unknown Component with Unknown Format'
+    else {
+      return "${fact.componentIdentifier.coordinates.name} ${fact.componentIdentifier.coordinates.version}"
+    }
   }
 
   static class Report
