@@ -23,7 +23,7 @@ class PolicyEvaluationReportUtil
 
   public static final String IQ_FORMAT_MAVEN = 'maven'
   public static final String IQ_FORMAT_NPM = 'npm'
-  public static final String IQ_FORMAT_NUGET = "nuget"
+  public static final String IQ_FORMAT_NUGET = 'nuget'
 
   static Report parseApplicationPolicyEvaluation(ApplicationPolicyEvaluation policyEvaluationResult) {
     Report report = new Report()
