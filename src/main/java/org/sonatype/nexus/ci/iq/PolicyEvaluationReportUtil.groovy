@@ -20,11 +20,6 @@ import com.sonatype.nexus.api.iq.PolicyAlert
 
 class PolicyEvaluationReportUtil
 {
-
-  public static final String IQ_FORMAT_MAVEN = 'maven'
-  public static final String IQ_FORMAT_NPM = 'npm'
-  public static final String IQ_FORMAT_NUGET = 'nuget'
-
   static Report parseApplicationPolicyEvaluation(ApplicationPolicyEvaluation policyEvaluationResult) {
     Report report = new Report()
     Map<String, ReportComponent> componentsMap = [:]
@@ -83,8 +78,8 @@ class PolicyEvaluationReportUtil
   private static List<Constraint> getConstraints(ReportComponent component, PolicyAlert alert) {
     List<Constraint> constraints = []
     for (ComponentFact fact : alert.trigger.componentFacts) {
-      if (fact.componentIdentifier) {
-        component.componentName = getComponentName(fact)
+      if (fact.displayName) {
+        component.componentName = fact.displayName.parts?.sum { it.value }
       }
 
       for (ConstraintFact constraintFact : fact.constraintFacts) {
@@ -107,19 +102,6 @@ class PolicyEvaluationReportUtil
     }
     else {
       componentsMap.put(component.getComponentName(), component)
-    }
-  }
-
-  private static String getComponentName(ComponentFact fact) {
-    if (fact.componentIdentifier.format == IQ_FORMAT_MAVEN) {
-      return "${fact.componentIdentifier.coordinates.groupId} : ${fact.componentIdentifier.coordinates.artifactId} : " +
-          fact.componentIdentifier.coordinates.version
-    }
-    else if (fact.componentIdentifier.format == IQ_FORMAT_NPM || fact.componentIdentifier.format == IQ_FORMAT_NUGET) {
-      return "${fact.componentIdentifier.coordinates.packageId} ${fact.componentIdentifier.coordinates.version}"
-    }
-    else {
-      return "${fact.componentIdentifier.coordinates.name} ${fact.componentIdentifier.coordinates.version}"
     }
   }
 
