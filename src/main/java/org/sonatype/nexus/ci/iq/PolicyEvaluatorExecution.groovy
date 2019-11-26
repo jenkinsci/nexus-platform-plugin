@@ -17,6 +17,7 @@ import javax.inject.Inject
 
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
+import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Run
@@ -44,7 +45,8 @@ class PolicyEvaluatorExecution
     TaskListener taskListener = context.get(TaskListener)
     FilePath workspace = context.get(FilePath)
     Launcher launcher = context.get(Launcher)
+    EnvVars envVars = context.get(EnvVars)
 
-    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener)
+    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars)
   }
 }

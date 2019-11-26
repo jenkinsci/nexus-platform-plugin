@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 
@@ -20,13 +21,17 @@ import com.cloudbees.plugins.credentials.CredentialsScope
 import com.cloudbees.plugins.credentials.domains.Domain
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.junit.WireMockRule
-import hudson.model.Result
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import hudson.model.FreeStyleProject
+import hudson.model.Result
 import hudson.model.Slave
+import hudson.slaves.EnvironmentVariablesNodeProperty
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
+import org.jvnet.hudson.test.ExtractResourceSCM
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
@@ -223,6 +228,153 @@ class IqPolicyEvaluatorSlaveIntegrationTest
 
     then: 'the return code is failure'
       jenkins.assertBuildStatus(Result.FAILURE, build)
+  }
+
+  def 'Freestyle build with repo env var should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      def url = 'http://a.com/b/c'
+      def prop = new EnvironmentVariablesNodeProperty()
+      def env = prop.getEnvVars()
+      env.put('GIT_URL', url)
+      jenkins.jenkins.globalNodeProperties.add(prop)
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.assignedNode = jenkins.createSlave()
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is called with the repo url'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 1
+  }
+
+  def 'Freestyle build within git context should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.assignedNode = jenkins.createSlave()
+      def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
+      project.setScm(new ExtractResourceSCM(path))
+      project.buildersList
+          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is called with the repo url'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 1
+  }
+
+  def 'Freestyle build without env var and git context should not call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.assignedNode = jenkins.createSlave()
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is not called'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 0
+  }
+
+  def 'Pipeline build with repo env var should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      def url = 'http://a.com/b/c'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      Slave slave = jenkins.createSlave()
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
+          "withEnv(['GIT_URL=" + url + "']) {\n" +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
+          'iqStage: \'stage\'\n' +
+          '}\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is called with the repo url'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 1
+  }
+
+  def 'Pipeline build within git context should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      Slave slave = jenkins.createSlave()
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the nexus policy evaluator is executed'
+      def path = new File(getClass().getResource('sampleRepoWithRemoteUrl.zip').toURI()).absolutePath
+      project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          "unzip zipFile: '" + path + "', glob: '**/*'\n" +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
+          'iqStage: \'stage\'\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is called with the repo url'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 1
+  }
+
+  def 'Pipeline build without env var and git context should not call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      Slave slave = jenkins.createSlave()
+      configureJenkins()
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
+          'iqStage: \'stage\'\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the source control onboarding is not called'
+      jenkins.assertBuildStatusSuccess(build)
+      assert wireMockRule.countRequestsMatching(
+          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+              .build()).count == 0
   }
 
   private String decrementVersion(String version) {

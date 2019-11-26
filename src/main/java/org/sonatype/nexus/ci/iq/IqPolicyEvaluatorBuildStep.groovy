@@ -21,17 +21,16 @@ import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.Extension
-import hudson.FilePath
 import hudson.Launcher
+import hudson.model.AbstractBuild
 import hudson.model.AbstractProject
+import hudson.model.BuildListener
 import hudson.model.Job
-import hudson.model.Run
-import hudson.model.TaskListener
+import hudson.tasks.BuildStep
 import hudson.tasks.BuildStepDescriptor
 import hudson.tasks.Builder
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
-import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
@@ -39,7 +38,7 @@ import org.kohsuke.stapler.QueryParameter
 @ParametersAreNonnullByDefault
 class IqPolicyEvaluatorBuildStep
     extends Builder
-    implements IqPolicyEvaluator, SimpleBuildStep
+    implements IqPolicyEvaluator, BuildStep
 {
   String iqStage
 
@@ -75,10 +74,12 @@ class IqPolicyEvaluatorBuildStep
   }
 
   @Override
-  void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
-               @Nonnull final TaskListener listener) throws InterruptedException, IOException
+  boolean perform(@Nonnull AbstractBuild run, @Nonnull Launcher launcher, @Nonnull BuildListener listener)
+      throws InterruptedException, IOException
   {
-    IqPolicyEvaluatorUtil.evaluatePolicy(this, run, workspace, launcher, listener)
+    IqPolicyEvaluatorUtil.
+        evaluatePolicy(this, run, run.getWorkspace(), launcher, listener, run.getEnvironment(listener))
+    return true
   }
 
   @Extension

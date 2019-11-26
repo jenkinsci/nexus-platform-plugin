@@ -34,17 +34,17 @@ class IqPolicyEvaluatorUtil
 {
   private static final String MINIMAL_SERVER_VERSION_REQUIRED = "1.69.0"
 
-  @SuppressWarnings('AbcMetric')
+  @SuppressWarnings(['AbcMetric', 'ParameterCount'])
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
                                                     final FilePath workspace,
                                                     final Launcher launcher,
-                                                    final TaskListener listener)
+                                                    final TaskListener listener,
+                                                    final EnvVars envVars)
   {
     ensureInNodeContext(run, workspace, launcher, listener)
 
     try {
-      EnvVars envVars = run.getEnvironment(listener)
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String iqStage = iqPolicyEvaluator.iqStage
 
@@ -57,7 +57,7 @@ class IqPolicyEvaluatorUtil
           new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
               log: loggerBridge))
 
-      iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED);
+      iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
       def verified = iqClient.verifyOrCreateApplication(applicationId)
       checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
@@ -69,8 +69,15 @@ class IqPolicyEvaluatorUtil
       def remoteScanner = RemoteScannerFactory.
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
-              advancedProperties)
+              advancedProperties, envVars)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
+
+      def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
+          .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId, envVars)
+      def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
+      if (repositoryUrl != null) {
+        iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+      }
 
       File workDirectory = new File(workspace.getRemote())
       def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
