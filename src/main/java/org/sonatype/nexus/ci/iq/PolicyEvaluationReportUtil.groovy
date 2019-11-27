@@ -29,7 +29,7 @@ class PolicyEvaluationReportUtil
         continue
       }
 
-      ReportComponent component = new ReportComponent(componentName: 'Component-Unknown',
+      ReportComponent component = new ReportComponent(componentName: 'unknown component',
           policyName: alert.trigger.policyName, policyLevel: alert.trigger.threatLevel)
       component.constraints = getConstraints(component, alert)
 
@@ -96,6 +96,7 @@ class PolicyEvaluationReportUtil
     ReportComponent comp = componentsMap.get(component.getComponentName())
     if (comp) {
       comp.getConstraints().addAll(component.getConstraints())
+      comp.constraints = comp.constraints.sort{ -it.policyLevel }
       if (comp.policyLevel < component.policyLevel) {
         comp.policyLevel = component.policyLevel
       }
