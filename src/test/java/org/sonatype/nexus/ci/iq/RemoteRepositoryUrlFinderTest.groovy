@@ -73,18 +73,4 @@ class RemoteRepositoryUrlFinderTest
     where:
       workspace = new FilePath(new File(Paths.get('').toAbsolutePath().toString()))
   }
-
-  def 'returns null when no environment var is set and git not available'() {
-    setup:
-      def remoteRepositoryUrlFinder = new RemoteRepositoryUrlFinder(workspace, log, 'instance-id', 'appId', null)
-
-    when:
-      String result = remoteRepositoryUrlFinder.call()
-
-    then:
-      assert result == null
-
-    where:
-      workspace = new FilePath(new File('{invalid}'))
-  }
 }
