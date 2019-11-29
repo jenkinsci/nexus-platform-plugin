@@ -85,6 +85,6 @@ class RemoteRepositoryUrlFinderTest
       assert result == null
 
     where:
-      workspace = new FilePath(new File('/file/path'))
+      workspace = new FilePath(new File('{invalid}'))
   }
 }

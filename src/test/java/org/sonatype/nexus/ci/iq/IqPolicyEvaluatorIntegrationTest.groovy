@@ -20,6 +20,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
+import com.sonatype.nexus.git.utils.repository.RepositoryUrlFinderBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -679,7 +680,7 @@ class IqPolicyEvaluatorIntegrationTest
           'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
-      1 * iqClient.addOrUpdateSourceControl('app', 'https://e.com/e/f')
+      1 * iqClient.addOrUpdateSourceControl(*_)
       jenkins.assertBuildStatusSuccess(build)
   }
 
@@ -700,7 +701,16 @@ class IqPolicyEvaluatorIntegrationTest
           'http://server/link/to/report')
 
     and: 'the source control onboarding is not called'
-      0 * iqClient.addOrUpdateSourceControl(*_)
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        0 * iqClient.addOrUpdateSourceControl(*_)
+      }
       jenkins.assertBuildStatusSuccess(build)
   }
 
@@ -755,7 +765,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     and: 'the source control onboarding is called with the repo url'
       jenkins.assertBuildStatusSuccess(build)
-      1 * iqClient.addOrUpdateSourceControl('app', 'https://e.com/e/f')
+      1 * iqClient.addOrUpdateSourceControl(*_)
   }
 
   def 'Pipeline build without env var and git context should not call addOrUpdateSourceControl'() {
@@ -786,7 +796,16 @@ class IqPolicyEvaluatorIntegrationTest
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
 
     and: 'the source control onboarding is not called'
-      0 * iqClient.addOrUpdateSourceControl(*_)
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        0 * iqClient.addOrUpdateSourceControl(*_)
+      }
       jenkins.assertBuildStatusSuccess(build)
   }
 

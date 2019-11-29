@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.git.utils.repository.RepositoryUrlFinderBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -295,9 +296,18 @@ class IqPolicyEvaluatorSlaveIntegrationTest
 
     then: 'the source control onboarding is not called'
       jenkins.assertBuildStatusSuccess(build)
-      assert wireMockRule.countRequestsMatching(
-          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
-              .build()).count == 0
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        assert wireMockRule.countRequestsMatching(
+            RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+                .build()).count == 0
+      }
   }
 
   def 'Pipeline build with repo env var should call addOrUpdateSourceControl'() {
@@ -372,9 +382,18 @@ class IqPolicyEvaluatorSlaveIntegrationTest
 
     then: 'the source control onboarding is not called'
       jenkins.assertBuildStatusSuccess(build)
-      assert wireMockRule.countRequestsMatching(
-          RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
-              .build()).count == 0
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        assert wireMockRule.countRequestsMatching(
+            RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
+                .build()).count == 0
+      }
   }
 
   private String decrementVersion(String version) {
