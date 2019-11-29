@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.nexus.git.utils.repository.RepositoryUrlFinderBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -280,36 +279,6 @@ class IqPolicyEvaluatorSlaveIntegrationTest
               .build()).count == 1
   }
 
-  def 'Freestyle build without env var and git context should not call addOrUpdateSourceControl'() {
-    given: 'a jenkins project'
-      FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.assignedNode = jenkins.createSlave()
-      project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
-      configureJenkins()
-
-    and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
-
-    when: 'the build is scheduled'
-      def build = project.scheduleBuild2(0).get()
-
-    then: 'the source control onboarding is not called'
-      jenkins.assertBuildStatusSuccess(build)
-      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
-      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
-      // and we can't verify that the method was not called
-      if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(build.workspace.remote)
-          .build()
-          .tryGetRepositoryUrl().present
-      ) {
-        assert wireMockRule.countRequestsMatching(
-            RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
-                .build()).count == 0
-      }
-  }
-
   def 'Pipeline build with repo env var should call addOrUpdateSourceControl'() {
     given: 'a jenkins project'
       def url = 'http://a.com/b/c'
@@ -361,39 +330,6 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       assert wireMockRule.countRequestsMatching(
           RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
               .build()).count == 1
-  }
-
-  def 'Pipeline build without env var and git context should not call addOrUpdateSourceControl'() {
-    given: 'a jenkins project'
-      WorkflowJob project = jenkins.createProject(WorkflowJob)
-      Slave slave = jenkins.createSlave()
-      configureJenkins()
-
-    and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
-
-    when: 'the nexus policy evaluator is executed'
-      project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
-          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
-          'iqStage: \'stage\'\n' +
-          '}\n')
-      def build = project.scheduleBuild2(0).get()
-
-    then: 'the source control onboarding is not called'
-      jenkins.assertBuildStatusSuccess(build)
-      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
-      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
-      // and we can't verify that the method was not called
-      if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(jenkins.jenkins.getBuildDirFor(project).absolutePath)
-          .build()
-          .tryGetRepositoryUrl().present
-      ) {
-        assert wireMockRule.countRequestsMatching(
-            RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
-                .build()).count == 0
-      }
   }
 
   private String decrementVersion(String version) {
