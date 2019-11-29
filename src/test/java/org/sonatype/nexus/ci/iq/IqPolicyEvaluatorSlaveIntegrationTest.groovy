@@ -300,7 +300,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       // build causing the repo url to be detected from there, if the finder above finds something, this is the case
       // and we can't verify that the method was not called
       if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .withGitRepoAtPath(build.workspace.remote)
           .build()
           .tryGetRepositoryUrl().present
       ) {
@@ -386,7 +386,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       // build causing the repo url to be detected from there, if the finder above finds something, this is the case
       // and we can't verify that the method was not called
       if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .withGitRepoAtPath(jenkins.jenkins.getBuildDirFor(project).absolutePath)
           .build()
           .tryGetRepositoryUrl().present
       ) {

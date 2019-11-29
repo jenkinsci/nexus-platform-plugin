@@ -705,13 +705,14 @@ class IqPolicyEvaluatorIntegrationTest
       // build causing the repo url to be detected from there, if the finder above finds something, this is the case
       // and we can't verify that the method was not called
       if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .withGitRepoAtPath(build.workspace.remote)
           .build()
           .tryGetRepositoryUrl().present
       ) {
-        0 * iqClient.addOrUpdateSourceControl(*_)
+        jenkins.assertLogNotContains('Amending source control record', build)
       }
       jenkins.assertBuildStatusSuccess(build)
+
   }
 
   def 'Pipeline build with repo env var should call addOrUpdateSourceControl'() {
@@ -800,11 +801,11 @@ class IqPolicyEvaluatorIntegrationTest
       // build causing the repo url to be detected from there, if the finder above finds something, this is the case
       // and we can't verify that the method was not called
       if (!new RepositoryUrlFinderBuilder()
-          .withGitRepoAtPath(jenkins.jenkins.rootPath.remote)
+          .withGitRepoAtPath(jenkins.jenkins.getBuildDirFor(project).absolutePath)
           .build()
           .tryGetRepositoryUrl().present
       ) {
-        0 * iqClient.addOrUpdateSourceControl(*_)
+        jenkins.assertLogNotContains('Amending source control record', build)
       }
       jenkins.assertBuildStatusSuccess(build)
   }
