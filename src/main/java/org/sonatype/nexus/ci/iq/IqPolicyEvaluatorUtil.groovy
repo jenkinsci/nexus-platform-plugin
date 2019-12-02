@@ -78,6 +78,9 @@ class IqPolicyEvaluatorUtil
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
 
+      def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
+      run.addAction(reportAction)
+
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
       run.setResult(result)
       if (result == Result.FAILURE) {
