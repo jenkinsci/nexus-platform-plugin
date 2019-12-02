@@ -29,7 +29,7 @@
   <packaging>hpi</packaging>
 
   <name>Nexus Platform Plugin</name>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Nexus+Platform+Plugin</url>
+  <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
 
   <licenses>
     <license>

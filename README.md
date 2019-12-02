@@ -25,9 +25,9 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
-3.8.20191127-111424.5d61f82 (November 11th, 2019)
+3.8.20191127-111424.5d61f82 (November 27th, 2019)
 --------------------------------------------------
-
+- Add trend graph to a Pipeline, which depicts the information about the last 5 builds with critical, severe and moderate violation numbers
 - [Support to scan and evaluate Clair identified container dependencies](https://help.sonatype.com/iqserver/analysis/clair-application-analysis)
 - [Support to scan and evaluate identified dependencies from a CycloneDX SBOM file](https://help.sonatype.com/iqserver/analysis/cyclonedx-application-analysis)
 
