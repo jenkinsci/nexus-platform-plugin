@@ -37,7 +37,7 @@
       }
 
       .report-parent div.title {
-        display: flex;
+        display: block;
         flex-direction: row;
         flex-wrap: nowrap;
         justify-content: flex-start;
@@ -53,11 +53,16 @@
         font-size: 18px;
       }
 
-      .report-parent div.title div.report {
+      .report-parent div.title{
         font-weight: bold;
         font-size: 12px;
         padding-top: 5px;
-        margin-left: 15px;
+      }
+
+      div.report {
+        font-weight: normal;
+        font-size: 12px;
+        padding-top: 5px;
       }
 
       .report-parent div.general-info {
@@ -343,9 +348,10 @@
       <j:set var="report" value="${it.getReport()}" />
       <div id="nexusIqParent" class="report-parent">
         <div class="title">
-          <div class="main-title">Nexus IQ Build Failure Report</div>
+          <div class="main-title">Nexus IQ Build Report</div>
           <div class="report">
-            <a href="${it.url}">View IQ Server Application Report</a>
+            This report lists IQ policy violations which are configured to 'warn' or 'fail.
+            <a href="${it.url}">See full report in IQ Server</a>
           </div>
         </div>
 

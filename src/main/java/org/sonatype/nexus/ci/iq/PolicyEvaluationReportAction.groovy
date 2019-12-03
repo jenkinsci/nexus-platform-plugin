@@ -26,7 +26,7 @@ class PolicyEvaluationReportAction
 
   private static final String IQ_REPORT_NAME = 'iqreport'
 
-  private static final String MENU_REPORT_TITLE = 'Nexus IQ Build Failure Report'
+  private static final String MENU_REPORT_TITLE = 'Nexus IQ Build Report'
 
   private static final String IQ_SPACE_SHIP_PNG = '/plugin/nexus-jenkins-plugin/images/sonatype-iq-rocketship.png'
   private static final String IQ_SPACE_SHIP_SUCCESS_MESSAGE = 'We\'re all clear!'
