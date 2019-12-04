@@ -29,10 +29,11 @@ class RemoteScannerFactory
                                         final ProprietaryConfig proprietaryConfig,
                                         final Logger log,
                                         final String instanceId,
-                                        final Properties advancedProperties)
+                                        final Properties advancedProperties,
+                                        final Map<String, String> envVars)
   {
     new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId,
-        advancedProperties)
+        advancedProperties, envVars)
   }
 
   static DirectoryScanner getDirectoryScanner() {

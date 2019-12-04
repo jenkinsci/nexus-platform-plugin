@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+
 import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
@@ -19,6 +20,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
+import com.sonatype.nexus.git.utils.repository.RepositoryUrlFinderBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -36,6 +38,7 @@ import hudson.slaves.EnvironmentVariablesNodeProperty
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
+import org.jvnet.hudson.test.ExtractResourceSCM
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -128,7 +131,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.scan(_, _,
           {
             it.size() == 1 && it.containsKey('excludedFiles') && it.get('excludedFiles') == 'target/my-project.jar'
-          }, _, _, _) >>
+          }, _, _, _, _) >>
             new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
@@ -629,6 +632,181 @@ class IqPolicyEvaluatorIntegrationTest
           'http://server/link/to/report')
 
     then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Freestyle build with repo env var should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+      def url = 'http://a.com/b/c'
+      def prop = new EnvironmentVariablesNodeProperty()
+      def env = prop.getEnvVars()
+      env.put('GIT_URL', url)
+      jenkins.jenkins.globalNodeProperties.add(prop)
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+          'http://server/link/to/report')
+
+    and: 'the source control onboarding is called with the repo url'
+      1 * iqClient.addOrUpdateSourceControl('app', url)
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Freestyle build within git context should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
+      project.setScm(new ExtractResourceSCM(path))
+      project.buildersList
+          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, [],
+          'http://server/link/to/report')
+
+    and: 'the source control onboarding is called with the repo url'
+      1 * iqClient.addOrUpdateSourceControl(*_)
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Freestyle build without env var and git context should not call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList
+          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+          'http://server/link/to/report')
+
+    and: 'the source control onboarding is not called'
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(build.workspace.remote)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        jenkins.assertLogNotContains('Amending source control record', build)
+      }
+      jenkins.assertBuildStatusSuccess(build)
+
+  }
+
+  def 'Pipeline build with repo env var should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+      def url = 'http://a.com/b/c'
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition("node {\n" +
+          "withEnv(['GIT_URL=" + url + "']) {\n" +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
+          'iqStage: \'stage\'\n' +
+          '}\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application with application id "app" is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+
+    and: 'the source control onboarding is called with the repo url'
+      1 * iqClient.addOrUpdateSourceControl('app', url)
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Pipeline build within git context should call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      def path = new File(getClass().getResource('sampleRepoWithRemoteUrl.zip').toURI()).absolutePath
+
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          "unzip zipFile: '" + path + "', glob: '**/*'\n" +
+          "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
+          'iqStage: \'stage\'\n' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application with application id "app" is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+
+    and: 'the source control onboarding is called with the repo url'
+      jenkins.assertBuildStatusSuccess(build)
+      1 * iqClient.addOrUpdateSourceControl(*_)
+  }
+
+  def 'Pipeline build without env var and git context should not call addOrUpdateSourceControl'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+              stages {
+                stage("Example") {
+                  steps { 
+                    writeFile file: 'dummy.txt', text: 'dummy'
+                    nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                      iqApplication: selectedApplication('app'), iqStage: 'stage'
+                  }
+                }
+              }
+          }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application with application id "app" is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+
+    and: 'the source control onboarding is not called'
+      //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
+      // build causing the repo url to be detected from there, if the finder above finds something, this is the case
+      // and we can't verify that the method was not called
+      if (!new RepositoryUrlFinderBuilder()
+          .withGitRepoAtPath(jenkins.jenkins.getBuildDirFor(project).absolutePath)
+          .build()
+          .tryGetRepositoryUrl().present
+      ) {
+        jenkins.assertLogNotContains('Amending source control record', build)
+      }
       jenkins.assertBuildStatusSuccess(build)
   }
 
