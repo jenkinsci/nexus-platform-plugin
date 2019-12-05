@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.8.20191204-084645.a4bff16 (December 4th, 2019)
+--------------------------------------------------
+- Add Nexus IQ Build Report which shows details for warn/fail vulnerabilities
+- Support slave nodes for automatic repository URL discovery for usage with [Nexus IQ for SCM](https://help.sonatype.com/integrations/nexus-iq-for-scm)
 
 3.8.20191127-111424.5d61f82 (November 27th, 2019)
 --------------------------------------------------
@@ -34,12 +38,12 @@ Changelog
 3.8.20190920-091853.5b0aa4e (September 20th, 2019)
 --------------------------------------------------
 
--   Support for automatically deducing the repository URL for usage with [IQ for Git](https://help.sonatype.com/integrations/nexus-iq-for-git)
+-   Support for automatically deducing the repository URL for usage with [Nexus IQ for SCM](https://help.sonatype.com/integrations/nexus-iq-for-scm)
 
 3.7.20190823-091836.9f85050 (August 23rd, 2019)
 -----------------------------------------------
 
--   Support for automatically deducing git commit hash for usage with [IQ for Git](https://help.sonatype.com/integrations/nexus-iq-for-git)
+-   Support for automatically deducing git commit hash for usage with [Nexus IQ for SCM](https://help.sonatype.com/integrations/nexus-iq-for-scm)
 
 3.6.20190722-122200.83d1447 (July 22nd, 2019)
 ---------------------------------------------
