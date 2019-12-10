@@ -58,6 +58,10 @@ function getXAxisLabels() {
   return policyEvaluations ? policyEvaluations.map(value => value.buildNumber) : [];
 }
 
+function getMaxValue() {
+  return getCriticalValues().concat(getSevereValues()).concat(getModerateValues()).max();
+}
+
 const options = {
   chart: {
     height: CHART_HEIGHT,
@@ -118,6 +122,9 @@ const options = {
     }
   },
   yaxis: {
+    min: 0,
+    max: getMaxValue() + 1,
+    forceNiceScale: true,
     labels: {
       formatter: function (value) {
         return value;
