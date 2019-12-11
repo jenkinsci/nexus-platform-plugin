@@ -7,3 +7,8 @@ com.sonatype.insight.scan.model.ScanConfiguration
 com.sonatype.insight.scan.model.ScanItem
 com.sonatype.insight.scan.model.ScanSummary
 com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+com.sonatype.nexus.api.iq.PolicyAlert
+com.sonatype.nexus.api.iq.PolicyFact
+com.sonatype.nexus.api.iq.ComponentFact
+com.sonatype.nexus.api.iq.ConstraintFact
+com.sonatype.nexus.api.iq.ConditionFact
