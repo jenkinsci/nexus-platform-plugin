@@ -6,3 +6,4 @@ com.sonatype.insight.scan.model.Scan
 com.sonatype.insight.scan.model.ScanConfiguration
 com.sonatype.insight.scan.model.ScanItem
 com.sonatype.insight.scan.model.ScanSummary
+com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
