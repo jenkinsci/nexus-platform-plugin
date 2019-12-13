@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.8.20191213-085900.c28ded4 (December 13th, 2019)
+--------------------------------------------------
+- Fix marshalling issue with new trend graph
+- Fix issue with y-axis number on new trend graph
+
 3.8.20191204-084645.a4bff16 (December 4th, 2019)
 --------------------------------------------------
 - Add Nexus IQ Build Report which shows details for warn/fail vulnerabilities
