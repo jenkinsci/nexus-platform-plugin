@@ -13,7 +13,6 @@
 package org.sonatype.nexus.ci.iq
 
 import java.util.logging.Level
-import java.util.logging.LogRecord
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution
 import org.junit.After
@@ -44,11 +43,7 @@ will need to be added to the 'hudson.remoting.ClassFilter' file. See INT-2407 fo
 
   @After
   def runLoggingTest() {
-    for (LogRecord logRecord : loggerRule.records) {
-      if (logRecord.thrown != null) {
-        assertNoClassFilterErrors(logRecord.thrown)
-      }
-    }
+    loggerRule.records.findAll { it.thrown }.each { record -> assertNoClassFilterErrors(record.thrown) }
   }
 
   /**
