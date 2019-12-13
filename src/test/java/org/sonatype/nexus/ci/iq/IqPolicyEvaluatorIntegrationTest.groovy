@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.util.logging.Level
+import java.util.logging.LogRecord
 
 import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
@@ -37,10 +39,13 @@ import hudson.model.Result
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
+import org.junit.rules.RuleChain
 import org.jvnet.hudson.test.ExtractResourceSCM
 import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.LoggerRule
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -48,6 +53,7 @@ import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 
 class IqPolicyEvaluatorIntegrationTest
     extends Specification
+    implements ClassFilterLoggingTestTrait
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
