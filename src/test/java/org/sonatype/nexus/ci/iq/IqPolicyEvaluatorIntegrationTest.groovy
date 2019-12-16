@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import java.util.logging.Level
-import java.util.logging.LogRecord
 
 import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
@@ -39,13 +37,10 @@ import hudson.model.Result
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
-import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
-import org.junit.rules.RuleChain
 import org.jvnet.hudson.test.ExtractResourceSCM
 import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.LoggerRule
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -106,7 +101,8 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [createAlert(Action.ID_NOTIFY)],
+              'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)
