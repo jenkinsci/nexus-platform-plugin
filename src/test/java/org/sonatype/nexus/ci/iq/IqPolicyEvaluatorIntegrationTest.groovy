@@ -35,6 +35,7 @@ import hudson.EnvVars
 import hudson.model.FreeStyleProject
 import hudson.model.Result
 import hudson.slaves.EnvironmentVariablesNodeProperty
+import jenkins.model.Jenkins
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
@@ -71,6 +72,7 @@ class IqPolicyEvaluatorIntegrationTest
     iqClientBuilder.withInstanceId(_) >> iqClientBuilder
     iqClient = Mock()
     iqClientBuilder.build() >> iqClient
+    println "Testing Jenkins version: ${Jenkins.getStoredVersion()}"
   }
 
   def 'Declarative pipeline build successful with mandatory parameters'() {
@@ -282,7 +284,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the build status is failure and the error is logged'
       jenkins.assertBuildStatus(Result.FAILURE, build)
-      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
+      build.getLog(100).find { it.endsWith('com.sonatype.nexus.api.exception.IqClientException: ERROR') }
   }
 
   def 'Freestyle build should set build status to unstable when network error occurs with failBuildOnNetworkError false'() {
@@ -326,7 +328,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the build status is failure and the error is logged'
       jenkins.assertBuildStatus(Result.FAILURE, build)
-      build.getLog(100).contains('com.sonatype.nexus.api.exception.IqClientException: ERROR')
+      build.getLog(100).find { it.endsWith('com.sonatype.nexus.api.exception.IqClientException: ERROR') }
   }
 
   @Unroll
