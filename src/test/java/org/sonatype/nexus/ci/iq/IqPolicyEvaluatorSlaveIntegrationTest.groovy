@@ -49,6 +49,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
  */
 class IqPolicyEvaluatorSlaveIntegrationTest
     extends Specification
+    implements ClassFilterLoggingTestTrait
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()

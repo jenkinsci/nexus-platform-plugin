@@ -12,3 +12,7 @@ com.sonatype.nexus.api.iq.PolicyFact
 com.sonatype.nexus.api.iq.ComponentFact
 com.sonatype.nexus.api.iq.ConstraintFact
 com.sonatype.nexus.api.iq.ConditionFact
+com.sonatype.nexus.api.iq.ComponentIdentifier
+com.sonatype.nexus.api.iq.ComponentDisplayName
+com.sonatype.nexus.api.iq.ComponentDisplayNamePart
+com.sonatype.nexus.api.iq.Action

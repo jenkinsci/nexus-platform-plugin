@@ -48,6 +48,7 @@ import static org.sonatype.nexus.ci.iq.TestDataGenerators.createAlert
 
 class IqPolicyEvaluatorIntegrationTest
     extends Specification
+    implements ClassFilterLoggingTestTrait
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
@@ -100,7 +101,8 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [createAlert(Action.ID_NOTIFY)],
+              'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)

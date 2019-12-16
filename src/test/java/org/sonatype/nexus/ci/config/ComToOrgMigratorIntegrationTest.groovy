@@ -18,6 +18,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
+import org.sonatype.nexus.ci.iq.ClassFilterLoggingTestTrait
 import org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 import org.sonatype.nexus.ci.nxrm.ComponentUploader
 import org.sonatype.nexus.ci.nxrm.ComponentUploaderFactory
@@ -33,6 +34,7 @@ import spock.lang.Specification
 
 class ComToOrgMigratorIntegrationTest
     extends Specification
+    implements ClassFilterLoggingTestTrait
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule().withExistingHome(new File(
