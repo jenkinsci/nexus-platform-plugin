@@ -34,7 +34,7 @@ trait ClassFilterLoggingTestTrait
   LoggerRule loggerRule = new LoggerRule()
 
   def helpfulMessage = '''A possible JEP-200 marshalling error has occurred. It is likely that additional classes 
-will need to be added to the 'hudson.remoting.ClassFilter' file. See INT-2407 for additional info'''
+will need to be added to the 'hudson.remoting.ClassFilter' file. See https://docs.sonatype.com/x/op5NCQ'''
 
   @Before
   def setupLoggingTest() {
