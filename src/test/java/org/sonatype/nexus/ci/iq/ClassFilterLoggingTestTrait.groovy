@@ -24,14 +24,14 @@ import org.slf4j.LoggerFactory
 
 /**
  * Add this trait to any test that should have an extra verification that no JEP-200 marshalling errors have occurred.
- * See INT-2407 for additional information and INT-418 for original work.
+ * See INT-2407 and https://docs.sonatype.com/x/op5NCQ for additional information and INT-418 for the original work.
  */
 trait ClassFilterLoggingTestTrait
 {
   Logger logger = LoggerFactory.getLogger(ClassFilterLoggingTestTrait)
 
   @Rule
-  public LoggerRule loggerRule = new LoggerRule()
+  LoggerRule loggerRule = new LoggerRule()
 
   def helpfulMessage = '''A possible JEP-200 marshalling error has occurred. It is likely that additional classes 
 will need to be added to the 'hudson.remoting.ClassFilter' file. See INT-2407 for additional info'''
