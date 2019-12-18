@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.8.20191216-154521.a7bf2be (December 18th, 2019)
+--------------------------------------------------
+- Fix additional marshalling issue with new trend graph
+
 3.8.20191213-085900.c28ded4 (December 13th, 2019)
 --------------------------------------------------
 - Fix marshalling issue with new trend graph
