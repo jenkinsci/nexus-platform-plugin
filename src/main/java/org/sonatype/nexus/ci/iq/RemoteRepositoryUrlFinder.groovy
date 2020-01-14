@@ -53,6 +53,7 @@ class RemoteRepositoryUrlFinder
           .withEnvironmentVariableDefault()
           .withGitRepoAtPath(workDirectory == null ? null : workDirectory.getAbsolutePath() + '/.git')
           .withEnvironmentOverride(envVars)
+          .withLogger(log)
           .build()
           .tryGetRepositoryUrl()
       if (optional.isPresent()) {
