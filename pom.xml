@@ -83,7 +83,6 @@
     <findbugs.effort>Max</findbugs.effort>
   </properties>
 
-
   <dependencyManagement>
     <dependencies>
       <dependency>
