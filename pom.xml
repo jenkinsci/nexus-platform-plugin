@@ -83,13 +83,12 @@
     <findbugs.effort>Max</findbugs.effort>
   </properties>
 
-
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.11.20191129-110145.6dda2ea</version>
+        <version>3.13</version>
         <classifier>internal</classifier>
       </dependency>
 
