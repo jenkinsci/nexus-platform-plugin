@@ -539,6 +539,7 @@
               <serverId>${staging.serverId}</serverId>
               <altStagingDirectory>${staging.directory}</altStagingDirectory>
               <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
               <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
               <tags>
                 <localUsername>${user.name}</localUsername>
