@@ -162,8 +162,8 @@ class Summary {
 
   Summary(PolicyEvaluationHealthAction action) {
     this.buildNumber = action.getBuildNumber()
-    this.criticalCount = action.getCriticalComponentCount()
-    this.severeCount = action.getSevereComponentCount()
-    this.moderateCount = action.getModerateComponentCount()
+    this.criticalCount = action.getCriticalPolicyViolationCount()
+    this.severeCount = action.getSeverePolicyViolationCount()
+    this.moderateCount = action.getModeratePolicyViolationCount()
   }
 }
