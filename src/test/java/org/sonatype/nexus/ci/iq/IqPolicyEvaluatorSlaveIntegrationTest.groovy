@@ -75,9 +75,9 @@ class IqPolicyEvaluatorSlaveIntegrationTest
         "result": {
         "alerts": [],
         "affectedComponentCount": 33,
-        "criticalComponentCount": 20,
-        "severeComponentCount": 12,
-        "moderateComponentCount": 1,
+        "criticalPolicyViolationCount": 20,
+        "severePolicyViolationCount": 12,
+        "moderatePolicyViolationCount": 1,
         "criticalPolicyViolationCount": 46,
         "severePolicyViolationCount": 54,
         "moderatePolicyViolationCount": 3,
