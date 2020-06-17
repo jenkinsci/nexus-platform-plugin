@@ -22,6 +22,15 @@ def action = (PolicyEvaluationHealthAction) it
 def policyCss = {
   // Inline the iq-chiclet css here for Jenkins v1 which does not support the css tag.
   style(type: 'text/css', """
+        .iq-job-main-table {
+          margin-top: 1em;
+          margin-left: 1em;
+        }
+        
+        .iq-job-main-table img {
+          margin-right: 0.3em !important;
+        }
+
         .iq-block {
           display:inline-block;
           margin-right: 1em;
