@@ -89,6 +89,7 @@ class PolicyEvaluationHealthActionTest
       def severePolicyViolationCount = healthAction.severePolicyViolationCount
       def moderatePolicyViolationCount = healthAction.moderatePolicyViolationCount
       def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
+      def totalPolicyViolationCount = healthAction.totalPolicyViolationCount
       def urlName = healthAction.urlName
       def appId = healthAction.applicationId
       def iqStage = healthAction.iqStage
@@ -98,6 +99,7 @@ class PolicyEvaluationHealthActionTest
       criticalPolicyViolationCount == 11
       severePolicyViolationCount == 12
       moderatePolicyViolationCount == 13
+      totalPolicyViolationCount == 36
       grandfatheredPolicyViolationCount == 5
       urlName == reportLink
       appId == 'my-iq-app'

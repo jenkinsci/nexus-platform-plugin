@@ -79,7 +79,7 @@ def policyCss = {
         }
         
         .iq-chiclet-message {
-          margin-left: 3px;
+          margin-left: 0.4em;
           padding-top: 2px;
         }
       """)
@@ -102,11 +102,19 @@ def policyUI = {
       }
     }
     div(class: 'p-iq-chiclet') {
-      span(class: 'iq-chiclet critical', action.criticalPolicyViolationCount ? action.criticalPolicyViolationCount : 0)
-      span(class: 'iq-chiclet severe', action.severePolicyViolationCount ? action.severePolicyViolationCount : 0)
-      span(class: 'iq-chiclet moderate', action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
+      span(class: 'iq-label', Messages.IqPolicyEvaluation_TotalViolations(action.totalPolicyViolationCount))
       span(class: 'iq-chiclet-message',
-          Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+          Messages.IqPolicyEvaluation_AffectedComponents(action.affectedComponentCount))
+    }
+    div(class: 'p-iq-chiclet') {
+      span(class: 'iq-chiclet critical',
+          action.criticalPolicyViolationCount ? action.criticalPolicyViolationCount : 0)
+      span(class: 'iq-chiclet severe', action.severePolicyViolationCount ? action.severePolicyViolationCount : 0)
+      span(class: 'iq-chiclet moderate',
+          action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
+    }
+    div(class: 'p-iq-chiclet') {
+      span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
     }
   }
 }
