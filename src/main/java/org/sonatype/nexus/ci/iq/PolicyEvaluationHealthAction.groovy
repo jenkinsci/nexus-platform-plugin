@@ -75,6 +75,14 @@ class PolicyEvaluationHealthAction
     return moderatePolicyViolationCount
   }
 
+  int getTotalPolicyViolationCount() {
+    return criticalPolicyViolationCount + severePolicyViolationCount + moderatePolicyViolationCount
+  }
+
+  int getAffectedComponentCount() {
+    return affectedComponentCount
+  }
+
   int getGrandfatheredPolicyViolationCount() {
     return grandfatheredPolicyViolationCount
   }
