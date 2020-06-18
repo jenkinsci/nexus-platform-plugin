@@ -127,7 +127,8 @@ const options = {
     forceNiceScale: true,
     labels: {
       formatter: function (value) {
-        return value;
+        const intVal = value.toFixed(0);
+        return Math.abs(value - intVal) < 0.001 ? intVal : value.toFixed(1);
       }
     }
   },
