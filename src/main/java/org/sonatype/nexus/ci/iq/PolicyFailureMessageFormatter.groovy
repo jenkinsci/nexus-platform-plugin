@@ -41,8 +41,8 @@ class PolicyFailureMessageFormatter
     def warnings = groupedActions.get(Action.ID_WARN).
         collect { Messages.PolicyFailureMessageFormatter_PolicyWarning(it) }
     def summary = [Messages.PolicyFailureMessageFormatter_EvaluationReport(evaluation.applicationCompositionReportUrl),
-                   Messages.PolicyFailureMessageFormatter_EvaluationSummary(evaluation.criticalComponentCount,
-                       evaluation.severeComponentCount, evaluation.moderateComponentCount)]
+                   Messages.PolicyFailureMessageFormatter_EvaluationSummary(evaluation.criticalPolicyViolationCount,
+                       evaluation.severePolicyViolationCount, evaluation.moderatePolicyViolationCount)]
     return ([(failures + warnings).join('\n\n')] + summary).join('\n')
   }
 

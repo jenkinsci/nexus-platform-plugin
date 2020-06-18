@@ -33,11 +33,11 @@ class PolicyEvaluationHealthAction
 
   private final int affectedComponentCount
 
-  private final int criticalComponentCount
+  private final int criticalPolicyViolationCount
 
-  private final int severeComponentCount
+  private final int severePolicyViolationCount
 
-  private final int moderateComponentCount
+  private final int moderatePolicyViolationCount
   
   private final int grandfatheredPolicyViolationCount
 
@@ -53,9 +53,9 @@ class PolicyEvaluationHealthAction
     this.run = run
     this.reportLink = policyEvaluationResult.applicationCompositionReportUrl
     this.affectedComponentCount = policyEvaluationResult.affectedComponentCount
-    this.criticalComponentCount = policyEvaluationResult.criticalComponentCount
-    this.severeComponentCount = policyEvaluationResult.severeComponentCount
-    this.moderateComponentCount = policyEvaluationResult.moderateComponentCount
+    this.criticalPolicyViolationCount = policyEvaluationResult.criticalPolicyViolationCount
+    this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
+    this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
     this.grandfatheredPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
   }
 
@@ -63,16 +63,16 @@ class PolicyEvaluationHealthAction
     return run.number
   }
 
-  int getCriticalComponentCount() {
-    return criticalComponentCount
+  int getCriticalPolicyViolationCount() {
+    return criticalPolicyViolationCount
   }
 
-  int getSevereComponentCount() {
-    return severeComponentCount
+  int getSeverePolicyViolationCount() {
+    return severePolicyViolationCount
   }
 
-  int getModerateComponentCount() {
-    return moderateComponentCount
+  int getModeratePolicyViolationCount() {
+    return moderatePolicyViolationCount
   }
 
   int getGrandfatheredPolicyViolationCount() {

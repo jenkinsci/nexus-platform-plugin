@@ -122,9 +122,9 @@ if (action) {
         }
       }
       div(class: 'p-iq-chiclet') {
-        span(class: 'iq-chiclet critical', action.criticalComponentCount ? action.criticalComponentCount : 0)
-        span(class: 'iq-chiclet severe', action.severeComponentCount ? action.severeComponentCount : 0)
-        span(class: 'iq-chiclet moderate', action.moderateComponentCount ? action.moderateComponentCount : 0)
+        span(class: 'iq-chiclet critical', action.criticalPolicyViolationCount ? action.criticalPolicyViolationCount : 0)
+        span(class: 'iq-chiclet severe', action.severePolicyViolationCount ? action.severePolicyViolationCount : 0)
+        span(class: 'iq-chiclet moderate', action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
         span(class: 'iq-chiclet-message',
             Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
       }
@@ -162,8 +162,8 @@ class Summary {
 
   Summary(PolicyEvaluationHealthAction action) {
     this.buildNumber = action.getBuildNumber()
-    this.criticalCount = action.getCriticalComponentCount()
-    this.severeCount = action.getSevereComponentCount()
-    this.moderateCount = action.getModerateComponentCount()
+    this.criticalCount = action.getCriticalPolicyViolationCount()
+    this.severeCount = action.getSeverePolicyViolationCount()
+    this.moderateCount = action.getModeratePolicyViolationCount()
   }
 }

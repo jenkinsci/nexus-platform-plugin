@@ -101,7 +101,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [createAlert(Action.ID_NOTIFY)],
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [createAlert(Action.ID_NOTIFY)],
               'http://server/link/to/report')
 
     and: 'the build is successful'
@@ -138,7 +138,7 @@ class IqPolicyEvaluatorIntegrationTest
           }, _, _, _, _) >>
             new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [], 'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)
@@ -171,7 +171,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [], 'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)
@@ -189,9 +189,9 @@ class IqPolicyEvaluatorIntegrationTest
           'iqStage: \'stage\'\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
           'echo "affected:" + result.affectedComponentCount\n' +
-          'echo "critical:" + result.criticalComponentCount\n' +
-          'echo "severe:" + result.severeComponentCount\n' +
-          'echo "moderate:" + result.moderateComponentCount\n' +
+          'echo "critical:" + result.criticalPolicyViolationCount\n' +
+          'echo "severe:" + result.severePolicyViolationCount\n' +
+          'echo "moderate:" + result.moderatePolicyViolationCount\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
           'echo "alerts:" + result.policyAlerts' +
           '}\n')
@@ -200,7 +200,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     then: 'the expected result is returned'
@@ -208,9 +208,9 @@ class IqPolicyEvaluatorIntegrationTest
       with(build.getLog(100)) {
         it.contains('url:http://server/link/to/report')
         it.contains('affected:0')
-        it.contains('critical:1')
-        it.contains('severe:2')
-        it.contains('moderate:3')
+        it.contains('critical:11')
+        it.contains('severe:12')
+        it.contains('moderate:13')
         it.contains('alerts:[]')
       }
   }
@@ -228,7 +228,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -402,7 +402,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0,
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
     and: 'the build fails'
@@ -428,9 +428,9 @@ class IqPolicyEvaluatorIntegrationTest
               'def result = error.policyEvaluation \n' +
               'echo "url:" + result.applicationCompositionReportUrl\n' +
               'echo "affected:" + result.affectedComponentCount\n' +
-              'echo "critical:" + result.criticalComponentCount\n' +
-              'echo "severe:" + result.severeComponentCount\n' +
-              'echo "moderate:" + result.moderateComponentCount\n' +
+              'echo "critical:" + result.criticalPolicyViolationCount\n' +
+              'echo "severe:" + result.severePolicyViolationCount\n' +
+              'echo "moderate:" + result.moderatePolicyViolationCount\n' +
               'echo "url:" + result.applicationCompositionReportUrl\n' +
               'echo "alerts:" + result.policyAlerts' +
             '} \n' +
@@ -440,7 +440,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0,
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
     and: 'the build fails'
@@ -448,9 +448,9 @@ class IqPolicyEvaluatorIntegrationTest
       with(build.getLog(100)) {
         it.contains('url:http://server/link/to/report')
         it.contains('affected:0')
-        it.contains('critical:1')
-        it.contains('severe:2')
-        it.contains('moderate:3')
+        it.contains('critical:11')
+        it.contains('severe:12')
+        it.contains('moderate:13')
         it =~ /alerts:\[.+]/
       }
   }
@@ -470,7 +470,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0,
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
 
     then: 'the build fails'
@@ -607,7 +607,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -632,7 +632,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -657,7 +657,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
@@ -680,7 +680,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, [],
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, [],
           'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
@@ -701,7 +701,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [],
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
           'http://server/link/to/report')
 
     and: 'the source control onboarding is not called'
@@ -739,7 +739,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [], 'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
       1 * iqClient.addOrUpdateSourceControl('app', url)
@@ -766,7 +766,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [], 'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
       jenkins.assertBuildStatusSuccess(build)
@@ -798,7 +798,7 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.verifyOrCreateApplication('app') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 0, [], 'http://server/link/to/report')
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [], 'http://server/link/to/report')
 
     and: 'the source control onboarding is not called'
       //When running tests as part of a CI build, the workspace will be in the git context of the checked out CI
