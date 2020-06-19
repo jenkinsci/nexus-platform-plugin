@@ -33,6 +33,12 @@ class PolicyEvaluationHealthAction
 
   private final int affectedComponentCount
 
+  private final int criticalComponentCount
+
+  private final int severeComponentCount
+
+  private final int moderateComponentCount
+
   private final int criticalPolicyViolationCount
 
   private final int severePolicyViolationCount
@@ -53,6 +59,9 @@ class PolicyEvaluationHealthAction
     this.run = run
     this.reportLink = policyEvaluationResult.applicationCompositionReportUrl
     this.affectedComponentCount = policyEvaluationResult.affectedComponentCount
+    this.criticalComponentCount = policyEvaluationResult.criticalComponentCount
+    this.severeComponentCount = policyEvaluationResult.severeComponentCount
+    this.moderateComponentCount = policyEvaluationResult.moderateComponentCount
     this.criticalPolicyViolationCount = policyEvaluationResult.criticalPolicyViolationCount
     this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
     this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
@@ -61,6 +70,18 @@ class PolicyEvaluationHealthAction
 
   int getBuildNumber() {
     return run.number
+  }
+
+  int getCriticalComponentCount() {
+    return criticalComponentCount
+  }
+
+  int getSevereComponentCount() {
+    return severeComponentCount
+  }
+
+  int getModerateComponentCount() {
+    return moderateComponentCount
   }
 
   int getCriticalPolicyViolationCount() {

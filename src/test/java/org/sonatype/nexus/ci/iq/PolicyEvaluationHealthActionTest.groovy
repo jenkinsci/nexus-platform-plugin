@@ -85,6 +85,9 @@ class PolicyEvaluationHealthActionTest
 
     when: 'getting component and grandfathered policy violation counts'
       def affectedComponentCount = healthAction.affectedComponentCount
+      def criticalComponentCount = healthAction.criticalComponentCount
+      def severeComponentCount = healthAction.severeComponentCount
+      def moderateComponentCount = healthAction.moderateComponentCount
       def criticalPolicyViolationCount = healthAction.criticalPolicyViolationCount
       def severePolicyViolationCount = healthAction.severePolicyViolationCount
       def moderatePolicyViolationCount = healthAction.moderatePolicyViolationCount
@@ -96,6 +99,9 @@ class PolicyEvaluationHealthActionTest
 
     then:
       affectedComponentCount == 1
+      criticalComponentCount == 2
+      severeComponentCount == 3
+      moderateComponentCount == 4
       criticalPolicyViolationCount == 11
       severePolicyViolationCount == 12
       moderatePolicyViolationCount == 13

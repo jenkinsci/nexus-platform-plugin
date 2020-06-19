@@ -101,20 +101,32 @@ def policyUI = {
         span("${action.getIqStage()}")
       }
     }
-    div(class: 'p-iq-chiclet') {
-      span(class: 'iq-label', Messages.IqPolicyEvaluation_TotalViolations(action.totalPolicyViolationCount))
-      span(class: 'iq-chiclet-message',
-          Messages.IqPolicyEvaluation_AffectedComponents(action.affectedComponentCount))
+
+    if (action.totalPolicyViolationCount == 0 && action.affectedComponentCount > 0) {
+      div(class: 'p-iq-chiclet') {
+        span(class: 'iq-chiclet critical', action.criticalComponentCount ? action.criticalComponentCount : 0)
+        span(class: 'iq-chiclet severe', action.severeComponentCount ? action.severeComponentCount : 0)
+        span(class: 'iq-chiclet moderate', action.moderateComponentCount ? action.moderateComponentCount : 0)
+        span(class: 'iq-chiclet-message',
+            Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+      }
     }
-    div(class: 'p-iq-chiclet') {
-      span(class: 'iq-chiclet critical',
-          action.criticalPolicyViolationCount ? action.criticalPolicyViolationCount : 0)
-      span(class: 'iq-chiclet severe', action.severePolicyViolationCount ? action.severePolicyViolationCount : 0)
-      span(class: 'iq-chiclet moderate',
-          action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
-    }
-    div(class: 'p-iq-chiclet') {
-      span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+    else {
+      div(class: 'p-iq-chiclet') {
+        span(class: 'iq-label', Messages.IqPolicyEvaluation_TotalViolations(action.totalPolicyViolationCount))
+        span(class: 'iq-chiclet-message',
+            Messages.IqPolicyEvaluation_AffectedComponents(action.affectedComponentCount))
+      }
+      div(class: 'p-iq-chiclet') {
+        span(class: 'iq-chiclet critical',
+            action.criticalPolicyViolationCount ? action.criticalPolicyViolationCount : 0)
+        span(class: 'iq-chiclet severe', action.severePolicyViolationCount ? action.severePolicyViolationCount : 0)
+        span(class: 'iq-chiclet moderate',
+            action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
+      }
+      div(class: 'p-iq-chiclet') {
+        span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+      }
     }
   }
 }
