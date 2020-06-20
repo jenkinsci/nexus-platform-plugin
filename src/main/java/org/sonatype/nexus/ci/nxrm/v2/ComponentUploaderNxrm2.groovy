@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.nxrm.v2
 
-import javax.annotation.Nullable
-
 import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v2.GAV
 import com.sonatype.nexus.api.repository.v2.MavenAsset
@@ -40,7 +38,7 @@ class ComponentUploaderNxrm2
   @Override
   void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
               final String nxrmRepositoryId,
-              @Nullable final String tag = null)
+              final String tag = null)
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 

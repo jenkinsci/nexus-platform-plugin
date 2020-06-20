@@ -12,10 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import javax.annotation.Nonnull
-import javax.annotation.Nullable
-import javax.annotation.ParametersAreNonnullByDefault
-
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -35,7 +31,6 @@ import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-@ParametersAreNonnullByDefault
 class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, BuildStep
@@ -74,7 +69,7 @@ class IqPolicyEvaluatorBuildStep
   }
 
   @Override
-  boolean perform(@Nonnull AbstractBuild run, @Nonnull Launcher launcher, @Nonnull BuildListener listener)
+  boolean perform(AbstractBuild run, Launcher launcher, BuildListener listener)
       throws InterruptedException, IOException
   {
     IqPolicyEvaluatorUtil.
@@ -136,7 +131,7 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
+    FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
     }
