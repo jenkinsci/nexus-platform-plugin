@@ -25,6 +25,20 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.9.20200623-110149.2e546a0 (June 23rd, 2020)
+------------------------------------------------
+- Added scanning and application/package analysis support for the following ecosystems:
+  - Alpine
+  - Conda
+  - Debian
+  - Drupal
+  - R (Cran)
+  - Rust (Cargo)
+  - Swift (Cocoapods)
+  - Yum
+- Use policy violation counts instead of component counts in the policy evaluation summary
+- Fixed an issue with y-axis labels on the new trend graph
+
 3.8.20200204-101107.d1d344b (February 6th, 2020)
 ------------------------------------------------
 - Fix to ensure that all Nexus IQ for SCM logging goes to the build log instead of the server log
