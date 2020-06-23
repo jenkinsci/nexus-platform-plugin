@@ -12,9 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import javax.annotation.Nullable
-import javax.annotation.ParametersAreNonnullByDefault
-
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -31,7 +28,6 @@ import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
 
-@ParametersAreNonnullByDefault
 class IqPolicyEvaluatorWorkflowStep
     extends AbstractStepImpl
     implements IqPolicyEvaluator
@@ -123,7 +119,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
       IqUtil.doFillIqStageItems(jobCredentialsId, job)
     }
 
@@ -154,7 +150,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
+    FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
     }

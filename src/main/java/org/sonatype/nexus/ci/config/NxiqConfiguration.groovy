@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-import javax.annotation.Nullable
-
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
@@ -49,16 +47,16 @@ class NxiqConfiguration
     return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
-  static @Nullable URI getServerUrl() {
+  static URI getServerUrl() {
     def serverUrl = getIqConfig()?.@serverUrl
     serverUrl ? new URI(serverUrl) : null
   }
 
-  static @Nullable String getCredentialsId() {
+  static String getCredentialsId() {
     getIqConfig()?.@credentialsId
   }
 
-  static @Nullable NxiqConfiguration getIqConfig() {
+  static NxiqConfiguration getIqConfig() {
     return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
   }
 
@@ -89,7 +87,7 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
-        @QueryParameter @Nullable String credentialsId) throws IOException
+        @QueryParameter String credentialsId) throws IOException
     {
       return IqUtil.verifyJobCredentials(serverUrl, credentialsId, Jenkins.instance)
     }
