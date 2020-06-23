@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.util
 
-import javax.annotation.Nullable
-
 import com.sonatype.nexus.api.common.Authentication
 import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.exception.RepositoryManagerException
@@ -84,7 +82,7 @@ class RepositoryManagerClientUtil
    * @param credentialsId the id of the credentials configured in jenkisn
    * @return a {@link RepositoryManagerV3Client}
    */
-  static RepositoryManagerV3Client nexus3Client(String url, @Nullable String credentialsId)
+  static RepositoryManagerV3Client nexus3Client(String url, String credentialsId)
       throws URISyntaxException
   {
     def uri = new URI(url)

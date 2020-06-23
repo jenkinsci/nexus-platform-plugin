@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.util
 
-import javax.annotation.Nullable
-
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
@@ -42,7 +40,7 @@ class IqUtil
     return client.getApplicationsForApplicationEvaluation()
   }
 
-  static ListBoxModel doFillIqStageItems(@Nullable final String credentialsId, final Job job) {
+  static ListBoxModel doFillIqStageItems(final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.
           getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
@@ -53,7 +51,7 @@ class IqUtil
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems(@Nullable final String credentialsId, final Job job) {
+  static ListBoxModel doFillIqApplicationItems(final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.
           getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
