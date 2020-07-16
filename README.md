@@ -25,6 +25,10 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.9.20200716-164408.7b4a45f (July 16th, 2020)
+------------------------------------------------
+- Added scanning and application/package analysis support for Golang using a go.list file (in addition to the file go.sum).
+
 3.9.20200623-110149.2e546a0 (June 23rd, 2020)
 ------------------------------------------------
 - Added scanning and application/package analysis support for the following ecosystems:
