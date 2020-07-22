@@ -24,6 +24,9 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.9.20200722-164144.e3a1be0 (July 22nd, 2020)
+------------------------------------------------
+- Added scanning and application/package analysis support for Conan using a conaninfo.txt file (in addition to the files conanfile.txt and conanfile.py).
 
 3.9.20200716-164408.7b4a45f (July 16th, 2020)
 ------------------------------------------------
