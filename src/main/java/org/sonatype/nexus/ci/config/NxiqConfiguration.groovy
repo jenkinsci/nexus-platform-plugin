@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.config
 
+
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
@@ -23,11 +24,20 @@ import hudson.util.FormValidation.Kind
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
 
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
 {
+  String id
+
+  /**
+   * Used as a unique identifier per instance to ensure unique Display Name and Id
+   */
+
+  String internalId
+
   String serverUrl
 
   @Deprecated
@@ -36,28 +46,24 @@ class NxiqConfiguration
   String credentialsId
 
   @DataBoundConstructor
-  NxiqConfiguration(final String serverUrl, final String credentialsId)
-  {
+  NxiqConfiguration(final String serverUrl, final String credentialsId) {
     this.serverUrl = serverUrl
     this.credentialsId = credentialsId
+  }
+
+  @DataBoundSetter
+  void setId(String id) {
+    this.id = id
+  }
+
+  @DataBoundSetter
+  void setInternalId(String internalId) {
+    this.internalId = internalId
   }
 
   @Override
   Descriptor<NxiqConfiguration> getDescriptor() {
     return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
-  }
-
-  static URI getServerUrl() {
-    def serverUrl = getIqConfig()?.@serverUrl
-    serverUrl ? new URI(serverUrl) : null
-  }
-
-  static String getCredentialsId() {
-    getIqConfig()?.@credentialsId
-  }
-
-  static NxiqConfiguration getIqConfig() {
-    return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
   }
 
   @Extension

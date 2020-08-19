@@ -112,12 +112,15 @@ class IqClientFactoryTest
 
   def 'it uses configured serverUrl and credentialsId'() {
     setup:
-      GroovyMock(NxiqConfiguration, global: true)
       GroovyMock(InternalIqClientBuilder, global: true)
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
-      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
-      NxiqConfiguration.credentialsId >> "123-cred-456"
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration("https://server/url/", "123-cred-456")
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
       CredentialsMatchers.firstOrNull(_, _) >> credentials
 
     when:

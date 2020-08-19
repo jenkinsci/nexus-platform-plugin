@@ -144,8 +144,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job) {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job, final String iqServerId = null) {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getNxiqConfiguration(iqServerId)
+      FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration.serverUrl, nxiqConfiguration.credentialsId,
           job)
     }
 

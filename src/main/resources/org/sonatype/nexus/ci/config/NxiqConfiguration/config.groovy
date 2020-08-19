@@ -21,6 +21,16 @@ def c = namespace(lib.CredentialsTagLib)
 def nxiqConfiguration = (NxiqConfiguration) instance
 
 f.section(title: descriptor.displayName) {
+  f.invisibleEntry() {
+    // When instance is null, new server configuration so generate new internalId
+    input(type: 'hidden', name: 'internalId',
+        value: "${instance != null ? instance.internalId : UUID.randomUUID().toString()}")
+  }
+
+  f.entry(title: _(Messages.Configuration_ServerID()), field:'id') {
+    f.textbox()
+  }
+
   f.entry(title: _(Messages.Configuration_ServerUrl()), field: 'serverUrl') {
     f.textbox(clazz: 'required')
   }

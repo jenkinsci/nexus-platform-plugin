@@ -232,10 +232,9 @@ abstract class IqPolicyEvaluatorDescriptorTest
   def 'it validates that credentials items are filled'() {
     setup:
       def descriptor = getDescriptor()
+      GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('http://server/path',
+          'credentialsId')]
       GroovyMock(FormUtil, global: true)
-      GroovyMock(NxiqConfiguration, global: true)
-      NxiqConfiguration.serverUrl >> URI.create("http://server/path")
-      NxiqConfiguration.credentialsId >> 'credentialsId'
       def job = Mock(Job)
 
     when:

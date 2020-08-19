@@ -20,6 +20,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
+import org.sonatype.nexus.ci.util.IqUtil
 import org.sonatype.nexus.ci.util.ProxyUtil
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
@@ -37,10 +38,12 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 class IqClientFactory
 {
-  static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration()) {
-    def serverUrl = conf.serverUrl ?: NxiqConfiguration.serverUrl
+  static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration(),
+                                      final String iqServerId = null) {
+    NxiqConfiguration nxiqConfiguration = IqUtil.getNxiqConfiguration(iqServerId)
+    def serverUrl = conf.serverUrl ?: URI.create(nxiqConfiguration.serverUrl)
     def context = conf.context ?: Jenkins.instance
-    def credentialsId = conf.credentialsId ?: NxiqConfiguration.credentialsId
+    def credentialsId = conf.credentialsId ?: nxiqConfiguration.credentialsId
     def credentials = findCredentials(serverUrl, credentialsId, context)
     def serverConfig = getServerConfig(serverUrl, credentials)
     def proxyConfig = getProxyConfig(serverUrl)
