@@ -12,10 +12,31 @@
  */
 package org.sonatype.nexus.ci.nxrm.NexusPublisherWorkflowStep
 
+import org.sonatype.nexus.ci.nxrm.NexusPublisherWorkflowStep
 import org.sonatype.nexus.ci.util.NxrmUtil
 
 def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
+def st = namespace('jelly:stapler')
+
+NexusPublisherWorkflowStep jobConfig = instance
+def tagVisible = descriptor.getTagVisibility(jobConfig?.nexusInstanceId)
+
+st.bind(var:'descriptor', value:descriptor)
+script() {
+  text('''
+    function adjustTagVisibility(e) {
+      descriptor.getTagVisibility(e.value, function(t) {
+        var visibility =  t.responseObject();
+        var tagName = findNextFormItem(e, "tagName");
+        tagName.style.visibility = visibility;
+        if (visibility === "hidden") {
+          tagName.value = "";
+        }
+      });
+    }
+  ''')
+}
 
 l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
 
@@ -39,11 +60,15 @@ f.section(title: descriptor.displayName) {
   }
 
   f.entry(title: _('Nexus Instance'), field: 'nexusInstanceId') {
-    f.select()
+    f.select(onchange: 'adjustTagVisibility(this)')
   }
 
   f.entry(title: _('Nexus Repository'), field: 'nexusRepositoryId') {
     f.select()
+  }
+
+  f.entry(title: _('Tag'), field: 'tagName') {
+    f.textbox(style: "visibility: ${tagVisible};")
   }
 
   f.entry(title: _('Packages')) {

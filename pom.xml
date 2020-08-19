@@ -19,16 +19,17 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.22</version>
+    <version>3.35</version>
+    <relativePath />
   </parent>
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>3.9-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>Nexus Platform Plugin</name>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Nexus+Platform+Plugin</url>
+  <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
 
   <licenses>
     <license>
@@ -52,12 +53,12 @@
   </developers>
 
   <properties>
+    <!-- This is the minimum advertised compatible version -->
     <jenkins.version>2.7</jenkins.version>
-    <jenkins-test-harness.version>2.7</jenkins-test-harness.version>
-    <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
+    <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
-    <concurrency>1</concurrency>
-    <java.level>7</java.level>
+    <forkCount>1</forkCount>
+    <java.level>8</java.level>
     <slf4j.version>1.7.7</slf4j.version>
 
     <buildsupport.version>10</buildsupport.version>
@@ -77,23 +78,34 @@
     <staging.serverId>${public.serverId}</staging.serverId>
     <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
     <staging.progressTimeout>15</staging.progressTimeout>
-  </properties>
 
+    <findbugs.threshold>High</findbugs.threshold>
+    <findbugs.effort>Max</findbugs.effort>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>1.7.20170929-121951.293626c</version>
+        <version>3.17</version>
         <classifier>internal</classifier>
+        <!-- TODO 3.16 won't have the transitive anymore, do we still need this? -->
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
+      <!-- bcprov-jdk15on versions before 1.60 have a lot of security vulnerabilities. -->
       <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-core</artifactId>
-        <version>${jenkins.version}</version>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>1.60</version>
       </dependency>
+
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
@@ -116,9 +128,19 @@
         <version>1.11</version>
       </dependency>
       <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>symbol-annotation</artifactId>
-        <version>1.5</version>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>structs</artifactId>
+        <version>1.14</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>matrix-auth</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>pipeline-utility-steps</artifactId>
+        <version>2.3.1</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -127,51 +149,61 @@
       </dependency>
 
       <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
-        <version>2.4.7</version>
+        <version>2.4.15</version>
       </dependency>
 
       <dependency>
         <groupId>org.spockframework</groupId>
         <artifactId>spock-core</artifactId>
-        <version>1.0-groovy-2.4</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-war</artifactId>
-        <version>${jenkins.version}</version>
-        <type>war</type>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-war</artifactId>
-        <version>${jenkins.version}</version>
-        <classifier>war-for-test</classifier>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>jenkins-test-harness</artifactId>
-        <version>${jenkins-test-harness.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>1.2-groovy-2.4</version>
       </dependency>
 
       <dependency>
         <groupId>cglib</groupId>
         <artifactId>cglib-nodep</artifactId>
-        <version>3.2.4</version>
-        <scope>test</scope>
+        <version>3.2.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock-standalone</artifactId>
+        <version>2.14.0</version>
+      </dependency>
+
+      <!-- Override from parent to exclude jsr305 -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <!-- Override from parent to exclude jsr305 -->
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-jrebel</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
@@ -179,17 +211,7 @@
       <classifier>internal</classifier>
     </dependency>
 
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
+    <!-- Begin Jenkins plugins we depend on -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
@@ -203,12 +225,19 @@
       <artifactId>token-macro</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>symbol-annotation</artifactId>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
     </dependency>
+    <!-- End Jenkins plugins we depend on -->
+
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-step-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
     </dependency>
 
     <dependency>
@@ -219,36 +248,6 @@
     <dependency>
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <type>war</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <classifier>war-for-test</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-test-harness</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit-dep</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -280,33 +279,59 @@
     </dependency>
 
     <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Begin Jenkins plugins installed at runtime for testing -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>pipeline-utility-steps</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
       <version>2.9</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-cps</artifactId>
       <version>2.24</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-basic-steps</artifactId>
       <version>2.3</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-durable-task-step</artifactId>
       <version>2.8</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.jenkinsci.plugins</groupId>
+      <artifactId>pipeline-model-definition</artifactId>
+      <version>1.2.7</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- End Jenkins plugins -->
   </dependencies>
 
   <build>
@@ -318,6 +343,12 @@
     </resources>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
@@ -342,6 +373,11 @@
                   <ignoredScope>test</ignoredScope>
                 </ignoredScopes>
               </enforceBytecodeVersion>
+              <bannedDependencies>
+                <excludes>
+                  <exclude>com.google.code.findbugs:jsr305</exclude>
+                </excludes>
+              </bannedDependencies>
             </rules>
           </configuration>
         </plugin>
@@ -352,17 +388,6 @@
           <configuration>
             <fileMask>Messages.properties</fileMask>
             <outputDirectory>target/generated-sources/localizer</outputDirectory>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>${findbugs-maven-plugin.version}</version>
-          <configuration>
-            <effort>Max</effort>
-            <threshold>High</threshold>
-            <xmlOutput>true</xmlOutput>
-            <failOnError>true</failOnError>
           </configuration>
         </plugin>
         <plugin>
@@ -381,7 +406,6 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
-        <version>3.1</version>
         <configuration>
           <compilerId>groovy-eclipse-compiler</compilerId>
         </configuration>
@@ -395,7 +419,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <version>2.4.3-01</version>
+            <version>2.4.16-03</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -435,6 +459,7 @@
             <exclude>**/.*/**</exclude>
             <exclude>**/release.properties</exclude>
             <exclude>**/META-INF/services/**</exclude>
+            <exclude>**/webapp/lib/**</exclude>
           </excludes>
           <mapping>
             <groovy>SLASHSTAR_STYLE</groovy>
@@ -447,44 +472,75 @@
           </headerDefinitions>
         </configuration>
       </plugin>
-
-<!--
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <check>
-            <branchRate>0</branchRate>
-            <lineRate>0</lineRate>
-            <haltOnFailure>true</haltOnFailure>
--->            <!-- IMPORTANT never approve a code review where any of the numbers below have decreased --> <!--
-            <totalBranchRate>54</totalBranchRate>
-            <totalLineRate>71</totalLineRate>
-            <packageBranchRate>61</packageBranchRate>
-            <packageLineRate>78</packageLineRate>
-          </check>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>clean</goal>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
--->
     </plugins>
   </build>
 
   <profiles>
     <profile>
-      <id>jenkins-1.642.3</id>
+      <id>jenkins-2.102</id>
       <properties>
-        <jenkins.version>1.642.3</jenkins.version>
-        <jenkins-test-harness.version>1.642.3</jenkins-test-harness.version>
+        <jenkins.version>2.102</jenkins.version>
       </properties>
+    </profile>
+    <profile>
+      <id>jenkins-2.138</id>
+      <properties>
+        <jenkins.version>2.138.4</jenkins.version>
+      </properties>
+      <dependencyManagement>
+        <dependencies>
+          <!-- override with set of versions compatible with this jenkins version -->
+          <dependency>
+            <groupId>io.jenkins.tools.bom</groupId>
+            <artifactId>bom-2.138.x</artifactId>
+            <version>3</version>
+            <scope>import</scope>
+            <type>pom</type>
+          </dependency>
+          <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>2.3.0</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>plain-credentials</artifactId>
+            <version>1.3</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>structs</artifactId>
+            <version>1.20</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>2.20</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-job</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-cps</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-basic-steps</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-durable-task-step</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
     </profile>
 
     <profile>
@@ -525,6 +581,7 @@
               <serverId>${staging.serverId}</serverId>
               <altStagingDirectory>${staging.directory}</altStagingDirectory>
               <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
               <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
               <tags>
                 <localUsername>${user.name}</localUsername>

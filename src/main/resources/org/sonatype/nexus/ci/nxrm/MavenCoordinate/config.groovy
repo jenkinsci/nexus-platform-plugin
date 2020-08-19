@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.nxrm.MavenCoordinate
 
-import com.sonatype.nexus.api.repository.MavenPackageType
+import com.sonatype.nexus.api.repository.v2.MavenPackageType
 
 def f = namespace(lib.FormTagLib)
 

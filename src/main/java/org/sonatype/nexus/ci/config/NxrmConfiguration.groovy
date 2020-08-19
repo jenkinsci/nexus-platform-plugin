@@ -12,11 +12,16 @@
  */
 package org.sonatype.nexus.ci.config
 
+import org.sonatype.nexus.ci.util.FormUtil
+
 import hudson.model.Describable
 import hudson.model.Descriptor
+import hudson.util.FormValidation
+import hudson.util.FormValidation.Kind
+import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
+import org.kohsuke.stapler.QueryParameter
 
-@SuppressWarnings('AbstractClassWithoutAbstractMethod')
 abstract class NxrmConfiguration
     implements Describable<NxrmConfiguration>
 {
@@ -25,6 +30,7 @@ abstract class NxrmConfiguration
   /**
    * Used as a unique identifier per instance to ensure unique Display Name and Id
    */
+
   String internalId
 
   String displayName
@@ -32,6 +38,21 @@ abstract class NxrmConfiguration
   String serverUrl
 
   String credentialsId
+
+  protected NxrmConfiguration(final String id,
+                              final String internalId,
+                              final String displayName,
+                              final String serverUrl,
+                              final String credentialsId)
+  {
+    this.id = id
+    this.internalId = internalId
+    this.displayName = displayName
+    this.serverUrl = serverUrl
+    this.credentialsId = credentialsId
+  }
+
+  abstract NxrmVersion getVersion()
 
   @Override
   Descriptor<NxrmConfiguration> getDescriptor() {
@@ -49,6 +70,45 @@ abstract class NxrmConfiguration
     @SuppressWarnings('AbstractClassWithPublicConstructor')
     NxrmDescriptor(Class<? extends NxrmConfiguration> clazz) {
       super(clazz)
+    }
+
+    abstract FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
+        throws IOException
+
+    FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
+      for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
+        if (config.internalId != internalId && config.displayName == value) {
+          return FormValidation.error('Display Name must be unique')
+        }
+      }
+      return FormUtil.validateNotEmpty(value, 'Display Name is required')
+    }
+
+    FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
+      for (NxrmConfiguration config : globalConfigurations.nxrmConfigs) {
+        if (config.internalId != internalId && config.id == value) {
+          return FormValidation.error('Server ID must be unique')
+        }
+      }
+      def validation = FormUtil.validateNoWhitespace(value, 'Server ID must not contain whitespace')
+      if (validation.kind == Kind.OK) {
+        validation = FormUtil.validateNotEmpty(value, 'Server ID is required')
+      }
+      return validation
+    }
+
+    FormValidation doCheckServerUrl(@QueryParameter String value) {
+      def validation = FormUtil.validateUrl(value)
+      if (validation.kind == Kind.OK) {
+        validation = FormUtil.validateNotEmpty(value, 'Server Url is required')
+      }
+      return validation
+    }
+
+    ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl, @QueryParameter String credentialsId) {
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, null)
     }
   }
 }

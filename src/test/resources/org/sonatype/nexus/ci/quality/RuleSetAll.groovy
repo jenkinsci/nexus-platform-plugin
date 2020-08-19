@@ -354,7 +354,7 @@ ruleset {
   ClassSize { maxLines = 200 }
   CrapMetric   // Requires the GMetrics jar and a Cobertura coverage file
   CyclomaticComplexity   // Requires the GMetrics jar
-  MethodCount { maxMethods = 15 }
+  MethodCount { maxMethods = 20 }
   MethodSize { maxLines = 50 }
   NestedBlockDepth
   ParameterCount

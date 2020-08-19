@@ -12,64 +12,69 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import javax.annotation.Nonnull
-import javax.annotation.Nullable
-import javax.annotation.ParametersAreNonnullByDefault
-
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
 import hudson.Extension
-import hudson.FilePath
 import hudson.Launcher
+import hudson.model.AbstractBuild
 import hudson.model.AbstractProject
+import hudson.model.BuildListener
 import hudson.model.Job
-import hudson.model.Run
-import hudson.model.TaskListener
+import hudson.tasks.BuildStep
 import hudson.tasks.BuildStepDescriptor
 import hudson.tasks.Builder
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
-import jenkins.tasks.SimpleBuildStep
 import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 
-@ParametersAreNonnullByDefault
 class IqPolicyEvaluatorBuildStep
     extends Builder
-    implements IqPolicyEvaluator, SimpleBuildStep
+    implements IqPolicyEvaluator, BuildStep
 {
   String iqStage
 
-  String iqApplication
+  IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns
+
+  List<ModuleExclude> iqModuleExcludes
 
   Boolean failBuildOnNetworkError
 
   String jobCredentialsId
 
+  String advancedProperties
+
   @DataBoundConstructor
+  @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
-                             final String iqApplication,
+                             final IqApplication iqApplication,
                              final List<ScanPattern> iqScanPatterns,
+                             final List<ModuleExclude> iqModuleExcludes,
                              final Boolean failBuildOnNetworkError,
-                             final String jobCredentialsId)
+                             final String jobCredentialsId,
+                             final String advancedProperties)
   {
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
-    this.iqApplication = iqApplication
+    this.iqModuleExcludes = iqModuleExcludes
     this.iqStage = iqStage
+    this.iqApplication = iqApplication
+    this.advancedProperties = advancedProperties
   }
 
   @Override
-  void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
-               @Nonnull final TaskListener listener) throws InterruptedException, IOException
+  boolean perform(AbstractBuild run, Launcher launcher, BuildListener listener)
+      throws InterruptedException, IOException
   {
-    IqPolicyEvaluatorUtil.evaluatePolicy(this, run, workspace, launcher, listener)
+    IqPolicyEvaluatorUtil.
+        evaluatePolicy(this, run, run.getWorkspace(), launcher, listener, run.getEnvironment(listener))
+    return true
   }
 
   @Extension
@@ -77,6 +82,7 @@ class IqPolicyEvaluatorBuildStep
       extends BuildStepDescriptor<Builder>
       implements IqPolicyEvaluatorDescriptor
   {
+
     @Override
     String getDisplayName() {
       Messages.IqPolicyEvaluation_DisplayName()
@@ -99,18 +105,17 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    FormValidation doCheckIqApplication(@QueryParameter String value) {
-      FormValidation.validateRequired(value)
-    }
-
-    @Override
-    ListBoxModel doFillIqApplicationItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqApplicationItems(jobCredentialsId, job)
+    FormValidation doCheckAdvancedProperties(@QueryParameter String advancedProperties) {
+      FormValidation.ok()
     }
 
     @Override
     FormValidation doCheckScanPattern(@QueryParameter String value) {
+      FormValidation.ok()
+    }
+
+    @Override
+    FormValidation doCheckModuleExclude(@QueryParameter final String value) {
       FormValidation.ok()
     }
 
@@ -126,7 +131,7 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    FormValidation doVerifyCredentials(@QueryParameter @Nullable String jobCredentialsId, @AncestorInPath Job job)
+    FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
     }

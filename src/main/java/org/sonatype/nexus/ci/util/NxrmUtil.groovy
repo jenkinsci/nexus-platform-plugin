@@ -12,61 +12,65 @@
  */
 package org.sonatype.nexus.ci.util
 
-import com.sonatype.nexus.api.repository.RepositoryInfo
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.Nxrm2Configuration
 import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.config.NxrmVersion
 
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_2
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
+import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModel
+import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModelWithEmptyOption
+import static org.sonatype.nexus.ci.util.FormUtil.validateNotEmpty
+
 class NxrmUtil
 {
   static boolean hasNexusRepositoryManagerConfiguration() {
-    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.size() > 0
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs?.size() > 0
+  }
+
+  static NxrmConfiguration getNexusConfiguration(final String nexusInstanceId) {
+    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { return it.id == nexusInstanceId }
   }
 
   static FormValidation doCheckNexusInstanceId(final String value) {
-    return FormUtil.validateNotEmpty(value, 'Nexus Instance is required')
+    return validateNotEmpty(value, 'Nexus Instance is required')
   }
 
   static ListBoxModel doFillNexusInstanceIdItems() {
-    return FormUtil.
-        newListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
-            GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
+    return newListBoxModel({ NxrmConfiguration it -> it.displayName }, { NxrmConfiguration it -> it.id },
+        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs)
+  }
+
+  static ListBoxModel doFillNexusInstanceIdItems(NxrmVersion version) {
+    newListBoxModel({ it.displayName }, { it.id },
+        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.findAll({ it.version == version }))
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {
-    return FormUtil.validateNotEmpty(value, 'Nexus Repository is required')
+    return validateNotEmpty(value, 'Nexus Repository is required')
   }
 
   static ListBoxModel doFillNexusRepositoryIdItems(final String nexusInstanceId) {
     if (!nexusInstanceId) {
-      return FormUtil.newListBoxModelWithEmptyOption()
+      return newListBoxModelWithEmptyOption()
     }
-    def repositories = getApplicableRepositories(nexusInstanceId)
-    return FormUtil.newListBoxModel({ it.name }, { it.id }, repositories)
+
+    def configuration = getNexusConfiguration(nexusInstanceId)
+
+    switch (configuration.version) {
+      case NEXUS_2:
+        return newListBoxModel({ it.name }, { it.id },
+            Nxrm2Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId))
+      case NEXUS_3:
+        return newListBoxModel({ it.name }, { it.name },
+            Nxrm3Util.getApplicableRepositories(configuration.serverUrl, configuration.credentialsId, 'maven2'))
+    }
   }
 
-  /**
-   * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
-   */
-  static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
-    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find {
-      Nxrm2Configuration config -> config.id == nexusInstanceId
-    }
-    return getApplicableRepositories(configuration.serverUrl, configuration.credentialsId)
-  }
-
-  /**
-   * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
-   */
-  static List<RepositoryInfo> getApplicableRepositories(final String serverUrl, final String credentialsId) {
-    def client = RepositoryManagerClientUtil.newRepositoryManagerClient(serverUrl, credentialsId)
-    return client.getRepositoryList().findAll {
-      'maven2'.equalsIgnoreCase(it.format) &&
-          'hosted'.equalsIgnoreCase(it.repositoryType) &&
-          'release'.equalsIgnoreCase(it.repositoryPolicy)
-    }
+  static boolean isVersion(final String nexusInstanceId, final NxrmVersion version) {
+    getNexusConfiguration(nexusInstanceId)?.version == version
   }
 }

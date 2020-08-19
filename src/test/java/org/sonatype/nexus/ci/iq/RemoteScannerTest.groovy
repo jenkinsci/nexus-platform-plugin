@@ -21,15 +21,19 @@ import hudson.FilePath
 import jenkins.model.Jenkins
 import org.codehaus.plexus.util.DirectoryScanner
 import org.slf4j.Logger
+import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 @ConfineMetaClassChanges([IqClientFactory])
 class RemoteScannerTest
     extends Specification
 {
+  @Shared
+  ProprietaryConfig proprietaryConfig = new ProprietaryConfig([], [])
+
   Logger log
-  ProprietaryConfig proprietaryConfig
   InternalIqClient iqClient
   DirectoryScanner directoryScanner
 
@@ -38,7 +42,6 @@ class RemoteScannerTest
     Jenkins.instance >> Mock(Jenkins)
 
     log = Stub()
-    proprietaryConfig = new ProprietaryConfig([], [])
     GroovyMock(InternalIqClientBuilder, global: true)
     GroovyMock(RemoteScannerFactory, global: true)
     directoryScanner = Mock()
@@ -53,8 +56,8 @@ class RemoteScannerTest
 
   def "creates a list of targets from the result of a directory scan"() {
     setup:
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], workspace, proprietaryConfig, log,
-          "instance-id")
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
+          "instance-id", null, null)
       directoryScanner.getIncludedDirectories() >> matchedDirs.toArray(new String[matchedDirs.size()])
       directoryScanner.getIncludedFiles() >> matchedFiles.toArray(new String[matchedFiles.size()])
 
@@ -62,7 +65,11 @@ class RemoteScannerTest
       remoteScanner.call()
 
     then:
-      iqClient.scan('appId', proprietaryConfig, _, expectedFiles) >> new ScanResult(null, new File('file'))
+      iqClient.scan(*_) >> { arguments ->
+        assert arguments[3] == expectedFiles
+
+        new ScanResult(null, new File('file'))
+      }
 
     where:
       matchedFiles          | matchedDirs
@@ -72,11 +79,34 @@ class RemoteScannerTest
       expectedFiles = (matchedFiles + matchedDirs).collect { new File(workspace.getRemote(), it) }
   }
 
-  def 'RemoteScanner passes arguments to IqClient'() {
+  def 'creates a list of module indices from the results of a directory scan'() {
+    setup:
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
+          "instance-id", null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> matchedModuleIndices.toArray(new String[matchedModuleIndices.size()])
+
+    when:
+      remoteScanner.call()
+
+    then:
+      iqClient.scan(*_) >> { arguments ->
+        assert arguments[4] == expectedModuleIndices
+        new ScanResult(null, new File('file'))
+      }
+
+    where:
+      matchedModuleIndices = ["ddd", "eee", "fff"]
+      workspace = new FilePath(new File('/file/path'))
+      expectedModuleIndices = matchedModuleIndices.collect { new File(workspace.getRemote(), it) }
+  }
+
+  @Unroll
+  def 'RemoteScanner passes #arguments to IqClient'() {
     setup:
       GroovyMock(IqClientFactory, global: true)
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], new FilePath(new File('/file/path')),
-          proprietaryConfig, log, 'instance-id')
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], new FilePath(new File('/file/path')),
+          proprietaryConfig, log, 'instance-id', null, null)
       directoryScanner.getIncludedDirectories() >> []
       directoryScanner.getIncludedFiles() >> []
 
@@ -84,7 +114,69 @@ class RemoteScannerTest
       remoteScanner.call()
 
     then:
-      1 * iqClient.scan('appId', proprietaryConfig, _, []) >> new ScanResult(null, new File('file'))
+      1 * iqClient.scan(*_) >> { arguments ->
+        assert arguments[argumentIndex] == value
+
+        new ScanResult(null, new File('file'))
+      }
       1 * IqClientFactory.getIqLocalClient(log, 'instance-id') >> iqClient
+
+    where:
+      argument              | argumentIndex | value
+      'Application ID'      | 0             | 'appId'
+      'Proprietary Config'  | 1             | proprietaryConfig
+      'Base Directory'      | 5             | new File('/file/path')
+  }
+
+  def 'Uses default scan patterns when patterns not set'() {
+    setup:
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId', null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getScanTargets(workspaceFile, [])
+
+    then:
+      1 * directoryScanner.setIncludes(*_) >> { arguments ->
+        assert arguments[0] == RemoteScanner.DEFAULT_SCAN_PATTERN
+      }
+  }
+
+  def 'Uses default modules for includes'() {
+    setup:
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId', null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getModuleIndices(workspaceFile, [])
+
+    then:
+      1 * directoryScanner.setIncludes(*_) >> { arguments ->
+        assert arguments[0] == RemoteScanner.DEFAULT_MODULE_INCLUDES
+      }
+  }
+
+  def 'Passes module excludes to scanner'() {
+    setup:
+      def moduleExcludes = ['/file/path/module.xml']
+      def workspaceFile = new File('/file/path')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId', null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.getModuleIndices(workspaceFile, moduleExcludes)
+
+    then:
+      1 * directoryScanner.setExcludes(*_) >> { arguments ->
+        assert arguments[0] == moduleExcludes
+      }
   }
 }

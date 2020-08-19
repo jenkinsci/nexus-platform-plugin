@@ -12,9 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-import javax.annotation.Nullable
-
-import com.sonatype.nexus.api.exception.IqClientException
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
@@ -27,8 +24,6 @@ import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
-
-import static GlobalNexusConfiguration.globalNexusConfiguration
 
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
@@ -52,17 +47,17 @@ class NxiqConfiguration
     return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
-  static @Nullable URI getServerUrl() {
+  static URI getServerUrl() {
     def serverUrl = getIqConfig()?.@serverUrl
     serverUrl ? new URI(serverUrl) : null
   }
 
-  static @Nullable String getCredentialsId() {
+  static String getCredentialsId() {
     getIqConfig()?.@credentialsId
   }
 
-  static @Nullable NxiqConfiguration getIqConfig() {
-    return globalNexusConfiguration.iqConfigs?.find { true }
+  static NxiqConfiguration getIqConfig() {
+    return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
   }
 
   @Extension
@@ -86,13 +81,13 @@ class NxiqConfiguration
     @SuppressWarnings('unused')
     ListBoxModel doFillCredentialsIdItems(@QueryParameter String serverUrl,
                                           @QueryParameter String credentialsId) {
-      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, Jenkins.instance)
+      return FormUtil.newCredentialsItemsListBoxModel(serverUrl, credentialsId, null)
     }
 
     @SuppressWarnings('unused')
     FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
-        @QueryParameter @Nullable String credentialsId) throws IOException
+        @QueryParameter String credentialsId) throws IOException
     {
       return IqUtil.verifyJobCredentials(serverUrl, credentialsId, Jenkins.instance)
     }

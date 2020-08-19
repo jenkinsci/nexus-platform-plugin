@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-import javax.annotation.Nullable
-
 import hudson.Extension
 import hudson.model.Descriptor
 import jenkins.model.GlobalConfiguration
@@ -59,11 +57,11 @@ class GlobalNexusConfiguration
     return 'Sonatype Nexus'
   }
 
-  static @Nullable getGlobalNexusConfiguration() {
+  static getGlobalNexusConfiguration() {
     return all().get(GlobalNexusConfiguration)
   }
 
-  static getInstanceId() {
+  static String getInstanceId() {
     getGlobalNexusConfiguration()?.@instanceId
   }
 

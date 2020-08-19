@@ -85,7 +85,7 @@ class PolicyFailureMessageFormatterTest
           ' hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\n\nNexus IQ reports ' +
           'policy warning due to \nPolicy(policyName) [\n Component(displayName=value, hash=12hash34) [\n  ' +
           'Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be viewed online at ' +
-          'http://report/url\nSummary of policy violations: 2 critical, 3 severe, 5 moderate'
+          'http://report/url\nSummary of policy violations: 11 critical, 12 severe, 13 moderate'
   }
 
   def 'creates success report'() {
@@ -94,10 +94,10 @@ class PolicyFailureMessageFormatterTest
 
     then:
       successFormatter.message == '\nThe detailed report can be viewed online at http://report/url\nSummary of ' +
-          'policy violations: 2 critical, 3 severe, 5 moderate'
+          'policy violations: 11 critical, 12 severe, 13 moderate'
   }
 
   ApplicationPolicyEvaluation createFullModel(List<PolicyAlert> alerts) {
-    return new ApplicationPolicyEvaluation(1, 2, 3, 5, alerts, false, 'http://report/url')
+    return new ApplicationPolicyEvaluation(1, 2, 3, 5, 11, 12, 13, 0, alerts, 'http://report/url')
   }
 }

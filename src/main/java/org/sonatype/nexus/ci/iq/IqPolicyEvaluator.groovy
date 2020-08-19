@@ -16,11 +16,15 @@ interface IqPolicyEvaluator
 {
   String getIqStage()
 
-  String getIqApplication()
+  IqApplication getIqApplication()
 
   List<ScanPattern> getIqScanPatterns()
+
+  List<ModuleExclude> getIqModuleExcludes()
 
   Boolean getFailBuildOnNetworkError()
 
   String getJobCredentialsId()
+
+  String getAdvancedProperties()
 }

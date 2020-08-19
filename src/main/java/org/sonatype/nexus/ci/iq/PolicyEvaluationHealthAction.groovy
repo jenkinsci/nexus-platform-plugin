@@ -39,15 +39,33 @@ class PolicyEvaluationHealthAction
 
   private final int moderateComponentCount
 
-  PolicyEvaluationHealthAction(final Run run,
-                                      final ApplicationPolicyEvaluation policyEvaluationResult)
+  private final int criticalPolicyViolationCount
+
+  private final int severePolicyViolationCount
+
+  private final int moderatePolicyViolationCount
+  
+  private final int grandfatheredPolicyViolationCount
+
+  private final String applicationId
+
+  private final String iqStage
+
+  PolicyEvaluationHealthAction(final String applicationId, final String iqStage, final Run run,
+                               final ApplicationPolicyEvaluation policyEvaluationResult)
   {
+    this.applicationId = applicationId
+    this.iqStage = iqStage
     this.run = run
     this.reportLink = policyEvaluationResult.applicationCompositionReportUrl
     this.affectedComponentCount = policyEvaluationResult.affectedComponentCount
     this.criticalComponentCount = policyEvaluationResult.criticalComponentCount
     this.severeComponentCount = policyEvaluationResult.severeComponentCount
     this.moderateComponentCount = policyEvaluationResult.moderateComponentCount
+    this.criticalPolicyViolationCount = policyEvaluationResult.criticalPolicyViolationCount
+    this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
+    this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
+    this.grandfatheredPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
   }
 
   int getBuildNumber() {
@@ -64,6 +82,38 @@ class PolicyEvaluationHealthAction
 
   int getModerateComponentCount() {
     return moderateComponentCount
+  }
+
+  int getCriticalPolicyViolationCount() {
+    return criticalPolicyViolationCount
+  }
+
+  int getSeverePolicyViolationCount() {
+    return severePolicyViolationCount
+  }
+
+  int getModeratePolicyViolationCount() {
+    return moderatePolicyViolationCount
+  }
+
+  int getTotalPolicyViolationCount() {
+    return criticalPolicyViolationCount + severePolicyViolationCount + moderatePolicyViolationCount
+  }
+
+  int getAffectedComponentCount() {
+    return affectedComponentCount
+  }
+
+  int getGrandfatheredPolicyViolationCount() {
+    return grandfatheredPolicyViolationCount
+  }
+
+  String getApplicationId() {
+    return applicationId
+  }
+
+  String getIqStage() {
+    return iqStage
   }
 
   @Override
@@ -83,7 +133,7 @@ class PolicyEvaluationHealthAction
 
   @Override
   String getUrlName() {
-    return 'nexus-iq-application-composition-report'
+    return reportLink
   }
 
   @Override
@@ -93,7 +143,7 @@ class PolicyEvaluationHealthAction
     }
 
     def job = run.getParent()
-    return Collections.singleton(new PolicyEvaluationProjectAction(job))
+    return Collections.singleton(new PolicyEvaluationProjectAction(job, reportLink))
   }
 
   @SuppressWarnings(value = ['UnusedMethodParameter', 'SynchronizedMethod'])

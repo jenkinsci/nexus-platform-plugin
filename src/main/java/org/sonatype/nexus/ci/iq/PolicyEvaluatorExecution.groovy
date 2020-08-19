@@ -12,39 +12,41 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import javax.annotation.Nonnull
 import javax.inject.Inject
 
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
+import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Run
 import hudson.model.TaskListener
-import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution
-import org.jenkinsci.plugins.workflow.steps.StepContextParameter
+import org.jenkinsci.plugins.workflow.steps.StepContext
+import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution
 
 @SuppressWarnings('UnnecessaryTransientModifier')
 class PolicyEvaluatorExecution
-    extends AbstractSynchronousNonBlockingStepExecution<ApplicationPolicyEvaluation>
+    extends SynchronousNonBlockingStepExecution<ApplicationPolicyEvaluation>
 {
   @Inject
   private transient IqPolicyEvaluatorWorkflowStep iqPolicyEvaluator
 
-  @StepContextParameter
-  private transient TaskListener taskListener
-
-  @StepContextParameter
-  private transient Run run
-
-  @StepContextParameter
-  private transient FilePath workspace
-
-  @StepContextParameter
-  private transient Launcher launcher
+  @Inject
+  protected PolicyEvaluatorExecution(@Nonnull final StepContext context)
+  {
+    super(context)
+  }
 
   @Override
   @SuppressWarnings('ConfusingMethodName')
   protected ApplicationPolicyEvaluation run() throws Exception {
-    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener)
+    Run run = context.get(Run)
+    TaskListener taskListener = context.get(TaskListener)
+    FilePath workspace = context.get(FilePath)
+    Launcher launcher = context.get(Launcher)
+    EnvVars envVars = context.get(EnvVars)
+
+    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars)
   }
 }

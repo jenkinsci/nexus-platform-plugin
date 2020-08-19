@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
+import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
@@ -56,7 +56,7 @@ abstract class NexusPublisherDescriptorTest
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       def nxrm2Configuration = saveGlobalConfigurationWithNxrm2Configuration()
 
-      def client = Mock(RepositoryManagerClient.class)
+      def client = Mock(RepositoryManagerV2Client.class)
       def repositories = [
           [
               id: 'maven-releases',
@@ -88,7 +88,7 @@ abstract class NexusPublisherDescriptorTest
           ]
       ]
       client.getRepositoryList() >> repositories
-      RepositoryManagerClientUtil.newRepositoryManagerClient(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
+      RepositoryManagerClientUtil.nexus2Client(nxrm2Configuration.serverUrl, nxrm2Configuration.credentialsId) >> client
 
     when: 'nexus repository items are filled'
       def descriptor = getDescriptor()

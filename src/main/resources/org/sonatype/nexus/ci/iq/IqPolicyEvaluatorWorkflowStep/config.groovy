@@ -13,7 +13,10 @@
 package org.sonatype.nexus.ci.iq.IqPolicyEvaluatorWorkflowStep
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
+import org.sonatype.nexus.ci.iq.IqApplication
 import org.sonatype.nexus.ci.iq.Messages
+
+import jenkins.model.Jenkins
 
 def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
@@ -46,8 +49,8 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  f.entry(title: _(Messages.IqPolicyEvaluation_Application()), field: 'iqApplication') {
-    f.select()
+  f.entry(title: 'Application') {
+    f.hetero_radio(field: 'iqApplication', descriptors: Jenkins.instance.getDescriptorList(IqApplication.class))
   }
 
   f.advanced() {
@@ -60,12 +63,24 @@ f.section(title: descriptor.displayName) {
         }
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_ModuleExcludes()),
+          help: descriptor.getHelpFile('iqModuleExcludes')) {
+        f.repeatable(field: 'iqModuleExcludes', minimum: '0') {
+          f.textbox(field: 'moduleExclude')
+          f.repeatableDeleteButton()
+        }
+      }
+
       f.entry(title: _(Messages.IqPolicyEvaluation_FailOnNetwork()), field: 'failBuildOnNetworkError') {
         f.checkbox()
       }
 
       f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
         c.select(context:app, includeUser:false, expressionAllowed:false)
+      }
+
+      f.entry(title: _(Messages.IqPolicyEvaluation_AdvancedProperties()), field: 'advancedProperties') {
+        f.textarea()
       }
 
       f.block() {

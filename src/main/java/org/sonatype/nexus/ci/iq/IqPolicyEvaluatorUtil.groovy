@@ -12,95 +12,107 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
+import hudson.AbortException
+import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
+import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.exception.ExceptionUtils
 
 import static com.google.common.base.Preconditions.checkArgument
 
 class IqPolicyEvaluatorUtil
 {
-  private static final List<String> DEFAULT_SCAN_PATTERN =
-      ['**/*.jar', '**/*.war', '**/*.ear', '**/*.zip', '**/*.tar.gz']
+  private static final String MINIMAL_SERVER_VERSION_REQUIRED = "1.69.0"
 
-  @SuppressWarnings('AbcMetric')
+  @SuppressWarnings(['AbcMetric', 'ParameterCount'])
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
                                                     final FilePath workspace,
                                                     final Launcher launcher,
-                                                    final TaskListener listener)
+                                                    final TaskListener listener,
+                                                    final EnvVars envVars)
   {
+    ensureInNodeContext(run, workspace, launcher, listener)
+
     try {
-      checkArgument(iqPolicyEvaluator.iqStage && iqPolicyEvaluator.iqApplication,
-          'Arguments iqApplication and iqStage are mandatory')
+      String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
+      String iqStage = iqPolicyEvaluator.iqStage
+
+      checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
+
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
-          credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent, log: loggerBridge))
+      def iqClient = IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
+              log: loggerBridge))
 
-      def scanPatterns = getPatterns(iqPolicyEvaluator.iqScanPatterns, listener, run)
+      iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
+      def verified = iqClient.verifyOrCreateApplication(applicationId)
+      checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
-      def proprietaryConfig =
-          rethrowNetworkErrors {
-            iqClient.getProprietaryConfigForApplicationEvaluation(iqPolicyEvaluator.iqApplication)
-          }
+      def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
+      def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
+
+      def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
+      def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
       def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanPatterns, workspace,
-              proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId)
+          getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
+              workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
+              advancedProperties, envVars)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def evaluationResult = rethrowNetworkErrors {
-        iqClient.evaluateApplication(iqPolicyEvaluator.iqApplication, iqPolicyEvaluator.iqStage, scanResult)
+      def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
+          .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId, envVars)
+      def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
+      if (repositoryUrl != null) {
+        iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
       }
 
-      Result result = handleEvaluationResult(evaluationResult, listener, iqPolicyEvaluator.iqApplication)
-      run.setResult(result)
+      File workDirectory = new File(workspace.getRemote())
+      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
 
-      def healthAction = new PolicyEvaluationHealthAction(run, evaluationResult)
+      def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
+
+      def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
+      run.addAction(reportAction)
+
+      Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
+      run.setResult(result)
+      if (result == Result.FAILURE) {
+        throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
+            evaluationResult)
+      }
 
       return evaluationResult
     }
-    catch (IqNetworkException e) {
+    catch (IqClientException e) {
       return handleNetworkException(iqPolicyEvaluator.failBuildOnNetworkError, e, listener, run)
     }
   }
 
-  private static handleNetworkException(final boolean failBuildOnNetworkError, final IqNetworkException e,
-                                    final TaskListener listener, final Run run)
+  private static handleNetworkException(final Boolean failBuildOnNetworkError, final IqClientException e,
+                                        final TaskListener listener, final Run run)
   {
-    if (failBuildOnNetworkError) {
-      throw e.cause
+    def isNetworkError = isNetworkError(e)
+    if (!isNetworkError || failBuildOnNetworkError) {
+      throw e
     }
     else {
-      listener.logger.println Messages.IqPolicyEvaluation_UnableToCommunicate(e.message)
+      listener.logger.println ExceptionUtils.getStackTrace(e)
       run.result = Result.UNSTABLE
       return null
-    }
-  }
-
-  @SuppressWarnings('CatchException')
-  // all exceptions are rethrown and possibly modified
-  private static <T> T rethrowNetworkErrors(final Closure<T> closure) {
-    try {
-      closure()
-    }
-    catch (Exception e) {
-      if (isNetworkError(e)) {
-        throw new IqNetworkException(e.getMessage(), e)
-      }
-      else {
-        throw e
-      }
     }
   }
 
@@ -108,11 +120,27 @@ class IqPolicyEvaluatorUtil
     ExceptionUtils.indexOfType(throwable, IOException) >= 0
   }
 
-  private static List<String> getPatterns(final List<ScanPattern> iqScanPatterns, final TaskListener listener,
-                                          final Run run)
+  private static Properties getAdvancedProperties(final String inputPropertiesString, final LoggerBridge loggerBridge) {
+    Properties advanced = new Properties()
+    if (StringUtils.isNotEmpty(inputPropertiesString)) {
+      try {
+        new StringReader(inputPropertiesString).withCloseable {advanced.load(it)}
+      } catch (IOException e) {
+        loggerBridge.error("Unable to parse advanced properties: ${e.message}", e)
+      }
+    }
+    return advanced
+  }
+
+  private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)
   {
-    def envVars = run.getEnvironment(listener)
-    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - '' ?: DEFAULT_SCAN_PATTERN
+    iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ''
+  }
+
+  private static List<String> getExpandedModuleExcludes(final List<ModuleExclude> moduleExcludes,
+                                                        final EnvVars envVars)
+  {
+    moduleExcludes.collect { envVars.expand(it.moduleExclude) } - null - ''
   }
 
   private static Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,
@@ -132,6 +160,21 @@ class IqPolicyEvaluatorUtil
     }
     else {
       return Result.SUCCESS
+    }
+  }
+
+  private static ensureInNodeContext(
+      final Run run,
+      final FilePath workspace,
+      final Launcher launcher,
+      final TaskListener listener
+  ) {
+    if (!(launcher && workspace)) {
+      run.setResult(Result.FAILURE)
+      if (listener) {
+        listener.error(Messages.IqPolicyEvaluation_NodeContextRequired())
+      }
+      throw new AbortException(Messages.IqPolicyEvaluation_NodeContextRequired())
     }
   }
 }

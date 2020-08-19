@@ -10,14 +10,19 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.nexus.ci.iq
+package org.sonatype.nexus.ci.nxrm.v3.SearchParameter
 
-import com.sonatype.nexus.api.exception.IqClientException
+def f = namespace(lib.FormTagLib)
 
-class IqNetworkException
-    extends IqClientException
-{
-  IqNetworkException(String message, Exception cause) {
-    super(message, cause)
+f.section() {
+  f.repeatableDeleteButton()
+
+  f.entry(title: 'Key', field: 'key') {
+    f.textbox(clazz: 'required')
+  }
+
+  f.entry(title: 'Value', field: 'value') {
+    f.textbox(clazz: 'required')
   }
 }
+

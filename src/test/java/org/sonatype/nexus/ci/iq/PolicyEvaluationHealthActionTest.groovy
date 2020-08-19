@@ -25,8 +25,8 @@ class PolicyEvaluationHealthActionTest
   def 'it redirects to the application composition report'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, [], false, reportLink)
-      def healthAction = new PolicyEvaluationHealthAction(null, policyEvaluation)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, [], reportLink)
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
     when: 'browsing to index'
@@ -38,7 +38,7 @@ class PolicyEvaluationHealthActionTest
 
   def 'it returns no project actions before build'() {
     setup:
-      def healthAction = new PolicyEvaluationHealthAction(null, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', null, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting project actions'
       def projectActions = healthAction.getProjectActions()
@@ -52,7 +52,7 @@ class PolicyEvaluationHealthActionTest
       def run = Mock(Run)
       def job = Mock(Job)
       run.getParent() >> job
-      def healthAction = new PolicyEvaluationHealthAction(run, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting project actions'
       def projectActions = healthAction.getProjectActions()
@@ -67,12 +67,63 @@ class PolicyEvaluationHealthActionTest
     setup:
       def run = Mock(Run)
       run.getNumber() >> 3
-      def healthAction = new PolicyEvaluationHealthAction(run, Mock(ApplicationPolicyEvaluation))
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, Mock(ApplicationPolicyEvaluation))
 
     when: 'getting build number'
       def buildNumber = healthAction.getBuildNumber()
 
     then:
       buildNumber == 3
+  }
+  
+  def 'it returns the correct component and grandfathered policy violation counts'() {
+    setup:
+      def reportLink = 'http://localhost/reportLink'
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def healthAction = new PolicyEvaluationHealthAction('my-iq-app', 'build', null, policyEvaluation)
+      def response = Mock(StaplerResponse)
+
+    when: 'getting component and grandfathered policy violation counts'
+      def affectedComponentCount = healthAction.affectedComponentCount
+      def criticalComponentCount = healthAction.criticalComponentCount
+      def severeComponentCount = healthAction.severeComponentCount
+      def moderateComponentCount = healthAction.moderateComponentCount
+      def criticalPolicyViolationCount = healthAction.criticalPolicyViolationCount
+      def severePolicyViolationCount = healthAction.severePolicyViolationCount
+      def moderatePolicyViolationCount = healthAction.moderatePolicyViolationCount
+      def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
+      def totalPolicyViolationCount = healthAction.totalPolicyViolationCount
+      def urlName = healthAction.urlName
+      def appId = healthAction.applicationId
+      def iqStage = healthAction.iqStage
+
+    then:
+      affectedComponentCount == 1
+      criticalComponentCount == 2
+      severeComponentCount == 3
+      moderateComponentCount == 4
+      criticalPolicyViolationCount == 11
+      severePolicyViolationCount == 12
+      moderatePolicyViolationCount == 13
+      totalPolicyViolationCount == 36
+      grandfatheredPolicyViolationCount == 5
+      urlName == reportLink
+      appId == 'my-iq-app'
+      iqStage == 'build'
+  }
+
+  def 'health action and project action have matching report links'() {
+    setup:
+      def reportLink = 'http://localhost/reportLink'
+      def run = Mock(Run)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, policyEvaluation)
+
+    when:
+      PolicyEvaluationProjectAction projectAction = (PolicyEvaluationProjectAction)healthAction.getProjectActions()[0]
+
+    then:
+      healthAction.urlName == reportLink
+      projectAction.reportLink == reportLink
   }
 }

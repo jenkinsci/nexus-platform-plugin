@@ -20,7 +20,11 @@ import hudson.util.ListBoxModel
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
+import org.kohsuke.stapler.bind.JavaScriptMethod
+
+import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 
 class NexusPublisherWorkflowStep
     extends AbstractStepImpl
@@ -32,6 +36,8 @@ class NexusPublisherWorkflowStep
 
   List<Package> packages
 
+  private String tagName
+
   @DataBoundConstructor
   NexusPublisherWorkflowStep(
       final String nexusInstanceId,
@@ -41,6 +47,15 @@ class NexusPublisherWorkflowStep
     this.nexusInstanceId = nexusInstanceId
     this.nexusRepositoryId = nexusRepositoryId
     this.packages = packages ?: []
+  }
+
+  String getTagName() {
+    tagName
+  }
+
+  @DataBoundSetter
+  void setTagName(final String tagName) {
+    this.tagName = tagName?.trim() ? tagName : null
   }
 
   @Extension
@@ -54,28 +69,37 @@ class NexusPublisherWorkflowStep
 
     @Override
     String getFunctionName() {
-      return 'nexusPublisher'
+      Messages.NexusPublisherWorkflowStep_FunctionName()
     }
 
     @Override
     String getDisplayName() {
-      return 'Nexus Repository Manager Publisher'
+      Messages.NexusPublisherWorkflowStep_DisplayName()
     }
 
+    @Override
     FormValidation doCheckNexusInstanceId(@QueryParameter String value) {
-      return NxrmUtil.doCheckNexusInstanceId(value)
+      NxrmUtil.doCheckNexusInstanceId(value)
     }
 
+    @Override
     ListBoxModel doFillNexusInstanceIdItems() {
-      return NxrmUtil.doFillNexusInstanceIdItems()
+      NxrmUtil.doFillNexusInstanceIdItems()
     }
 
+    @Override
     FormValidation doCheckNexusRepositoryId(@QueryParameter String value) {
-      return NxrmUtil.doCheckNexusRepositoryId(value)
+      NxrmUtil.doCheckNexusRepositoryId(value)
     }
 
+    @Override
     ListBoxModel doFillNexusRepositoryIdItems(@QueryParameter String nexusInstanceId) {
-      return NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
+      NxrmUtil.doFillNexusRepositoryIdItems(nexusInstanceId)
+    }
+
+    @JavaScriptMethod
+    static String getTagVisibility(final String id) {
+      NxrmUtil.isVersion(id, NEXUS_3) ? 'visible' : 'hidden'
     }
   }
 }

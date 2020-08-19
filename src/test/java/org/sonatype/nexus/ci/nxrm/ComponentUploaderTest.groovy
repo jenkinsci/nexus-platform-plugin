@@ -12,202 +12,122 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
-import com.sonatype.nexus.api.repository.RepositoryManagerClient
-
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.Nxrm2Configuration
-import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
+import org.sonatype.nexus.ci.config.NxrmConfiguration
+import org.sonatype.nexus.ci.nxrm.ComponentUploader.RemoteMavenAsset
 
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
-import org.junit.Rule
-import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.WithoutJenkins
 import spock.lang.Specification
-import spock.lang.Unroll
 
-class ComponentUploaderTest
+abstract class ComponentUploaderTest
     extends Specification
 {
-  @Rule
-  public JenkinsRule jenkins = new JenkinsRule()
-
   def run = Mock(Run)
 
   def taskListener = Mock(TaskListener)
 
-  ComponentUploader componentUploader
-
-  def setup() {
-    componentUploader = new ComponentUploader(run, taskListener)
-  }
+  abstract ComponentUploader getUploader()
 
   @WithoutJenkins
-  def 'it builds a repository client from configuration'() {
+  def 'it filters non maven packages'() {
     setup:
-      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
-      def expectedClient = Mock(RepositoryManagerClient)
-
-      GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> expectedClient
-
-    when:
-      def actualClient = componentUploader.getRepositoryManagerClient(nexusConfiguration)
-
-    then:
-      expectedClient == actualClient
-  }
-
-  @WithoutJenkins
-  def 'it fails the build when a client cannot be created'() {
-    setup:
-      def nexusConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId')
-
-      GroovyMock(RepositoryManagerClientUtil, global: true)
-      RepositoryManagerClientUtil.newRepositoryManagerClient('serverUrl', 'credentialsId') >> {
-        throw new URISyntaxException('foo', 'bar')
-      }
-
-    when:
-      try {
-        componentUploader.getRepositoryManagerClient(nexusConfiguration)
-      }
-      catch (Exception ex) {
-        // no op
-      }
-
-    then:
-      1 * run.setResult(Result.FAILURE)
-  }
-
-  def 'it gets the Nexus configuration'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-
-    when:
-      def configuration = componentUploader.getNexusConfiguration('id')
-
-    then:
-      configuration == nxrmConfiguration
-  }
-
-  def 'it fails the build if Nexus configuration not available'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'http://localhost', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-      def errorMessage = ''
-
-    when:
-      try {
-        componentUploader.getNexusConfiguration('other')
-      }
-      catch (Exception ex) {
-        errorMessage = ex.message
-      }
-
-    then:
-      1 * run.setResult(Result.FAILURE)
-      errorMessage == 'Nexus Configuration other not found.'
-  }
-
-  def 'it fails the build if Nexus server uri is not valid'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
-      globalConfiguration.nxrmConfigs = []
-      globalConfiguration.nxrmConfigs.add(nxrmConfiguration)
-      globalConfiguration.save()
-      def errorMessage = ''
-
-    when:
-      try {
-        componentUploader.getNexusConfiguration('id')
-      }
-      catch (Exception ex) {
-        errorMessage = ex.message
-      }
-
-    then:
-      1 * run.setResult(Result.FAILURE)
-      errorMessage == 'Nexus Server URL foo is invalid.'
-  }
-
-  @WithoutJenkins
-  @Unroll
-  def 'it uploads components - #description'(String description,
-                                             EnvVars envVar,
-                                             MavenCoordinate coordinate,
-                                             MavenAsset asset,
-                                             MavenCoordinate expectedCoordinate,
-                                             MavenAsset expectedAsset)
-  {
-    setup:
-      def client = Mock(RepositoryManagerClient)
-      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
-      run.getEnvironment(_) >> envVar
-
-      def mockComponentUploader = Spy(ComponentUploader, constructorArgs: [run, taskListener]) {
-        getNexusConfiguration(_) >> nxrmConfiguration
-        getRepositoryManagerClient(nxrmConfiguration) >> client
-      }
+      run.getEnvironment(_) >> [:]
+      def spyUploader = Spy(getUploader().class, constructorArgs: [Mock(NxrmConfiguration), run, taskListener])
       def publisher = Mock(NexusPublisher)
-      def tempFile = File.createTempFile("temp", ".tmp");
+      def coordinate = Mock(MavenCoordinate)
+      def tempFile = File.createTempFile("temp", ".tmp")
       tempFile.deleteOnExit()
-
       def filePath = new FilePath(tempFile.getParentFile())
-    
       publisher.packages >> [
-          new MavenPackage(coordinate, [new MavenAsset(tempFile.name, asset.classifier, asset.extension)])
-      ]
+          new MavenPackage(coordinate, [new MavenAsset(tempFile.name, 'classifier', 'extension')]),
+          new SimplePackage(Mock(Coordinate), [Mock(Asset)]),
+          new SimplePackage(Mock(Coordinate), [Mock(Asset)])]
 
-      def gav = null
-      def assets = null
+      def remotePackages = null
 
     when:
-      mockComponentUploader.uploadComponents(publisher, filePath)
+      spyUploader.uploadComponents(publisher, filePath)
       tempFile.delete()
 
     then:
-      1 * client.uploadComponent(*_) >> { args ->
-        gav = args[1]
-        assets = args[2]
+      1 * spyUploader.upload(*_) >> { args -> remotePackages = args[0] }
+      remotePackages.size() == 1
+      remotePackages.containsKey(coordinate) == true
+      remotePackages[coordinate].size() == 1
+      remotePackages[coordinate][0] instanceof RemoteMavenAsset
+  }
+
+  @WithoutJenkins
+  def 'it fails if asset does not exist'() {
+    setup:
+      run.getEnvironment(_) >> [:]
+      def spyUploader = Spy(getUploader().class, constructorArgs: [Mock(NxrmConfiguration), run, taskListener])
+      def coordinate = Mock(MavenCoordinate)
+      def workspace = File.createTempDir()
+      workspace.deleteOnExit()
+      def publisher = Mock(NexusPublisher)
+      publisher.packages >> [
+          new MavenPackage(coordinate, [new MavenAsset('does-not-exist', 'classifier', 'extension')])
+      ]
+
+    when:
+      spyUploader.uploadComponents(publisher, new FilePath(workspace))
+      workspace.delete()
+
+    then:
+      def thrown = thrown(IOException)
+      thrown.message == 'does-not-exist does not exist'
+      1 * run.setResult(Result.FAILURE)
+  }
+
+  @WithoutJenkins
+  def 'it expands the file path'() {
+    def tempFile = File.createTempFile("temp", ".tmp")
+    tempFile.deleteOnExit()
+    def workspace = new FilePath(tempFile.getParentFile())
+    run.getEnvironment(_) >> new EnvVars([ 'PATH': tempFile.getAbsolutePath()])
+    def spyUploader = Spy(getUploader().class, constructorArgs: [Mock(NxrmConfiguration), run, taskListener])
+    def coordinate = Mock(MavenCoordinate)
+    def publisher = Mock(NexusPublisher)
+    publisher.packages >> [
+        new MavenPackage(coordinate, [new MavenAsset('$PATH', 'classifier', 'extension')])
+    ]
+
+    def remotePackages = null
+
+    when:
+      spyUploader.uploadComponents(publisher, workspace)
+      tempFile.delete()
+
+    then:
+      1 * spyUploader.upload(*_) >> { args -> remotePackages = args[0] }
+      remotePackages.size() == 1
+      remotePackages[coordinate][0].RemotePath.toString() == tempFile.getAbsolutePath()
+  }
+
+  class SimplePackage
+      extends Package
+  {
+    SimplePackage(Coordinate coordinate, List<Asset> assets) {
+      this.coordinate = coordinate
+      this.assets = assets
+    }
+
+    final class DescriptorImpl
+        extends Package.PackageDescriptor
+    {
+      DescriptorImpl() {
+        super(SimplePackage)
       }
 
-      gav.groupId == expectedCoordinate.groupId
-      gav.artifactId == expectedCoordinate.artifactId
-      gav.version == expectedCoordinate.version
-      gav.packaging == expectedCoordinate.packaging
-
-      assets[0].classifier == expectedAsset.classifier
-      assets[0].extension == expectedAsset.extension
-      !tempFile.absolutePath.equals(assets[0].file.absolutePath)
-
-    where:
-      description << ['default', 'envVars']
-      envVar << [new EnvVars([:]), new EnvVars(['GROUPID'   : 'some-env-group',
-                                                'ARTIFACTID': 'some-env-artifact',
-                                                'VERSION'   : '1.0.0-01',
-                                                'PACKAGING' : 'jar',
-                                                'CLASSIFIER': 'env-classifier',
-                                                'EXTENSION' : 'env-extension'])]
-      coordinate <<
-          [new MavenCoordinate('some-group', 'some-artifact', '1.0.0-SNAPSHOT', 'jar'),
-           new MavenCoordinate('$GROUPID', '$ARTIFACTID', '$VERSION', '$PACKAGING')]
-      asset << [ new MavenAsset(null, 'classifier', 'extension'), new MavenAsset(null, '$CLASSIFIER', '$EXTENSION') ]
-      expectedCoordinate <<
-          [new MavenCoordinate('some-group', 'some-artifact', '1.0.0-SNAPSHOT', 'jar'),
-           new MavenCoordinate('some-env-group', 'some-env-artifact', '1.0.0-01', 'jar')]
-      expectedAsset <<
-          [new MavenAsset(null, 'classifier', 'extension'), new MavenAsset(null, 'env-classifier', 'env-extension')]
+      @Override
+      String getDisplayName() {
+        return 'Simple Package'
+      }
+    }
   }
 }

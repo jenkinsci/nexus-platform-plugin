@@ -1,0 +1,476 @@
+<!--
+
+  Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+
+  This program is licensed to you under the Apache License Version 2.0,
+  and you may not use this file except in compliance with the Apache License Version 2.0.
+  You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the Apache License Version 2.0 is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="Project Statistics">
+    <l:side-panel>
+      <st:include page="sidepanel.jelly" it="${it.run}" optional="true"/>
+    </l:side-panel>
+    <style type="text/css">
+      .cip-policy-wrapper {
+        overflow: auto;
+        height: 100vh;
+      }
+
+      .report-parent {
+        display: contents;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+        width: 1024px;
+        margin-top: 15px;
+        margin-left: 25px;
+      }
+
+      .report-parent div.title {
+        display: block;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+        border-bottom: 2px solid black;
+        padding: 5px 0;
+        margin-bottom: 10px;
+      }
+
+      .report-parent div.title div.main-title {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .report-parent div.title{
+        font-weight: bold;
+        font-size: 12px;
+        padding-top: 5px;
+      }
+
+      div.report {
+        font-weight: normal;
+        font-size: 12px;
+        padding-top: 5px;
+      }
+
+      .report-parent div.general-info {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .report-parent div.sub-general-info {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+        margin-bottom: 20px;
+      }
+
+      .report-parent .application {
+        flex: 1;
+      }
+
+      .report-parent .stage {
+        flex: 1;
+      }
+
+      .report-parent .ide-support {
+        flex: 1;
+      }
+
+      .report-parent .ide-support a {
+        padding-right: 10px;
+      }
+
+      .report-summary {
+        padding: 5px 5px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+      }
+
+      .violations-header {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: stretch;
+        align-content: stretch;
+        text-align: center;
+        min-height: 40px;
+        margin-top: 20px;
+      }
+
+      .violations-details {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+      }
+
+      .iq-summary-fail, .iq-summary-warn {
+        width: 180px;
+        margin-left: 10px;
+      }
+
+      .iq-summary-fail p,
+      .iq-summary-warn p {
+        margin: 0;
+        padding: 0;
+      }
+
+      .iq-summary-fail p:first-child,
+      .iq-summary-warn p:first-child {
+        font-weight: bold;
+      }
+
+      .iq-summary-fail-icon svg,
+      .iq-summary-warn-icon svg {
+        width: 32px;
+        height: 32px;
+      }
+
+      .iq-summary-warn-icon {
+        margin-left: 150px;
+      }
+
+      .violations-header div {
+        padding-top: 12px;
+      }
+
+      .violations-header div.stripe {
+        width: 12px;
+      }
+
+      .violations-header div.number {
+        width: 20px;
+      }
+
+      .violations-header div.security-name {
+        margin-left: 25px;
+      }
+
+      .violations-header div.component-name {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      div.stripe.red {
+        background-color: #bc012f;
+      }
+
+      div.stripe.orange {
+        background-color: #f4861d;
+      }
+
+      div.stripe.yellow {
+        background-color: #f5c648;
+      }
+
+      div.stripe.blue {
+        background-color: #006bbf;
+      }
+
+      div.stripe.lightblue {
+        background-color: #97cbee;
+      }
+
+      div.stripe.gray {
+        background-color: darkgray;
+      }
+
+      .violations-details div.header, .violations-details div.content {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+      }
+
+      .violations-details div.header div {
+        padding: 5px;
+      }
+
+      .violations-details .col1 {
+        min-width: 200px;
+      }
+
+      .violations-details .col2 {
+        min-width: 100px;
+        display: block;
+        padding: 5px 5px 5px 20px;
+      }
+
+      .violations-details .col2 svg.iq-failed-icon,
+      .violations-details .col2 svg.iq-warning-icon {
+        float: left;
+      }
+
+      .violations-details .col2 div.policy-action {
+        margin-left: 20px;
+        text-transform: capitalize;
+      }
+
+      .violations-details .col3 {
+        min-width: 200px;
+      }
+
+      .violations-details .col4 {
+        width: 100%;
+        display: block;
+      }
+
+      .violations-details div.header {
+        background-color: #f5f5f5;
+        min-height: 50px;
+        padding: 7px 0;
+      }
+
+      .violations-details div.header div.col1,
+      .violations-details div.header div.col2 {
+        text-align: center;
+      }
+
+      .violations-details div.header div.col1,
+      .violations-details div.header div.col2,
+      .violations-details div.header div.col3 {
+        border-right: 1px solid #eaeaea;
+      }
+
+      .violations-details div.header div.col1,
+      .violations-details div.header div.col2,
+      .violations-details div.header div.col3,
+      .violations-details div.header div.col4 {
+        padding-top: 10px;
+      }
+
+      .violations-details div.header div.col3,
+      .violations-details div.header div.col4 {
+        padding-left: 10px;
+      }
+
+      .violations-details div.content div.col1 {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+        align-content: stretch;
+      }
+
+      .violations-details div.content div.col1 div.stripe {
+        min-width: 10px;
+      }
+
+      .violations-details div.content div.col1 div.text {
+        width: 100%;
+        padding: 5px;
+      }
+
+      .violations-details div.content div.col1 div.text p {
+        margin: 0;
+        padding: 0;
+      }
+
+      .violations-details div.content div.col3,
+      .violations-details div.content div.col4 {
+        padding: 5px;
+      }
+
+      .violations-details div.content {
+        border-left: 1px solid #f5f5f5;
+        border-right: 1px solid #f5f5f5;
+        border-bottom: 1px solid #f5f5f5;
+        min-height: 50px;
+      }
+
+      .violations-details div.content p {
+        padding: 0;
+        margin: 0 0 10px;
+      }
+
+      .iq-failed-icon circle {
+        fill: #bc012f;
+      }
+
+      .iq-warning-icon circle {
+        fill: #f4861d;
+      }
+
+      div.iq-space-ship {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        align-content: stretch;
+      }
+
+      div.iq-space-ship img {
+        width: 500px;
+        margin-top: 50px;
+      }
+
+      div.iq-space-ship p {
+        font-size: 40px;
+        margin: 0 0 150px 0;
+        padding-right: 50px;
+      }
+    </style>
+    <l:main-panel>
+      <j:set var="report" value="${it.getReport()}" />
+      <div id="nexusIqParent" class="report-parent">
+        <div class="title">
+          <div class="main-title">Nexus IQ Build Report</div>
+          <div class="report">
+            This report lists IQ policy violations which are configured to 'warn' or 'fail.
+            <a href="${it.url}">See full report in IQ Server</a>
+          </div>
+        </div>
+
+        <div class="general-info">
+          <div class="application">Application</div>
+          <div class="stage">Stage</div>
+          <div class="ide-support">See Policy Violations directly in your IDE</div>
+        </div>
+
+        <div class="sub-general-info">
+          <div class="application">${it.getApplicationId()}</div>
+          <div class="stage">${it.getIqStage()}</div>
+          <div class="ide-support">
+            <a href="https://help.sonatype.com/integrations/iq-server-and-ides/iq-for-idea">IDEA</a>
+            <a href="https://help.sonatype.com/integrations/iq-server-and-ides/iq-for-visual-studio">Visual Studio</a>
+            <a href="https://help.sonatype.com/integrations/iq-server-and-ides/iq-for-eclipse">Eclipse</a>
+          </div>
+        </div>
+
+        <div class="report-summary">
+          <div class="iq-summary-fail-icon">
+            <svg class="iq-failed-icon" height="16" viewBox="0 0 512 512" width="16"
+                 xmlns="http://www.w3.org/2000/svg" focusable="false">
+              <path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8
+              256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595
+              46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982
+              11.346h48.546c6.373 0 11.635-4.982
+              11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+                    fill="#bc012f">
+              </path>
+            </svg>
+          </div>
+          <div class="iq-summary-fail">
+            <p>${report.failedActionViolations} Build Failures</p>
+            <p>caused by ${report.failedActionComponents} components</p>
+          </div>
+          <div class="iq-summary-warn-icon">
+            <svg class="iq-warning-icon" height="18" viewBox="0 0 576 512" width="16"
+                 xmlns="http://www.w3.org/2000/svg" focusable="false">
+              <path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937
+               0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288
+               354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418
+               136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982
+               11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+                    fill="#f4861d">
+              </path>
+            </svg>
+          </div>
+          <div class="iq-summary-warn">
+            <p>${report.warnActionViolations} Warnings</p>
+            <p>caused by ${report.warnActionComponents} components</p>
+          </div>
+        </div>
+
+        <j:if test="${report.components == null || report.components.size() == 0 }">
+          <j:set var="ssResult" value="${it.getSuccessResult()}" />
+          <div class="iq-space-ship">
+            <img alt="${ssResult.alt}" src="${rootURL}${ssResult.image}"/>
+            <p>${ssResult.message}</p>
+          </div>
+        </j:if>
+
+        <j:forEach items="${report.components}" var="comp" indexVar="i">
+          <div class="violations-header">
+            <div class="component-name">${comp.componentName}</div>
+          </div>
+            <div class="violations-details">
+              <div class="header">
+                <div class="col1">THREAT / POLICY NAME</div>
+                <div class="col2">ACTION</div>
+                <div class="col3">CONSTRAINT</div>
+                <div class="col4">CONDITION</div>
+              </div>
+              <j:forEach items="${comp.constraints}" var="constraint" indexVar="constraintIndex">
+                <div class="content">
+                  <div class="col1">
+                    <div class="stripe ${it.getColor(constraint.policyLevel)}"></div>
+                    <div class="text">${constraint.policyLevel} ${constraint.policyName}</div>
+                  </div>
+
+                  <div class="col2">
+                    <j:choose>
+                      <j:when test="${constraint.action.equalsIgnoreCase('warn')}">
+                        <svg class="iq-warning-icon" height="18" viewBox="0 0 576 512" width="16" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                          <path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937
+                         0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288
+                         354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418
+                         136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982
+                         11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z" fill="#f4861d">
+                          </path>
+                        </svg>
+                      </j:when>
+                      <j:otherwise>
+                        <svg class="iq-failed-icon" height="16" viewBox="0 0 512 512" width="16"
+                             xmlns="http://www.w3.org/2000/svg" focusable="false">
+                          <path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8
+                            256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595
+                            46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982
+                            11.346h48.546c6.373 0 11.635-4.982
+                            11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+                              fill="#bc012f">
+                          </path>
+                        </svg>
+                      </j:otherwise>
+                    </j:choose>
+                    <div class="policy-action">${constraint.action}</div>
+                  </div>
+
+                  <div class="col3"> ${constraint.name} </div>
+                  <div class="col4">
+                    <j:forEach items="${constraint.conditions}" var="condition" indexVar="conditionIndex">
+                      <p>${condition.reason}</p>
+                    </j:forEach>
+                  </div>
+                </div>
+              </j:forEach>
+            </div>
+        </j:forEach>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
