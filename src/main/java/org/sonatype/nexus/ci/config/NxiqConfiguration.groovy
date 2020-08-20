@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
@@ -46,7 +45,8 @@ class NxiqConfiguration
   String credentialsId
 
   @DataBoundConstructor
-  NxiqConfiguration(final String serverUrl, final String credentialsId) {
+  NxiqConfiguration(final String serverUrl, final String credentialsId)
+  {
     this.serverUrl = serverUrl
     this.credentialsId = credentialsId
   }
