@@ -16,6 +16,7 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import hudson.Extension
 import hudson.Launcher
 import hudson.model.AbstractBuild
@@ -29,12 +30,15 @@ import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
 
 class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, BuildStep
 {
+  String iqServerId
+
   String iqStage
 
   IqApplication iqApplication
@@ -68,6 +72,11 @@ class IqPolicyEvaluatorBuildStep
     this.advancedProperties = advancedProperties
   }
 
+  @DataBoundSetter
+  void setIqServerId(String iqServerId) {
+    this.iqServerId = iqServerId
+  }
+
   @Override
   boolean perform(AbstractBuild run, Launcher launcher, BuildListener listener)
       throws InterruptedException, IOException
@@ -94,14 +103,21 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
+    ListBoxModel doFillIqServerIdItems() {
+      IqUtil.doFillIqServerIdItems()
+    }
+
+    @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job,
+                                    @QueryParameter String iqServerId)
+    {
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqStageItems(jobCredentialsId, job)
+      IqUtil.doFillIqStageItems(jobCredentialsId, job, iqServerId)
     }
 
     @Override
@@ -125,10 +141,15 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job, final String iqServerId = null) {
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job, @QueryParameter String iqServerId) {
       NxiqConfiguration nxiqConfiguration = IqUtil.getNxiqConfiguration(iqServerId)
-      FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration.serverUrl, nxiqConfiguration.credentialsId,
-        job)
+      if (nxiqConfiguration) {
+        FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration.serverUrl, nxiqConfiguration.credentialsId,
+            job)
+      }
+      else {
+        new StandardListBoxModel().includeEmptyValue()
+      }
     }
 
     @Override

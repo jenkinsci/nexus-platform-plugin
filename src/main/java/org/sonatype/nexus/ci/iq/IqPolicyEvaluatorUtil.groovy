@@ -55,7 +55,7 @@ class IqPolicyEvaluatorUtil
 
       def iqClient = IqClientFactory.getIqClient(
           new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
-              log: loggerBridge))
+              log: loggerBridge), iqPolicyEvaluator.iqServerId)
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
       def verified = iqClient.verifyOrCreateApplication(applicationId)
@@ -82,7 +82,8 @@ class IqPolicyEvaluatorUtil
       File workDirectory = new File(workspace.getRemote())
       def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
 
-      def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
+      def healthAction = new PolicyEvaluationHealthAction(iqPolicyEvaluator.iqServerId, applicationId, iqStage, run,
+          evaluationResult)
       run.addAction(healthAction)
 
       def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)

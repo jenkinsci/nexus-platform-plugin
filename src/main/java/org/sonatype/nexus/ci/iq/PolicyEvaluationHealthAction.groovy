@@ -47,13 +47,16 @@ class PolicyEvaluationHealthAction
   
   private final int grandfatheredPolicyViolationCount
 
+  private final String iqServerId
+
   private final String applicationId
 
   private final String iqStage
 
-  PolicyEvaluationHealthAction(final String applicationId, final String iqStage, final Run run,
+  PolicyEvaluationHealthAction(final String iqServerId, final String applicationId, final String iqStage, final Run run,
                                final ApplicationPolicyEvaluation policyEvaluationResult)
   {
+    this.iqServerId = iqServerId
     this.applicationId = applicationId
     this.iqStage = iqStage
     this.run = run
@@ -106,6 +109,10 @@ class PolicyEvaluationHealthAction
 
   int getGrandfatheredPolicyViolationCount() {
     return grandfatheredPolicyViolationCount
+  }
+
+  String getIqServerId() {
+    return iqServerId
   }
 
   String getApplicationId() {

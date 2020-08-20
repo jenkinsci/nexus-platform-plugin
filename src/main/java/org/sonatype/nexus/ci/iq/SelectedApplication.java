@@ -45,9 +45,12 @@ public class SelectedApplication
       return Messages.IqPolicyEvaluation_SelectApplication();
     }
 
-    public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String jobCredentialsId,
+                                                 @AncestorInPath Job job,
+                                                 @RelativePath("..") @QueryParameter String iqServerId)
+    {
       // JobCredentialsId is an empty String if not set
-      return IqUtil.doFillIqApplicationItems(jobCredentialsId, job);
+      return IqUtil.doFillIqApplicationItems(jobCredentialsId, job, iqServerId);
     }
   }
 }

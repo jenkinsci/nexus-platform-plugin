@@ -35,6 +35,9 @@ class IqUtil
   }
 
   static NxiqConfiguration getNxiqConfiguration(final String iqServerId) {
+    if (GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.size() == 1) {
+      return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs.get(0)
+    }
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find {it.id == iqServerId }
   }
 
@@ -48,6 +51,15 @@ class IqUtil
         new IqClientFactoryConfiguration(credentialsId: credentialsId, context: context,
             serverUrl: URI.create(serverUrl)))
     return client.getApplicationsForApplicationEvaluation()
+  }
+
+  static ListBoxModel doFillIqServerIdItems() {
+    if (IqUtil.hasNxiqConfiguration()) {
+      FormUtil.newListBoxModel({ it.id }, { it.id }, GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs)
+    }
+    else {
+      FormUtil.newListBoxModelWithEmptyOption()
+    }
   }
 
   static ListBoxModel doFillIqStageItems(final String credentialsId, final Job job, final String iqServerId = null) {

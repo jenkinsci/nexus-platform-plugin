@@ -25,8 +25,7 @@ f.section(title: descriptor.displayName) {
   f.entry(title: _('Nexus IQ Server')) {
     f.repeatableHeteroProperty(
         field: 'iqConfigs',
-        addCaption: _('Add Nexus IQ Server'),
-        oneEach: 'true'
+        addCaption: _('Add Nexus IQ Server')
     )
   }
 }

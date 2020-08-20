@@ -18,9 +18,11 @@ import hudson.util.ListBoxModel
 
 interface IqPolicyEvaluatorDescriptor
 {
+  ListBoxModel doFillIqServerIdItems()
+
   FormValidation doCheckIqStage(String value)
 
-  ListBoxModel doFillIqStageItems(String jobCredentialsId, Job job)
+  ListBoxModel doFillIqStageItems(String jobCredentialsId, Job job, String iqServerId)
 
   FormValidation doCheckScanPattern(String scanPattern)
 

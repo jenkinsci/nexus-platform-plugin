@@ -91,6 +91,14 @@ def policyUI = {
       span(class: 'iq-title', Messages.IqPolicyEvaluation_ReportName())
       a(href: "${action.getUrlName()}", target: "_blank", "(view report)")
     }
+
+    if (action.getIqServerId()) {
+      div() {
+        span(class: 'iq-label', 'IQ Server ID : ')
+        span("${action.getIqServerId()}")
+      }
+    }
+
     if (action.getApplicationId()) {
       div() {
         span(class: 'iq-label', Messages.IqPolicyEvaluation_ApplicationLabel() + ' : ')

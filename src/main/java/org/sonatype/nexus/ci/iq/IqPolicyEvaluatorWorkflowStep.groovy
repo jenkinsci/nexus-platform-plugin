@@ -16,6 +16,7 @@ import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
 
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel
 import hudson.Extension
 import hudson.model.Job
 import hudson.util.FormValidation
@@ -32,6 +33,8 @@ class IqPolicyEvaluatorWorkflowStep
     extends AbstractStepImpl
     implements IqPolicyEvaluator
 {
+  String iqServerId
+
   String iqStage
 
   IqApplication iqApplication
@@ -88,6 +91,11 @@ class IqPolicyEvaluatorWorkflowStep
     }
   }
 
+  @DataBoundSetter
+  public void setIqServerId(final String iqServerId) {
+    this.iqServerId = iqServerId
+  }
+
   @DataBoundConstructor
   IqPolicyEvaluatorWorkflowStep(final String iqStage)
   {
@@ -114,13 +122,20 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
+    ListBoxModel doFillIqServerIdItems() {
+      IqUtil.doFillIqServerIdItems()
+    }
+
+    @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      IqUtil.doFillIqStageItems(jobCredentialsId, job)
+    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job,
+                                    @QueryParameter String iqServerId)
+    {
+      IqUtil.doFillIqStageItems(jobCredentialsId, job, iqServerId)
     }
 
     @Override
@@ -144,10 +159,15 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job, final String iqServerId = null) {
+    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job, @QueryParameter final String iqServerId) {
       NxiqConfiguration nxiqConfiguration = IqUtil.getNxiqConfiguration(iqServerId)
-      FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration.serverUrl, nxiqConfiguration.credentialsId,
-          job)
+      if (nxiqConfiguration) {
+        FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration.serverUrl, nxiqConfiguration.credentialsId,
+            job)
+      }
+      else {
+        new StandardListBoxModel().includeEmptyValue()
+      }
     }
 
     @Override

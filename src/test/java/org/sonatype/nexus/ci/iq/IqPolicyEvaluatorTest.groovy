@@ -276,7 +276,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * IqClientFactory.getIqClient { it.credentialsId == jobCredentials } >> iqClient
+      1 * IqClientFactory.getIqClient({ it.credentialsId == jobCredentials }, _) >> iqClient
 
     where:
       jobCredentials << [ null, '', '131-cred']
