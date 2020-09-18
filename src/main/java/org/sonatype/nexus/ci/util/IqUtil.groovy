@@ -43,7 +43,8 @@ class IqUtil
   static ListBoxModel doFillIqStageItems(final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.
-          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId,
+              serverUrl: NxiqConfiguration.getServerUrl(), context: job))
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
     }
     else {
@@ -54,7 +55,8 @@ class IqUtil
   static ListBoxModel doFillIqApplicationItems(final String credentialsId, final Job job) {
     if (NxiqConfiguration.iqConfig) {
       def client = IqClientFactory.
-          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
+          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId,
+              serverUrl: NxiqConfiguration.getServerUrl(), context: job))
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     }
     else {

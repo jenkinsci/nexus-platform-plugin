@@ -16,6 +16,7 @@ import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
 import hudson.AbortException
@@ -54,8 +55,8 @@ class IqPolicyEvaluatorUtil
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def iqClient = IqClientFactory.getIqClient(
-          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
-              log: loggerBridge))
+          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId,
+              serverUrl: NxiqConfiguration.getServerUrl(), context: run.parent, log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
       def verified = iqClient.verifyOrCreateApplication(applicationId)
