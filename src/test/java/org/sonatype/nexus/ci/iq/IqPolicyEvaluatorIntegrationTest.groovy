@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.iq
 
 
 import com.sonatype.insight.scan.model.Scan
+import com.sonatype.nexus.api.common.ServerConfig
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
@@ -811,6 +812,78 @@ class IqPolicyEvaluatorIntegrationTest
       ) {
         jenkins.assertLogNotContains('Amending source control record', build)
       }
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Declarative pipeline should use provided job credential id'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+      UsernamePasswordCredentials projectCredentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, '131-cred', 'project-cred', 'project-user', 'project-password')
+      CredentialsProvider.lookupStores(jenkins.jenkins).first().addCredentials(Domain.global(), projectCredentials)
+
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+        pipeline { 
+          agent any 
+          stages { 
+            stage("Example") { 
+              steps { 
+                writeFile file: 'dummy.txt', text: 'dummy'
+                nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage',
+                  jobCredentialsId: '131-cred'
+              } 
+            } 
+          } 
+        }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated using the project user'
+      1 *  iqClientBuilder.withServerConfig({ ServerConfig cfg ->
+        cfg.authentication.username == 'project-user'
+      }) >> iqClientBuilder
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [createAlert(Action.ID_NOTIFY)],
+              'http://server/link/to/report')
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Declarative pipeline should use global credential id if not job credential id not provided.'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+        pipeline { 
+          agent any 
+          stages { 
+            stage("Example") { 
+              steps { 
+                writeFile file: 'dummy.txt', text: 'dummy'
+                nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'
+              } 
+            } 
+          } 
+        }''')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated using the project user'
+      1 *  iqClientBuilder.withServerConfig({ ServerConfig cfg ->
+        cfg.authentication.username == 'user'
+      }) >> iqClientBuilder
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [createAlert(Action.ID_NOTIFY)],
+              'http://server/link/to/report')
+
+    and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)
   }
 

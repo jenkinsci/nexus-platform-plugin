@@ -55,7 +55,8 @@ class IqPolicyEvaluatorUtil
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def iqClient = IqClientFactory.getIqClient(
-          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId,
+          new IqClientFactoryConfiguration(
+              credentialsId: iqPolicyEvaluator.jobCredentialsId ?: NxiqConfiguration.getCredentialsId(),
               serverUrl: NxiqConfiguration.getServerUrl(), context: run.parent, log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
