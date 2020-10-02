@@ -160,7 +160,7 @@ class IqClientFactoryTest
   }
 
   def 'it uses configured proxy when configured'() {
-    given:
+    setup:
       jenkinsRule.instance.proxy = new ProxyConfiguration('localhost', 8888, null, null, '')
 
       CredentialsMatchers.firstOrNull(_, _) >> credentials
