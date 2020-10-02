@@ -37,13 +37,9 @@ import static com.google.common.base.Preconditions.checkNotNull
 class IqClientFactory
 {
   static InternalIqClient getIqClient(IqClientFactoryConfiguration conf) {
-    def serverUrl = conf.serverUrl
-    def credentialsId = conf.credentialsId
-    def context = conf.context ?: Jenkins.instance
-
-    checkNotNull(serverUrl)
-    checkNotNull(credentialsId)
-    checkNotNull(context)
+    def serverUrl = checkNotNull(conf.serverUrl, "Server URL is required.")
+    def credentialsId = checkNotNull(conf.credentialsId, "A Jenkins credentials id is required.")
+    def context = checkNotNull(conf.context ?: Jenkins.instance, "Unable to determine Jenkins context.")
 
     def credentials = findCredentials(serverUrl, credentialsId, context)
     def serverConfig = getServerConfig(serverUrl, credentials)

@@ -120,6 +120,7 @@ class IqClientFactoryTest
     then:
       NullPointerException exception = thrown()
       exception.cause == null
+      exception.message == "A Jenkins credentials id is required."
   }
 
   def 'it throws a NullPointerException when serverUrl is not provided'() {
@@ -130,9 +131,11 @@ class IqClientFactoryTest
     when:
       IqClientFactory.getIqClient(
           new IqClientFactoryConfiguration(credentialsId: credentialsId))
-     then:
-       NullPointerException exception = thrown()
-       exception.cause == null
+    then:
+      NullPointerException exception = thrown()
+      exception.cause == null
+      exception.message == "Server URL is required."
+
   }
 
   def 'it uses provided serverUrl and credentialsId'() {
