@@ -88,7 +88,7 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.17</version>
+        <version>3.20-SNAPSHOT</version>
         <classifier>internal</classifier>
         <!-- TODO 3.16 won't have the transitive anymore, do we still need this? -->
         <exclusions>
