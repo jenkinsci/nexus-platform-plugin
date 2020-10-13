@@ -263,7 +263,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
 
     when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId', null)
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId', null, null)
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'

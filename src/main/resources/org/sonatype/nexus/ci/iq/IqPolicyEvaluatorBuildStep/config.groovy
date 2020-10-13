@@ -78,6 +78,10 @@ f.section(title: descriptor.displayName) {
       f.entry(title: _(Messages.IqPolicyEvaluation_JobSpecificCredentials()), field: 'jobCredentialsId') {
         c.select(context:app, includeUser:false, expressionAllowed:false)
       }
+      
+      f.entry(title: _(Messages.IqPolicyEvaluation_EnableDebugLogging()), field: 'enableDebugLogging') {
+        f.checkbox()
+      }
 
       f.entry(title: _(Messages.IqPolicyEvaluation_AdvancedProperties()), field: 'advancedProperties') {
         f.textarea()

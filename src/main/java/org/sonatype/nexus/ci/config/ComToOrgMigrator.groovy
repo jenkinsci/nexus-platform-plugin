@@ -89,7 +89,8 @@ class ComToOrgMigrator
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqApplication'          : 'iqApplication',
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqScanPatterns'         : 'iqScanPatterns',
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__failBuildOnNetworkError': 'failBuildOnNetworkError',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'       : 'jobCredentialsId'
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'       : 'jobCredentialsId',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__enableDebugLogging'     : 'enableDebugLogging'
     ]
 
     iqPolicyEvaluatorTraitFieldMappings.each { key, value ->

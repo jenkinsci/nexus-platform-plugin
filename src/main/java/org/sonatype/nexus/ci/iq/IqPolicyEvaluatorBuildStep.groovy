@@ -47,6 +47,8 @@ class IqPolicyEvaluatorBuildStep
 
   String jobCredentialsId
 
+  Boolean enableDebugLogging
+
   String advancedProperties
 
   @DataBoundConstructor
@@ -57,6 +59,7 @@ class IqPolicyEvaluatorBuildStep
                              final List<ModuleExclude> iqModuleExcludes,
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId,
+                             final Boolean enableDebugLogging,
                              final String advancedProperties)
   {
     this.jobCredentialsId = jobCredentialsId
@@ -66,6 +69,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqStage = iqStage
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
+    this.enableDebugLogging = enableDebugLogging
   }
 
   @Override
@@ -121,6 +125,11 @@ class IqPolicyEvaluatorBuildStep
 
     @Override
     FormValidation doCheckFailBuildOnNetworkError(@QueryParameter String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    FormValidation doCheckEnableDebugLogging(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 

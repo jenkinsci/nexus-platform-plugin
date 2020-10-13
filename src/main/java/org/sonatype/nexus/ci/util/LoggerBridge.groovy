@@ -22,7 +22,7 @@ import org.slf4j.helpers.MessageFormatter
 final class LoggerBridge
     extends MarkerIgnoringBase
 {
-  private static final boolean DEBUG = Boolean.valueOf(System.getProperty(LoggerBridge.getName() + '.debug'))
+  private boolean debugEnabled = Boolean.valueOf(System.getProperty(LoggerBridge.getName() + '.debug'))
 
   private static final String TRACE_PREFIX = '[TRACE]'
 
@@ -52,12 +52,16 @@ final class LoggerBridge
 
   @Override
    boolean isTraceEnabled() {
-    return DEBUG
+    return debugEnabled
   }
 
   @Override
    boolean isDebugEnabled() {
-    return DEBUG
+    return debugEnabled
+  }
+
+  public void setDebugEnabled(boolean debugEnabled) {
+    this.debugEnabled = debugEnabled
   }
 
   @Override
@@ -77,70 +81,70 @@ final class LoggerBridge
 
   @Override
    void trace(final String msg) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(TRACE_PREFIX, msg, null)
     }
   }
 
   @Override
    void trace(final String format, final Object arg) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(TRACE_PREFIX, MessageFormatter.format(format, arg))
     }
   }
 
   @Override
    void trace(final String format, final Object arg1, final Object arg2) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(TRACE_PREFIX, MessageFormatter.format(format, arg1, arg2))
     }
   }
 
   @Override
    void trace(final String format, final Object[] argArray) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(TRACE_PREFIX, MessageFormatter.arrayFormat(format, argArray))
     }
   }
 
   @Override
    void trace(final String msg, final Throwable t) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(TRACE_PREFIX, msg, t)
     }
   }
 
   @Override
    void debug(final String msg) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(DEBUG_PREFIX, msg, null)
     }
   }
 
   @Override
    void debug(final String format, final Object arg) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(DEBUG_PREFIX, MessageFormatter.format(format, arg))
     }
   }
 
   @Override
    void debug(final String format, final Object arg1, final Object arg2) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(DEBUG_PREFIX, MessageFormatter.format(format, arg1, arg2))
     }
   }
 
   @Override
    void debug(final String format, final Object[] argArray) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(DEBUG_PREFIX, MessageFormatter.arrayFormat(format, argArray))
     }
   }
 
   @Override
    void debug(final String msg, final Throwable t) {
-    if (DEBUG) {
+    if (debugEnabled) {
       log(DEBUG_PREFIX, msg, t)
     }
   }

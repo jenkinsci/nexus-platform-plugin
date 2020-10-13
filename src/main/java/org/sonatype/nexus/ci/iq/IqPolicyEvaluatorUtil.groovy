@@ -45,12 +45,15 @@ class IqPolicyEvaluatorUtil
     ensureInNodeContext(run, workspace, launcher, listener)
 
     try {
+      LoggerBridge loggerBridge = new LoggerBridge(listener)
+      if (iqPolicyEvaluator.getEnableDebugLogging()) {
+        loggerBridge.setDebugEnabled(true)
+      }
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String iqStage = iqPolicyEvaluator.iqStage
 
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
-      LoggerBridge loggerBridge = new LoggerBridge(listener)
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def iqClient = IqClientFactory.getIqClient(

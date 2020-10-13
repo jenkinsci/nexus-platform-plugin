@@ -26,5 +26,7 @@ interface IqPolicyEvaluator
 
   String getJobCredentialsId()
 
+  Boolean getEnableDebugLogging()
+
   String getAdvancedProperties()
 }

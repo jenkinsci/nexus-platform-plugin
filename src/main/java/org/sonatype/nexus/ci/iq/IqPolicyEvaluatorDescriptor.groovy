@@ -32,5 +32,7 @@ interface IqPolicyEvaluatorDescriptor
 
   ListBoxModel doFillJobCredentialsIdItems(Job job)
 
+  FormValidation doCheckEnableDebugLogging(String value)
+
   FormValidation doVerifyCredentials(String jobCredentialsId, Job job)
 }

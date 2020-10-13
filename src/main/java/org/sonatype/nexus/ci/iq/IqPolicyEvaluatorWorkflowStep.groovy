@@ -44,6 +44,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   String jobCredentialsId
 
+  Boolean enableDebugLogging
+
   String advancedProperties
 
   @DataBoundSetter
@@ -64,6 +66,11 @@ class IqPolicyEvaluatorWorkflowStep
   @DataBoundSetter
   public void setJobCredentialsId(final String jobCredentialsId) {
     this.jobCredentialsId = jobCredentialsId
+  }
+
+  @DataBoundSetter
+  public void setEnableDebugLogging(final boolean enableDebugLogging) {
+    this.enableDebugLogging = enableDebugLogging
   }
 
   @DataBoundSetter
@@ -147,6 +154,11 @@ class IqPolicyEvaluatorWorkflowStep
     ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job) {
       FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
           job)
+    }
+
+    @Override
+    FormValidation doCheckEnableDebugLogging(@QueryParameter final String value) {
+      FormValidation.validateRequired(value)
     }
 
     @Override
