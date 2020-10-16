@@ -268,4 +268,26 @@ abstract class IqPolicyEvaluatorDescriptorTest
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'
   }
+
+  def 'it validates that flag enableDebugLogging is required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when:
+      "validating enableDebugLogging $enableDebugLogging"
+      def validation = descriptor.doCheckEnableDebugLogging(enableDebugLogging)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      enableDebugLogging | kind       | message
+      ''                      | Kind.ERROR | 'Required'
+      null                    | Kind.ERROR | 'Required'
+      'true'                  | Kind.OK    | '<div/>'
+      'false'                 | Kind.OK    | '<div/>'
+      'other'                 | Kind.OK    | '<div/>'
+  }
 }
