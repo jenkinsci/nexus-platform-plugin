@@ -219,7 +219,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -295,7 +296,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
-              'cred-id', null))
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -316,7 +317,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], true, 'cred-id', null))
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], true, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -366,7 +367,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
-              'cred-id', null))
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -461,7 +462,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
-              'cred-id', null))
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -513,7 +514,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
-              'cred-id', null))
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -532,7 +533,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], failBuildOnNetworkError,
-              'cred-id', null))
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -598,7 +599,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('app'), [], [], false, 'cred-id', null))
+          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('app'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -623,7 +625,8 @@ class IqPolicyEvaluatorIntegrationTest
 
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('$APP'), [], [], false, 'cred-id', null))
+          add(new IqPolicyEvaluatorBuildStep('stage', new ManualApplication('$APP'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -643,7 +646,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
       def url = 'http://a.com/b/c'
       def prop = new EnvironmentVariablesNodeProperty()
@@ -671,7 +675,8 @@ class IqPolicyEvaluatorIntegrationTest
       def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
       project.setScm(new ExtractResourceSCM(path))
       project.buildersList
-          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -692,7 +697,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList
-          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null))
+          .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
+            null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -812,6 +818,100 @@ class IqPolicyEvaluatorIntegrationTest
         jenkins.assertLogNotContains('Amending source control record', build)
       }
       jenkins.assertBuildStatusSuccess(build)
+  }
+  
+  def 'Pipeline build should log debug messages when debug logging is enabled'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'iqStage: \'stage\', enableDebugLogging: true' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
+          'http://server/link/to/report')
+
+    then: 'DEBUG messages are logged'
+      jenkins.assertBuildStatusSuccess(build)
+      build.getLog(100).stream().anyMatch({logLine -> logLine.contains('[DEBUG]')})
+  }
+  
+  def 'Pipeline build should not log debug messages when debug logging is not enabled'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('node {\n' +
+          'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+          'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+          'iqStage: \'stage\'' +
+          '}\n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
+          'http://server/link/to/report')
+
+    then: 'DEBUG messages are not logged'
+      jenkins.assertBuildStatusSuccess(build)
+      !build.getLog(100).stream().anyMatch({logLine -> logLine.contains('[DEBUG]')})
+  }
+  
+  def 'Freestyle build should log debug messages when debug logging is enabled'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      Boolean enableDebugLogging = true
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+            enableDebugLogging, null))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
+          'http://server/link/to/report')
+
+    then: 'DEBUG messages are logged'
+      jenkins.assertBuildStatusSuccess(build)
+      build.getLog(100).stream().anyMatch({logLine -> logLine.contains('[DEBUG]')})
+  }
+  
+  def 'Freestyle build should not log debug messages when debug logging is not enabled'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      Boolean enableDebugLogging = false
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+            enableDebugLogging, null))
+      configureJenkins()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [],
+          'http://server/link/to/report')
+
+    then: 'DEBUG messages are logged'
+      jenkins.assertBuildStatusSuccess(build)
+      !build.getLog(100).stream().anyMatch({logLine -> logLine.contains('[DEBUG]')})
   }
 
   def configureJenkins() {
