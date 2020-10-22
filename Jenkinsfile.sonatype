@@ -69,6 +69,8 @@ if (!params.isRelease) {
   }
 
   mavenSnapshotPipeline(
+      mavenVersion: 'Maven 3.6.x',
+      javaVersion: 'Java 8',
       notificationSender: postHandler,
       iqPolicyEvaluation: iqPolicyEvaluation,
       runFeatureBranchPolicyEvaluations: true
