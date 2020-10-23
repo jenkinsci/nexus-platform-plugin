@@ -303,8 +303,6 @@
       <scope>test</scope>
     </dependency>
 
-
-
     <!-- Begin Jenkins plugins installed at runtime for testing -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
