@@ -88,15 +88,8 @@
       <dependency>
         <groupId>com.sonatype.nexus</groupId>
         <artifactId>nexus-platform-api</artifactId>
-        <version>3.21</version>
+        <version>3.22</version>
         <classifier>internal</classifier>
-        <!-- TODO 3.16 won't have the transitive anymore, do we still need this? -->
-        <exclusions>
-          <exclusion>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- bcprov-jdk15on versions before 1.60 have a lot of security vulnerabilities. -->
