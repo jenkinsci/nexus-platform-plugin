@@ -69,6 +69,8 @@ if (!params.isRelease) {
   }
 
   mavenSnapshotPipeline(
+      mavenOptions: '-D skipTests',
+      downstreamJobName: 'extra-tests',
       notificationSender: postHandler,
       iqPolicyEvaluation: iqPolicyEvaluation,
       runFeatureBranchPolicyEvaluations: true

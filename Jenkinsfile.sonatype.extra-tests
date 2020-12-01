@@ -1,0 +1,61 @@
+/*
+ * Copyright (c) 2011-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+
+String agentLabel = 'ubuntu-zion'
+
+def runTests(String javaVersion = 'Java 8') {
+  def config = mavenCommon(
+      javaVersion: javaVersion,
+      mavenVersion: 'Maven 3.2.x',
+      useEventSpy: false
+  )
+  mvn config, 'clean install'
+}
+
+def captureResultsAndCleanup() {
+  archiveArtifacts(artifacts: '**/target/*-reports/**')
+  collectTestResults(['**/target/*-reports/*.xml'])
+  deleteDir()
+}
+
+pipeline {
+  agent none
+  options {
+    buildDiscarder(
+        logRotator(numToKeepStr: '100', daysToKeepStr: '14', artifactNumToKeepStr: '20', artifactDaysToKeepStr: '10')
+    )
+    timestamps()
+  }
+  stages {
+    stage('Parallel Test Groups') {
+      parallel {
+        stage('Unit and Integration Tests - Java8') {
+          agent { label agentLabel }
+          steps {
+            runTests('Java 8')
+          }
+          post {
+            always {
+              captureResultsAndCleanup()
+            }
+          }
+        }
+        stage('Unit and Integration Tests - Java11') {
+          agent { label agentLabel }
+          steps {
+            runTests('OpenJDK 11')
+          }
+          post {
+            always {
+              captureResultsAndCleanup()
+            }
+          }
+        }
+      }
+    }
+  }
+}
