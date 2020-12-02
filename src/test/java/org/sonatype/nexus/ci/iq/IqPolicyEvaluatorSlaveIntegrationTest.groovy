@@ -325,7 +325,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       def path = new File(getClass().getResource('sampleRepoWithRemoteUrl.zip').toURI()).absolutePath
       project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
-          "unzip zipFile: '" + path + "', glob: '**/*'\n" +
+          "unzip zipFile: '" + path.replace('\\', '/') + "', glob: '**/*'\n" +
           "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           '}\n')
