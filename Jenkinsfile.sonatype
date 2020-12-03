@@ -79,7 +79,7 @@ if (!params.isRelease) {
 }
 else {
   node('ubuntu-zion') {
-    def commitId, commitDate, pom, version, mvnReleaseCommand
+    def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
 
     try {
       stage('Preparation') {
@@ -96,7 +96,9 @@ else {
         mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
             "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
             "release:perform -B"
-
+        mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
+            "-Dfile=target/nexus-jenkins-plugin.hpi -DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} " +
+            "-Dversion=${version} deploy:deploy-file -B"
         currentBuild.displayName = "#${currentBuild.number} - ${version}"
       }
       stage('License Check') {
@@ -136,13 +138,9 @@ else {
         runSafely "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
             ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
       }
-
-      // Reset all changes to local repository made by the Maven release plugin
-      runSafely "git tag -d ${pom.artifactId}-${version}"
-      runSafely 'git clean -f && git reset --hard origin/master'
     }
-    stage('Deploy to Jenkins') {
-      mvn jenkinsMavenConfig(), mvnReleaseCommand
+    stage('Deploy to Jenkins.io') {
+      mvn jenkinsMavenConfig(), mvnDeployCommand
     }
   }
 }
