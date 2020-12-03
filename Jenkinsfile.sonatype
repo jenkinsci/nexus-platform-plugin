@@ -97,8 +97,9 @@ else {
             "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
             "release:perform -B"
         mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
-            "-Dfile=target/nexus-jenkins-plugin.hpi -DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} " +
-            "-Dversion=${version} -DgeneratePom=false deploy:deploy-file -B"
+            "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi -DgroupId=${pom.groupId} " +
+            "-DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
+            "deploy:deploy-file -B"
         currentBuild.displayName = "#${currentBuild.number} - ${version}"
       }
       stage('License Check') {
