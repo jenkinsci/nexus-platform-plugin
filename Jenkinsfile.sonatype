@@ -94,7 +94,8 @@ else {
         pom = readMavenPom file: 'pom.xml'
         version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
         mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
-            "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize release:prepare release:perform -B"
+            "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
+            "release:perform -B"
 
         currentBuild.displayName = "#${currentBuild.number} - ${version}"
       }
@@ -141,9 +142,7 @@ else {
       runSafely 'git clean -f && git reset --hard origin/master'
     }
     stage('Deploy to Jenkins') {
-      withGpgCredentials('gnupg') {
-        mvn jenkinsMavenConfig(), mvnReleaseCommand
-      }
+      mvn jenkinsMavenConfig(), mvnReleaseCommand
     }
   }
 }
