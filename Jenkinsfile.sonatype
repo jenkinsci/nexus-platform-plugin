@@ -140,10 +140,10 @@ else {
       }
     }
     stage('Deploy to Jenkins.io') {
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ${mvnDeployCommand}"
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ${mvnDeployCommand}"
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/pom.xml ${mvnDeployCommand}"
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
+          "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
+          "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
     }
   }
 }
