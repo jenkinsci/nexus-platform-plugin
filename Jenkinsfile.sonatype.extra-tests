@@ -10,7 +10,7 @@ String agentLabel = 'ubuntu-zion'
 def runTests(String javaVersion = 'Java 8') {
   def config = mavenCommon(
       javaVersion: javaVersion,
-      mavenVersion: 'Maven 3.2.x',
+      mavenVersion: 'Maven 3.6.x',
       useEventSpy: false
   )
   mvn config, 'clean install'

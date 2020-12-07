@@ -19,6 +19,7 @@ String getCommitId() {
 Map jenkinsMavenConfig() {
   def common = mavenCommon([mavenStandardOptions: ''])
   common.settingsFile = 'jenkins-settings.xml'
+  common.mavenVersion = 'Maven 3.6.x'
   return common
 }
 
@@ -70,6 +71,7 @@ if (!params.isRelease) {
 
   mavenSnapshotPipeline(
       mavenOptions: '-D skipTests',
+      mavenVersion: 'Maven 3.6.x',
       downstreamJobName: 'extra-tests',
       notificationSender: postHandler,
       iqPolicyEvaluation: iqPolicyEvaluation,
