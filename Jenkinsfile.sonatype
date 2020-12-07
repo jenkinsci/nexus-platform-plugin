@@ -97,8 +97,7 @@ else {
             "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
             "release:perform -B"
         mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
-            "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi -DgroupId=${pom.groupId} " +
-            "-DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
+            "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
             "deploy:deploy-file -B"
         currentBuild.displayName = "#${currentBuild.number} - ${version}"
       }
@@ -141,7 +140,10 @@ else {
       }
     }
     stage('Deploy to Jenkins.io') {
-      mvn jenkinsMavenConfig(), mvnDeployCommand
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ${mvnDeployCommand}"
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ${mvnDeployCommand}"
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
+      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/pom.xml ${mvnDeployCommand}"
     }
   }
 }
