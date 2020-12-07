@@ -63,6 +63,7 @@ if (!params.isRelease) {
   mavenSnapshotPipeline(
       mavenOptions: '-D skipTests',
       mavenVersion: 'Maven 3.6.x',
+      mavenProfiles: ['sonatype'],
       downstreamJobName: 'extra-tests',
       notificationSender: postHandler,
       iqPolicyEvaluation: iqPolicyEvaluation,
