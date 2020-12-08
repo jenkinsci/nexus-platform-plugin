@@ -153,9 +153,16 @@
       </dependency>
 
       <dependency>
-        <groupId>cglib</groupId>
-        <artifactId>cglib-nodep</artifactId>
-        <version>3.3.0</version>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>1.10.18</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <artifactId>junit-dep</artifactId>
+            <groupId>*</groupId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -258,11 +265,11 @@
     </dependency>
 
     <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-nodep</artifactId>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
       <scope>test</scope>
     </dependency>
-
+    
     <dependency>
       <groupId>org.objenesis</groupId>
       <artifactId>objenesis</artifactId>
