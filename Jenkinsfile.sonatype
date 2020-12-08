@@ -6,12 +6,6 @@
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
 import com.sonatype.jenkins.pipeline.GitHub
 
-properties([
-    parameters([
-        booleanParam(defaultValue: false, description: 'Release Nexus Platform Plugin', name: 'isRelease')
-    ])
-])
-
 String getCommitId() {
   return runSafely ('git rev-parse HEAD', true)
 }
@@ -59,85 +53,88 @@ Closure iqPolicyEvaluation = {
     }
 }
 
-if (!params.isRelease) {
-  mavenSnapshotPipeline(
-      mavenOptions: '-D skipTests',
-      mavenVersion: 'Maven 3.6.x',
-      mavenProfiles: ['sonatype'],
-      downstreamJobName: 'extra-tests',
-      notificationSender: postHandler,
-      iqPolicyEvaluation: iqPolicyEvaluation,
-      runFeatureBranchPolicyEvaluations: true
-  )
-  return
-}
-else {
-  node('ubuntu-zion') {
-    def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
+switch (currentBuild.fullProjectName) {
+  case ~/.*snapshot.*/:
+    mavenSnapshotPipeline(
+        mavenOptions: '-D skipTests',
+        mavenVersion: 'Maven 3.6.x',
+        mavenProfiles: ['sonatype'],
+        downstreamJobName: 'extra-tests',
+        notificationSender: postHandler,
+        iqPolicyEvaluation: iqPolicyEvaluation,
+        runFeatureBranchPolicyEvaluations: true
+    )
+    break
+  case ~/.*\/release$/:
+    node('ubuntu-zion') {
+      def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
 
-    try {
-      stage('Preparation') {
-        deleteDir()
+      try {
+        stage('Preparation') {
+          deleteDir()
 
-        checkout scm
-        runSafely 'git config --global user.email sonatype-ci@sonatype.com'
-        runSafely 'git config --global user.name Sonatype CI'
+          checkout scm
+          runSafely 'git config --global user.email sonatype-ci@sonatype.com'
+          runSafely 'git config --global user.name Sonatype CI'
 
-        commitId = getCommitId()
-        commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
-        pom = readMavenPom file: 'pom.xml'
-        version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
-        mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
-            "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
-            "release:perform -B"
-        mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
-            "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
-            "deploy:deploy-file -B"
-        currentBuild.displayName = "#${currentBuild.number} - ${version}"
+          commitId = getCommitId()
+          commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
+          pom = readMavenPom file: 'pom.xml'
+          version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
+          mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
+              "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
+              "release:perform -B"
+          mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
+              "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
+              "deploy:deploy-file -B"
+          currentBuild.displayName = "#${currentBuild.number} - ${version}"
+        }
+        stage('License Check') {
+          licenseCheck(jenkinsMavenConfig())
+        }
+        stage('Build') {
+          mvn jenkinsMavenConfig(), 'clean package'
+        }
+        stage('Nexus Lifecycle Analysis') {
+          iqPolicyEvaluation('release')
+        }
+        stage('Archive Results') {
+          junit '**/target/surefire-reports/TEST-*.xml'
+          archive 'target/*.hpi'
+        }
       }
-      stage('License Check') {
-        licenseCheck(jenkinsMavenConfig())
+      finally {
+        postHandler(env, currentBuild)
       }
-      stage('Build') {
-        mvn jenkinsMavenConfig(), 'clean package'
-      }
-      stage('Nexus Lifecycle Analysis') {
-        iqPolicyEvaluation('release')
-      }
-      stage('Archive Results') {
-        junit '**/target/surefire-reports/TEST-*.xml'
-        archive 'target/*.hpi'
-      }
-    }
-    finally {
-      postHandler(env, currentBuild)
-    }
 
-    if (currentBuild.result == 'FAILURE') {
-      return
-    }
-    if (scm.branches[0].name != '*/master') {
-      return
-    }
-    stage('Deploy to Sonatype') {
-      withGpgCredentials('gnupg') {
-        mvn mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: '']),
-            mvnReleaseCommand
+      if (currentBuild.result == 'FAILURE') {
+        return
+      }
+      if (scm.branches[0].name != '*/master') {
+        return
+      }
+      stage('Deploy to Sonatype') {
+        withGpgCredentials('gnupg') {
+          mvn mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: '']),
+              mvnReleaseCommand
+        }
+      }
+      input 'Push tags and deploy to Jenkins Update Center?'
+      stage('Push tags') {
+        withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                          usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+          runSafely "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+              ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
+        }
+      }
+      stage('Deploy to Jenkins.io') {
+        mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
+            "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
+        mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
+            "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
       }
     }
-    input 'Push tags and deploy to Jenkins Update Center?'
-    stage('Push tags') {
-      withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-        runSafely "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
-            ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
-      }
-    }
-    stage('Deploy to Jenkins.io') {
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
-          "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
-      mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
-          "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
-    }
-  }
+    break
+  default:
+      error "${currentBuild.fullProjectName} does not follow naming conventions."
 }
