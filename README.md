@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.10.20201208-151941.d953318 (December 8th, 2020)
+------------------------------------------------
+- Added support for running the plugin with Java 11 and 14.
+- Added support for scanning Java class binaries produced by Java 14 and 15.
+
 3.9.20201109-154552.99ba8b9 (November 9th, 2020)
 ------------------------------------------------
 - Added flag to enable debug logging.
