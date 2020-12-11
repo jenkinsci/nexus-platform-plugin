@@ -83,6 +83,10 @@ f.section(title: descriptor.displayName) {
         f.checkbox()
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_TerraformPlan()), field: 'terraformPlan') {
+        f.textbox()
+      }
+
       f.entry(title: _(Messages.IqPolicyEvaluation_AdvancedProperties()), field: 'advancedProperties') {
         f.textarea()
       }

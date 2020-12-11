@@ -29,4 +29,6 @@ interface IqPolicyEvaluator
   Boolean getEnableDebugLogging()
 
   String getAdvancedProperties()
+
+  String getTerraformPlan()
 }

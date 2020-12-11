@@ -29,11 +29,12 @@ class RemoteScannerFactory
                                         final ProprietaryConfig proprietaryConfig,
                                         final Logger log,
                                         final String instanceId,
+                                        final String terraformPlan,
                                         final Properties advancedProperties,
                                         final Map<String, String> envVars)
   {
     new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId,
-        advancedProperties, envVars)
+        terraformPlan, advancedProperties, envVars)
   }
 
   static DirectoryScanner getDirectoryScanner() {

@@ -51,6 +51,7 @@ class IqPolicyEvaluatorUtil
       }
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String iqStage = iqPolicyEvaluator.iqStage
+      String terraformPlan = iqPolicyEvaluator.terraformPlan
 
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
@@ -72,7 +73,7 @@ class IqPolicyEvaluatorUtil
       def remoteScanner = RemoteScannerFactory.
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
-              advancedProperties, envVars)
+              terraformPlan, advancedProperties, envVars)
       def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
       def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory

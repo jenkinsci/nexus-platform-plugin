@@ -15,6 +15,7 @@ package org.sonatype.nexus.ci.iq
 import hudson.model.Job
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
+import org.kohsuke.stapler.QueryParameter
 
 interface IqPolicyEvaluatorDescriptor
 {
@@ -35,4 +36,6 @@ interface IqPolicyEvaluatorDescriptor
   FormValidation doCheckEnableDebugLogging(String value)
 
   FormValidation doVerifyCredentials(String jobCredentialsId, Job job)
+
+  FormValidation doCheckTerraformPlan(String value)
 }

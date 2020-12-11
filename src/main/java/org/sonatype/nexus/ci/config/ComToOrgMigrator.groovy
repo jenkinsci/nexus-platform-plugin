@@ -90,7 +90,8 @@ class ComToOrgMigrator
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__iqScanPatterns'         : 'iqScanPatterns',
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__failBuildOnNetworkError': 'failBuildOnNetworkError',
         'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__jobCredentialsId'       : 'jobCredentialsId',
-        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__enableDebugLogging'     : 'enableDebugLogging'
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__enableDebugLogging'     : 'enableDebugLogging',
+        'com_sonatype_nexus_ci_iq_IqPolicyEvaluator__terraformPlan'          : 'terraformPlan'
     ]
 
     iqPolicyEvaluatorTraitFieldMappings.each { key, value ->

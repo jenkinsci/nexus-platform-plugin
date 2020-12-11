@@ -46,6 +46,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   Boolean enableDebugLogging
 
+  String terraformPlan
+
   String advancedProperties
 
   @DataBoundSetter
@@ -71,6 +73,11 @@ class IqPolicyEvaluatorWorkflowStep
   @DataBoundSetter
   public void setEnableDebugLogging(final boolean enableDebugLogging) {
     this.enableDebugLogging = enableDebugLogging
+  }
+
+  @DataBoundSetter
+  public void setTerraformPlan(final String terraformPlan) {
+    this.terraformPlan = terraformPlan
   }
 
   @DataBoundSetter
@@ -159,6 +166,11 @@ class IqPolicyEvaluatorWorkflowStep
     @Override
     FormValidation doCheckEnableDebugLogging(@QueryParameter final String value) {
       FormValidation.validateRequired(value)
+    }
+
+    @Override
+    FormValidation doCheckTerraformPlan(@QueryParameter final String value) {
+      FormValidation.ok()
     }
 
     @Override

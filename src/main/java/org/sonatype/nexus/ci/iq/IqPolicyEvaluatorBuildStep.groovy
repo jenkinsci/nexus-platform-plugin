@@ -51,6 +51,8 @@ class IqPolicyEvaluatorBuildStep
 
   String advancedProperties
 
+  String terraformPlan
+
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqStage,
@@ -60,6 +62,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnNetworkError,
                              final String jobCredentialsId,
                              final Boolean enableDebugLogging,
+                             final String terraformPlan,
                              final String advancedProperties)
   {
     this.jobCredentialsId = jobCredentialsId
@@ -69,6 +72,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqStage = iqStage
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
+    this.terraformPlan = terraformPlan
     this.enableDebugLogging = enableDebugLogging
   }
 
@@ -143,6 +147,11 @@ class IqPolicyEvaluatorBuildStep
     FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
     {
       IqUtil.verifyJobCredentials(jobCredentialsId, job)
+    }
+
+    @Override
+    FormValidation doCheckTerraformPlan(@QueryParameter final String value) {
+      FormValidation.ok()
     }
   }
 }

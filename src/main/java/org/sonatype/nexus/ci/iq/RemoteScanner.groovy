@@ -45,6 +45,8 @@ class RemoteScanner
 
   private final String instanceId
 
+  private final String terraformPlan
+
   private final Properties advancedProperties
 
   private final Map<String, String> envVars
@@ -58,6 +60,7 @@ class RemoteScanner
                 final ProprietaryConfig proprietaryConfig,
                 final Logger log,
                 final String instanceId,
+                final String terraformPlan,
                 final Properties advancedProperties,
                 final Map<String, String> envVars)
   {
@@ -69,6 +72,7 @@ class RemoteScanner
     this.proprietaryConfig = proprietaryConfig
     this.log = log
     this.instanceId = instanceId
+    this.terraformPlan = terraformPlan
     this.advancedProperties = advancedProperties
     this.envVars = envVars
   }
@@ -80,7 +84,7 @@ class RemoteScanner
     def targets = getScanTargets(workDirectory, scanPatterns)
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
-        envVars)
+        envVars, new File(workDirectory, terraformPlan).path)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 

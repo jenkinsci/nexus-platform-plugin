@@ -87,6 +87,10 @@ f.section(title: descriptor.displayName) {
         f.textarea()
       }
 
+      f.entry(title: _(Messages.IqPolicyEvaluation_TerraformPlan()), field: 'terraformPlan') {
+        f.textbox()
+      }
+
       f.block() {
         f.validateButton(
             title: _(org.sonatype.nexus.ci.config.Messages.Configuration_TestConnection()),
