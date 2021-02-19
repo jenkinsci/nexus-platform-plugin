@@ -35,11 +35,20 @@ class NxiqConfiguration
 
   String credentialsId
 
+  /**
+   * Allow for selectively removing features related to https://issues.sonatype.org/browse/INTC-95
+   * - do not store the embedded Report along with builds
+   * - do not show causation for Policy violations in the build log
+   * @since 3.10
+   */
+  boolean hideReports
+  
   @DataBoundConstructor
-  NxiqConfiguration(final String serverUrl, final String credentialsId)
+  NxiqConfiguration(final String serverUrl, final String credentialsId, final boolean hideReports)
   {
     this.serverUrl = serverUrl
     this.credentialsId = credentialsId
+    this.hideReports = hideReports
   }
 
   @Override
@@ -58,6 +67,10 @@ class NxiqConfiguration
 
   static NxiqConfiguration getIqConfig() {
     return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
+  }
+  
+  static boolean getHideReports() {
+    getIqConfig()?.@hideReports
   }
 
   @Extension

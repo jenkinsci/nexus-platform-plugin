@@ -59,7 +59,7 @@ class ComToOrgMigrator
       }
       //noinspection GrDeprecatedAPIUsage
       oldGlobalConfiguration.iqConfigs.each { com.sonatype.nexus.ci.config.NxiqConfiguration iqConfiguration ->
-        def newIqConfiguration = new NxiqConfiguration(iqConfiguration.serverUrl, iqConfiguration.credentialsId)
+        def newIqConfiguration = new NxiqConfiguration(iqConfiguration.serverUrl, iqConfiguration.credentialsId, false)
         newGlobalConfiguration.iqConfigs.add(newIqConfiguration)
       }
 

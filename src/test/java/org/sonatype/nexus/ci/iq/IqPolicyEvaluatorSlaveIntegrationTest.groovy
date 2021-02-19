@@ -41,6 +41,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.okJson
 import static com.github.tomakehurst.wiremock.client.WireMock.post
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import static org.hamcrest.CoreMatchers.hasItems
+import static org.hamcrest.Matchers.not
+import static org.junit.Assert.assertThat
 
 /**
  * Test builds on slave using WireMock. A HTTP Mock service is required over Spock's GroovyMock as the slave runs
@@ -108,8 +111,8 @@ class IqPolicyEvaluatorSlaveIntegrationTest
             }""")))
   }
 
-  def configureJenkins() {
-    def nxiqConfiguration = [new NxiqConfiguration("http://localhost:${wireMockRule.port()}", 'cred-id')]
+  def configureJenkins(boolean hideReports = false) {
+    def nxiqConfiguration = [new NxiqConfiguration("http://localhost:${wireMockRule.port()}", 'cred-id', hideReports)]
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
     GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs = []
     def credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'cred-id', 'name', 'user',
@@ -134,6 +137,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
 
     then: 'the return code is successful'
       jenkins.assertBuildStatusSuccess(build)
+    
+    and: 'two IQ build actions are associated'
+      assertThat(build.actions.collect { it.getClass() },
+          hasItems(PolicyEvaluationHealthAction.class, PolicyEvaluationReportAction.class))
   }
 
   def 'Should perform a freestyle build on slave with new server version'() {
@@ -336,6 +343,30 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       assert wireMockRule.countRequestsMatching(
           RequestPatternBuilder.newRequestPattern(RequestMethod.POST, urlMatching('/api/v2/sourceControl.*'))
               .build()).count == 1
+  }
+  
+  def 'Build with hideReports configured should not include a report action'() {
+    given: 'a jenkins project, and "hideReports" feature turned on'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.assignedNode = jenkins.createSlave()
+      project.buildersList.
+          add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
+              null))
+      configureJenkins(true)
+
+    and: 'a mock IQ server stub'
+      configureIqServerMock()
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
+
+    and: 'only the health IQ build action is associated'
+      def actionClasses = build.actions.collect { it.getClass() }
+      assertThat(actionClasses, hasItems(PolicyEvaluationHealthAction.class))
+      assertThat(actionClasses, not(hasItems(PolicyEvaluationReportAction.class)))
   }
 
   private String decrementVersion(String version) {
