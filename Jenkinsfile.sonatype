@@ -62,7 +62,8 @@ switch (currentBuild.fullProjectName) {
         downstreamJobName: 'extra-tests',
         notificationSender: postHandler,
         iqPolicyEvaluation: iqPolicyEvaluation,
-        runFeatureBranchPolicyEvaluations: true
+        runFeatureBranchPolicyEvaluations: true,
+        testResults: ['**/target/*-reports/*.xml']
     )
     break
   case ~/.*\/release$/:
