@@ -16,6 +16,7 @@ import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.LoggerBridge
 
 import hudson.AbortException
@@ -88,10 +89,12 @@ class IqPolicyEvaluatorUtil
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
 
-      def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
-      run.addAction(reportAction)
-
-      Result result = handleEvaluationResult(evaluationResult, listener, applicationId)
+      if (!NxiqConfiguration.hideReports){
+        def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
+        run.addAction(reportAction)
+      }
+      
+      Result result = handleEvaluationResult(evaluationResult, listener, applicationId, NxiqConfiguration.hideReports)
       run.setResult(result)
       if (result == Result.FAILURE) {
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
@@ -148,10 +151,13 @@ class IqPolicyEvaluatorUtil
 
   private static Result handleEvaluationResult(final ApplicationPolicyEvaluation evaluationResult,
                                                final TaskListener listener,
-                                               final String appId)
+                                               final String appId,
+                                               boolean hideReports)
   {
     def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
-    listener.logger.println(policyFailureMessageFormatter.message)
+    if(!hideReports) {
+      listener.logger.println(policyFailureMessageFormatter.message)
+    }
 
     if (policyFailureMessageFormatter.hasFailures()) {
       listener.fatalError(Messages.IqPolicyEvaluation_EvaluationFailed(appId))

@@ -34,6 +34,7 @@ import hudson.model.Result
 import hudson.remoting.Channel
 import org.slf4j.Logger
 import spock.lang.Specification
+import spock.lang.Unroll
 import spock.util.mop.ConfineMetaClassChanges
 
 import static TestDataGenerators.createAlert
@@ -324,13 +325,15 @@ class IqPolicyEvaluatorTest
       ex.policyEvaluation == policyEvaluation
   }
 
-  def 'prints an error message on failure'() {
+  @Unroll
+  def 'prints an error message on failure when configured with hideReports = #hideReports'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           false, '131-cred', null, null)
       BuildListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log
+      NxiqConfiguration.hideReports >> hideReports
       def trigger = createAlert(Action.ID_FAIL).trigger
 
     when:
@@ -344,20 +347,25 @@ class IqPolicyEvaluatorTest
 
     and:
       thrown PolicyEvaluationException
-      1 * log.println(
+      (hideReports ? 0 : 1) * log.println(
           'Nexus IQ reports policy failing due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
               ' viewed online at http://server/report\nSummary of policy violations: 11 critical, 12 severe, 13 moderate')
       1 * listener.fatalError('IQ Server evaluation of application appId failed')
+    
+    where:
+      hideReports << [true, false]
   }
 
-  def 'prints a log message on warnings'() {
+  @Unroll
+  def 'prints a log message on warnings when configured with hideReports = #hideReports'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           false, '131-cred', null, null)
       BuildListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log
+      NxiqConfiguration.hideReports >> hideReports
       def trigger = createAlert(Action.ID_FAIL).trigger
 
     when:
@@ -369,10 +377,13 @@ class IqPolicyEvaluatorTest
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])],
               reportUrl)
       1 * log.println("IQ Server evaluation of application appId detected warnings")
-      1 * log.println(
+      (hideReports ? 0 : 1) * log.println(
           'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
               ' viewed online at http://server/report\nSummary of policy violations: 11 critical, 12 severe, 13 moderate')
+
+    where:
+      hideReports << [true, false]
   }
 
   def 'prints a summary on success'() {

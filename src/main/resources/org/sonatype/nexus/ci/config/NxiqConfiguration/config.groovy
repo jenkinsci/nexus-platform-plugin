@@ -24,7 +24,11 @@ f.section(title: descriptor.displayName) {
   f.entry(title: _(Messages.Configuration_ServerUrl()), field: 'serverUrl') {
     f.textbox(clazz: 'required')
   }
-
+  
+  f.entry(title: (Messages.Configuration_HideReports()), field: 'hideReports') {
+    f.checkbox(help: descriptor.getHelpFile('hideReports'))
+  }
+  
   f.entry(title: _(Messages.Configuration_Credentials()), field: 'credentialsId') {
     c.select(context:app, includeUser:false, expressionAllowed:false)
   }

@@ -187,7 +187,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def descriptor = getSelectedApplication()
       // create a config so that IqUtil.doFillApplicationIdItems will go down the path that uses custom credentials
       GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('http://server/url',
-          null)]
+          null, false)]
       def job = Mock(Job)
 
     when:

@@ -915,7 +915,7 @@ class IqPolicyEvaluatorIntegrationTest
   }
 
   def configureJenkins() {
-    nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'cred-id')]
+    nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'cred-id', false)]
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
     GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs = nxrmConfiguration
     credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'cred-id', 'name', 'user', 'password')
