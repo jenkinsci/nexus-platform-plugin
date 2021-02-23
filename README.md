@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.10.20210222-102732.7875f67 (February 23rd, 2020)
+------------------------------------------------
+- Update the resultant <dependencies> structure to include the nested dependencies to form a dependency tree when scanning a module.xml file.
+
 3.10.20201208-151941.d953318 (December 8th, 2020)
 ------------------------------------------------
 - Added support for running the plugin with Java 11 and 14.
