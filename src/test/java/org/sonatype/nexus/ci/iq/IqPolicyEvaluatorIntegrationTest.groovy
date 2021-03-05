@@ -919,12 +919,14 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
+      def credential_id = '131-cred'
+      def username = 'project-user'
       UsernamePasswordCredentials projectCredentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
-        '131-cred', 'project-cred', 'project-user', 'project-password')
+        credential_id, 'project-cred', username, 'project-password')
       CredentialsProvider.lookupStores(jenkins.jenkins).first().addCredentials(Domain.global(), projectCredentials)
 
     when: 'the nexus policy evaluator is executed'
-      project.definition = new CpsFlowDefinition('''
+      project.definition = new CpsFlowDefinition("""
         pipeline { 
           agent any 
           stages { 
@@ -932,16 +934,16 @@ class IqPolicyEvaluatorIntegrationTest
               steps { 
                 writeFile file: 'dummy.txt', text: 'dummy'
                 nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage',
-                  jobCredentialsId: '131-cred'
+                  jobCredentialsId: '${credential_id}'
               } 
             } 
           } 
-        }''')
+        }""")
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated using the project user'
       1 * iqClientBuilder.withServerConfig({ ServerConfig cfg ->
-        cfg.authentication.username == 'project-user'
+        cfg.authentication.username == username
       }) >> iqClientBuilder
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
