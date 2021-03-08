@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.11.20210308-082521.0d183ff (March 8th, 2021)
+------------------------------------------------
+- Added scanning and application/package analysis support for Java using a pom.xml or build.gradle file.
+
 3.11.20210301-084816.bd7c972 (March 1, 2021)
 ------------------------------------------------
 - Added a Global Configuration option to remove direct IQ reporting of policy violations from Jenkins.
@@ -31,6 +35,9 @@ Changelog
 3.10.20210222-102732.7875f67 (February 23rd, 2021)
 ------------------------------------------------
 - Update the resultant <dependencies> structure to include the nested dependencies to form a dependency tree when scanning a module.xml file.
+- Added scanning and application/package analysis support for the following ecosystems:
+    - NPM using files : yarn.lock, pnpm-lock.yaml, package-lock.json, npm-shrinkwrap.json
+    - Nuget using packages.config file or .csproj files
 
 3.10.20201208-151941.d953318 (December 8th, 2020)
 ------------------------------------------------
