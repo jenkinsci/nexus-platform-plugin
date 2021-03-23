@@ -50,6 +50,7 @@ class IqUtilTest
 
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
       iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
@@ -60,10 +61,6 @@ class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems(credentialsId, job)
 
     then:
-      1 * IqClientFactory.getIqClient { IqClientFactoryConfiguration cfg ->
-        cfg.credentialsId == credentialsId && cfg.serverUrl == URI.create(serverUrl) && cfg.context == job
-      } >> iqClient
-
       applicationItems.size() == 3
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
@@ -102,16 +99,14 @@ class IqUtilTest
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
 
+      IqClientFactory.getIqClient { it.credentialsId == 'jobCredentialsId' && it.context == job } >> iqClient
+
       iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
       def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId', job)
 
     then:
-      1 * IqClientFactory.getIqClient { IqClientFactoryConfiguration cfg ->
-        cfg.credentialsId == 'jobCredentialsId' && cfg.serverUrl == URI.create(serverUrl) && cfg.context == job
-      } >> iqClient
-
       applicationItems.size() == 2
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
