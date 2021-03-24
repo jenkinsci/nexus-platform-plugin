@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.11.20210323-112924.daaeac7 (March 24th, 2021)
+------------------------------------------------
+- Fix a regression in configuring the Policy Evaluation task in the UI.
+
 3.11.20210308-082521.0d183ff (March 8th, 2021)
 ------------------------------------------------
 - Added scanning and application/package analysis support for Java using a pom.xml or build.gradle file.
