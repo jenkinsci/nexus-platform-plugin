@@ -12,16 +12,38 @@
  */
 package org.sonatype.nexus.ci.iq
 
+
+import com.gargoylesoftware.htmlunit.html.HtmlOption
+import com.gargoylesoftware.htmlunit.html.HtmlPage
+import com.gargoylesoftware.htmlunit.html.HtmlSelect
+import com.github.tomakehurst.wiremock.junit.WireMockRule
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.JenkinsRule.WebClient
 import spock.lang.Specification
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import static org.sonatype.nexus.ci.iq.IqServerMockUtility.configureIqServerMock
+import static org.sonatype.nexus.ci.iq.IqServerMockUtility.configureJenkins
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_AddIqServers
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_Application
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_ManualApplication
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_NoIqServersConfigured
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_SelectApplication
+import static org.sonatype.nexus.ci.iq.Messages.IqPolicyEvaluation_Stage
+
+/**
+ * Functional test of the Pipeline syntax configuration page used for snippet generation.
+ */
 class PipelineSyntaxIntegrationTest
     extends Specification
 {
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
+
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort(), false)
 
   def 'Pipeline syntax page should load successfully'() {
     given: 'a pipleline project'
