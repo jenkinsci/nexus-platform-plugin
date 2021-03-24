@@ -86,7 +86,14 @@ class IqServerMockUtility
             "provider": ""
             }""")))
     givenThat(get(urlPathEqualTo('/rest/policy/stages'))
-        .willReturn(okJson('[{"stageTypeId":"develop","stageName":"Develop"},{"stageTypeId":"build","stageName":"Build"},{"stageTypeId":"stage-release","stageName":"Stage Release"},{"stageTypeId":"release","stageName":"Release"},{"stageTypeId":"operate","stageName":"Operate"}]'))
+        .willReturn(okJson('''[
+            {"stageTypeId":"develop","stageName":"Develop"},
+            {"stageTypeId":"build","stageName":"Build"},
+            {"stageTypeId":"stage-release",
+            "stageName":"Stage Release"},
+            {"stageTypeId":"release","stageName":"Release"},
+            {"stageTypeId":"operate","stageName":"Operate"}]'''
+        ))
     )
   }
 
