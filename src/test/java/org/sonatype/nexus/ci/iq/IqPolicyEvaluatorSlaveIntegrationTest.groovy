@@ -13,14 +13,6 @@
 package org.sonatype.nexus.ci.iq
 
 
-import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
-import org.sonatype.nexus.ci.config.NxiqConfiguration
-
-import com.cloudbees.plugins.credentials.CredentialsProvider
-import com.cloudbees.plugins.credentials.CredentialsScope
-import com.cloudbees.plugins.credentials.domains.Domain
-import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
@@ -35,15 +27,13 @@ import org.jvnet.hudson.test.ExtractResourceSCM
 import org.jvnet.hudson.test.JenkinsRule
 import spock.lang.Specification
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get
-import static com.github.tomakehurst.wiremock.client.WireMock.givenThat
-import static com.github.tomakehurst.wiremock.client.WireMock.okJson
-import static com.github.tomakehurst.wiremock.client.WireMock.post
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import static org.hamcrest.CoreMatchers.hasItems
 import static org.hamcrest.Matchers.not
 import static org.junit.Assert.assertThat
+import static org.sonatype.nexus.ci.iq.IqServerMockUtility.configureIqServerMock
+import static org.sonatype.nexus.ci.iq.IqServerMockUtility.configureJenkins
 
 /**
  * Test builds on slave using WireMock. A HTTP Mock service is required over Spock's GroovyMock as the slave runs
@@ -60,66 +50,6 @@ class IqPolicyEvaluatorSlaveIntegrationTest
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort())
 
-  /**
-   * Minimal server mock to allow plugin to succeed
-   */
-  def configureIqServerMock(serverVersion = IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED) {
-    WireMock.configureFor("localhost", wireMockRule.port())
-    givenThat(get(urlMatching('/rest/config/proprietary\\?.*'))
-        .willReturn(okJson('{}')))
-    givenThat(post(urlMatching('/rest/integration/applications/verifyOrCreate/.*'))
-        .willReturn(okJson('true')))
-    givenThat(post(urlMatching('/rest/integration/applications/app/evaluations/ci/stages/.*'))
-        .willReturn(okJson('{"statusId": "statusId"}')))
-    givenThat(get(urlMatching('/rest/integration/applications/app/evaluations/status/statusId'))
-        .willReturn(okJson('''{
-        "status": "COMPLETED",
-        "reason": null,
-        "result": {
-        "alerts": [],
-        "affectedComponentCount": 33,
-        "criticalPolicyViolationCount": 20,
-        "severePolicyViolationCount": 12,
-        "moderatePolicyViolationCount": 1,
-        "criticalPolicyViolationCount": 46,
-        "severePolicyViolationCount": 54,
-        "moderatePolicyViolationCount": 3,
-        "grandfatheredPolicyViolationCount": 0
-        },
-        "scanReceipt": {
-        "scanId": "scanId",
-        "timeToReport": 6,
-        "reportUrl": "ui/links/application/app/report/scanId",
-        "pdfUrl": "ui/links/application/app/report/scanId/pdf",
-        "dataUrl": "api/v2/applications/app/reports/scanId/raw",
-        "reportTimeoutInSeconds": 350
-        },
-        "nextPollingIntervalInSeconds": 0
-        }''')))
-    givenThat(get(urlMatching('/rest/product/version'))
-        .willReturn(okJson("""{"tag": "1e64d778447fc30e4f509f9ca965c5bbe7aa8fd3",
-        "version": "${serverVersion}",
-        "name": "sonatype-clm-server",
-        "timestamp": "201807111516",
-        "build": "build-number"}""")))
-    givenThat(post(urlMatching('/api/v2/sourceControl.*'))
-        .willReturn(okJson("""{"id": "id",
-            "ownerId" : "",
-            "repositoryUrl": "",
-            "token": "",
-            "provider": ""
-            }""")))
-  }
-
-  def configureJenkins(boolean hideReports = false) {
-    def nxiqConfiguration = [new NxiqConfiguration("http://localhost:${wireMockRule.port()}", 'cred-id', hideReports)]
-    GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
-    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs = []
-    def credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'cred-id', 'name', 'user',
-        'password')
-    CredentialsProvider.lookupStores(jenkins.jenkins).first().addCredentials(Domain.global(), credentials)
-  }
-
   def 'Should perform a freestyle build on slave'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
@@ -127,10 +57,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
             null))
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock()
+      configureIqServerMock(wireMockRule.port())
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -150,10 +80,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
             null))
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -169,10 +99,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
             null))
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(decrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), decrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -185,10 +115,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       Slave slave = jenkins.createSlave()
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock()
+      configureIqServerMock(wireMockRule.port())
 
     when: 'the build is scheduled'
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
@@ -205,10 +135,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       Slave slave = jenkins.createSlave()
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
@@ -225,10 +155,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       Slave slave = jenkins.createSlave()
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(decrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), decrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
@@ -253,10 +183,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
             null))
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -277,10 +207,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList
           .add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
             null))
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -297,10 +227,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       def url = 'http://a.com/b/c'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       Slave slave = jenkins.createSlave()
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition("node ('${slave.getNodeName()}') {\n" +
@@ -323,10 +253,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       Slave slave = jenkins.createSlave()
-      configureJenkins()
+      configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
-      configureIqServerMock(incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
+      configureIqServerMock(wireMockRule.port(), incrementVersion(IqPolicyEvaluatorUtil.MINIMAL_SERVER_VERSION_REQUIRED))
 
     when: 'the nexus policy evaluator is executed'
       def path = new File(getClass().getResource('sampleRepoWithRemoteUrl.zip').toURI()).absolutePath
@@ -352,10 +282,10 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('app'), [], [], false, 'cred-id', null,
               null))
-      configureJenkins(true)
+      configureJenkins(jenkins.jenkins, wireMockRule.port(), true)
 
     and: 'a mock IQ server stub'
-      configureIqServerMock()
+      configureIqServerMock(wireMockRule.port())
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
