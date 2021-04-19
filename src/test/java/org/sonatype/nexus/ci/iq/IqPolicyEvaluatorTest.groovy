@@ -84,8 +84,8 @@ class IqPolicyEvaluatorTest
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
     GlobalNexusConfiguration.instanceId >> 'instance-id'
-    iqClient.evaluateApplication("appId", "stage", _, _) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, [],
-        reportUrl)
+    iqClient.evaluateApplication("appId", "stage", _, _) >> new ApplicationPolicyEvaluation(
+        0, 0, 0, 0, 0, 0, 0, 0, 0, [], reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
     remoteScanResult.copyToLocalScanResult() >> scanResult
     run.getEnvironment(_) >> envVars
@@ -99,7 +99,7 @@ class IqPolicyEvaluatorTest
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'), [new ScanPattern("*.jar")], [],
           false, null, null, null)
-      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, emptyList(), reportUrl)
+      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, emptyList(), reportUrl)
       def remoteScanner = Mock(RemoteScanner)
 
     when:
@@ -294,7 +294,7 @@ class IqPolicyEvaluatorTest
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
-          new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, alerts, reportUrl)
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, alerts, reportUrl)
       1 * run.setResult(buildResult)
 
     where:
@@ -308,7 +308,7 @@ class IqPolicyEvaluatorTest
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
           false, '131-cred', null, null)
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0,
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0,
           [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
 
     when:
@@ -342,8 +342,8 @@ class IqPolicyEvaluatorTest
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])],
-              reportUrl)
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 0,
+              [new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])], reportUrl)
 
     and:
       thrown PolicyEvaluationException
@@ -374,8 +374,8 @@ class IqPolicyEvaluatorTest
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
-          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])],
-              reportUrl)
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1,
+              [new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], reportUrl)
       1 * log.println("IQ Server evaluation of application appId detected warnings")
       (hideReports ? 0 : 1) * log.println(
           'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
@@ -400,7 +400,7 @@ class IqPolicyEvaluatorTest
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
-          new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, [],
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, [],
               reportUrl)
       0 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
@@ -427,7 +427,7 @@ class IqPolicyEvaluatorTest
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'),
           [new ScanPattern("*.jar")], [],
           false, null, null, null)
-      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, emptyList(), reportUrl)
+      def evaluationResult = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, emptyList(), reportUrl)
       def remoteScanner = Mock(RemoteScanner)
 
     when:
