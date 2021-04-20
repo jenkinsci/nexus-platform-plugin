@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.11.20210420-142258.bdfc332 (April 20th, 2021)
+------------------------------------------------
+- Added support for scanning Java class binaries produced by Java 16.
+
 3.11.20210323-112924.daaeac7 (March 24th, 2021)
 ------------------------------------------------
 - Fix a regression in configuring the Policy Evaluation task in the UI.
