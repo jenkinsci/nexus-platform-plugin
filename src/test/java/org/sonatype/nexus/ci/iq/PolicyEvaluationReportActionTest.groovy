@@ -63,7 +63,7 @@ class PolicyEvaluationReportActionTest
   def "GetUrl"() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1, [], reportLink)
       def reportAction = new PolicyEvaluationReportAction('my-iq-app', 'build', null, policyEvaluation)
     when: 'getting report URL'
       def url = reportAction.getUrl()
@@ -74,7 +74,7 @@ class PolicyEvaluationReportActionTest
   def "GetReport should return empty report object"() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1, [], reportLink)
       def reportAction = new PolicyEvaluationReportAction('my-iq-app', 'build', null, policyEvaluation)
 
     when: 'getting report result from empty object'
@@ -99,7 +99,7 @@ class PolicyEvaluationReportActionTest
       def alertWarn2 = new PolicyAlert(fact, [new Action('warn', '', '')])
       def alertNoAction = new PolicyAlert(fact, [])
 
-      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5,
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1,
           [alertFail, alertWarn, alertWarn2, alertNoAction], 'link')
       def reportAction = new PolicyEvaluationReportAction('my-iq-app', 'build', null, policyEvaluation)
 

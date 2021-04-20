@@ -25,7 +25,7 @@ class PolicyEvaluationHealthActionTest
   def 'it redirects to the application composition report'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, [], reportLink)
       def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
@@ -79,7 +79,7 @@ class PolicyEvaluationHealthActionTest
   def 'it returns the correct component and grandfathered policy violation counts'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
-      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1, [], reportLink)
       def healthAction = new PolicyEvaluationHealthAction('my-iq-app', 'build', null, policyEvaluation)
       def response = Mock(StaplerResponse)
 
@@ -116,7 +116,7 @@ class PolicyEvaluationHealthActionTest
     setup:
       def reportLink = 'http://localhost/reportLink'
       def run = Mock(Run)
-      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, [], reportLink)
+      def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1, [], reportLink)
       def healthAction = new PolicyEvaluationHealthAction('appId', 'stage', run, policyEvaluation)
 
     when:
