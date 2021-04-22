@@ -74,17 +74,26 @@ class IqPolicyEvaluatorUtil
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
               advancedProperties, envVars)
-      def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
-          .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId, envVars)
-      def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
-      if (repositoryUrl != null) {
-        iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+      def scanResult
+      def evaluationResult
+      try {
+        def remoteScanResult = launcher.getChannel().call(remoteScanner)
+        scanResult = remoteScanResult.copyToLocalScanResult()
+
+        def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
+            .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId,
+                envVars)
+        def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
+        if (repositoryUrl != null) {
+          iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+        }
+
+        File workDirectory = new File(workspace.getRemote())
+        evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
+      } finally {
+        RemoteScanResult.deleteLocalScanResult(scanResult)
       }
-
-      File workDirectory = new File(workspace.getRemote())
-      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
 
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)

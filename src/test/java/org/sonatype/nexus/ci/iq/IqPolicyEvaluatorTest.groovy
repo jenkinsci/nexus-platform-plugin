@@ -75,6 +75,8 @@ class IqPolicyEvaluatorTest
 
   def repositoryUrl = 'https://a.com/b/c'
 
+  File localScanFile = Mock()
+
   def setup() {
     GroovyMock(NxiqConfiguration, global: true)
     GroovyMock(GlobalNexusConfiguration, global: true)
@@ -88,6 +90,7 @@ class IqPolicyEvaluatorTest
         0, 0, 0, 0, 0, 0, 0, 0, 0, [], reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
     remoteScanResult.copyToLocalScanResult() >> scanResult
+    scanResult.scanFile >> localScanFile
     run.getEnvironment(_) >> envVars
     run.parent >> job
     run.workspace >> workspace
@@ -116,6 +119,8 @@ class IqPolicyEvaluatorTest
 
     then: 'evaluates the result'
       1 * iqClient.evaluateApplication("appId", "stage", scanResult, _) >> evaluationResult
+    then: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
   }
 
   def 'it expands environment variables for scan pattern'() {
@@ -249,6 +254,8 @@ class IqPolicyEvaluatorTest
       1 * channel.call(remoteScanner) >> { throw new IOException('CRASH') }
       IOException e = thrown()
       e.message == 'CRASH'
+    and: 'no need to delete the temp scan file since it was not created'
+      0 * localScanFile.delete()
   }
 
   def 'evaluation networking exceptions are suppressed by failBuildOnNetworkError'() {
@@ -265,6 +272,8 @@ class IqPolicyEvaluatorTest
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
           { throw new IqClientException('SNAP', new IOException('CRASH')) }
       noExceptionThrown()
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
   }
 
   def 'global no credentials are passed to the client builder when no job credentials provided'() {
@@ -296,6 +305,8 @@ class IqPolicyEvaluatorTest
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
           new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, alerts, reportUrl)
       1 * run.setResult(buildResult)
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
 
     where:
       alerts                                                  || buildResult
@@ -323,6 +334,8 @@ class IqPolicyEvaluatorTest
       PolicyEvaluationException ex = thrown()
       ex.message == 'IQ Server evaluation of application appId failed'
       ex.policyEvaluation == policyEvaluation
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
   }
 
   @Unroll
@@ -352,7 +365,9 @@ class IqPolicyEvaluatorTest
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
               ' viewed online at http://server/report\nSummary of policy violations: 11 critical, 12 severe, 13 moderate')
       1 * listener.fatalError('IQ Server evaluation of application appId failed')
-    
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
+
     where:
       hideReports << [true, false]
   }
@@ -381,6 +396,8 @@ class IqPolicyEvaluatorTest
           'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
               'hash=12hash34) [\n  Constraint(constraintName) [summary because: reason] ]]\nThe detailed report can be' +
               ' viewed online at http://server/report\nSummary of policy violations: 11 critical, 12 severe, 13 moderate')
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
 
     where:
       hideReports << [true, false]
@@ -405,6 +422,8 @@ class IqPolicyEvaluatorTest
       0 * log.println("WARNING: IQ Server evaluation of application appId detected warnings.")
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
           'Summary of policy violations: 0 critical, 0 severe, 0 moderate')
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
   }
 
   def 'prints an error message if not in node context'() {
@@ -450,5 +469,7 @@ class IqPolicyEvaluatorTest
 
     then: 'evaluates the result'
       1 * iqClient.evaluateApplication("appId", "stage", scanResult, _) >> evaluationResult
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
   }
 }

@@ -35,4 +35,8 @@ class RemoteScanResult
     new FileOutputStream(localFile).withStream { filePath.copyTo(it) }
     return new ScanResult(scan, localFile)
   }
+
+  static boolean deleteLocalScanResult(final ScanResult scanResult) {
+    scanResult?.scanFile?.delete()
+  }
 }
