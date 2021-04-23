@@ -21,15 +21,15 @@ class RemoteScanResultTest extends Specification
 {
   def 'create and delete remote scan results'() {
     given: 'a file on an agent'
-      File agentFile = File.createTempFile('scan-', '.txt')
+      final agentFile = File.createTempFile('scan-', '.txt')
       agentFile.withWriter { w -> w.print('content') }
-      FilePath filePath = new FilePath(agentFile)
+      final filePath = new FilePath(agentFile)
     and: 'a scan'
-      Scan scan = Mock()
+      final Scan scan = Mock()
     and: 'a new remote scan result wrapped around the scan and agent file'
-      def remoteScanResult = new RemoteScanResult(scan, filePath)
+      final remoteScanResult = new RemoteScanResult(scan, filePath)
     expect: 'we can make a local copy of the result'
-      def scanResult = remoteScanResult.copyToLocalScanResult()
+      final scanResult = remoteScanResult.copyToLocalScanResult()
       scanResult.scan == scan
       scanResult.scanFile.text == 'content'
     when: 'we delete the local copy'
