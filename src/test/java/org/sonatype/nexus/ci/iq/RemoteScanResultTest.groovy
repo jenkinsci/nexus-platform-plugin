@@ -32,10 +32,6 @@ class RemoteScanResultTest extends Specification
       final scanResult = remoteScanResult.copyToLocalScanResult()
       scanResult.scan == scan
       scanResult.scanFile.text == 'content'
-    when: 'we delete the local copy'
-      RemoteScanResult.deleteLocalScanResult(scanResult)
-    then: 'the local file is gone'
-      ! scanResult.scanFile.exists()
     when: 'we delete the remote scan result'
       remoteScanResult.delete()
     then: 'the file is gone from the agent'

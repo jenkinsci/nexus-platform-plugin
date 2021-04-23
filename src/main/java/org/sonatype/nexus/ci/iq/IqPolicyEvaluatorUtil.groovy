@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.iq
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -94,7 +95,7 @@ class IqPolicyEvaluatorUtil
         evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
       } finally {
         // clean up scan files on master and agent
-        RemoteScanResult.deleteLocalScanResult(scanResult)
+        deleteLocalScanResult(scanResult)
         remoteScanResult?.delete()
       }
 
@@ -118,6 +119,15 @@ class IqPolicyEvaluatorUtil
     catch (IqClientException e) {
       return handleNetworkException(iqPolicyEvaluator.failBuildOnNetworkError, e, listener, run)
     }
+  }
+
+  /**
+   * delete the temp scan file referenced in a ScanResult produced as a copy of a RemoteScanResult.
+   * @param scanResult to cleanup
+   * @return true if the file was deleted
+   */
+  private static boolean deleteLocalScanResult(final ScanResult scanResult) {
+    scanResult?.scanFile?.delete()
   }
 
   private static handleNetworkException(final Boolean failBuildOnNetworkError, final IqClientException e,

@@ -48,12 +48,4 @@ class RemoteScanResult
     filePath.delete();
   }
 
-  /**
-   * delete the temp scan file referenced in a ScanResult produced as a copy of a RemoteScanResult.
-   * @param scanResult to cleanup
-   * @return true if the file was deleted
-   */
-  static boolean deleteLocalScanResult(final ScanResult scanResult) {
-    scanResult?.scanFile?.delete()
-  }
 }
