@@ -46,5 +46,4 @@ class RemoteScanResult
   boolean delete() {
     filePath.delete();
   }
-
 }
