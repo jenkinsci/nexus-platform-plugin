@@ -41,6 +41,14 @@ class RemoteScanResult
   }
 
   /**
+   * delete the remote scan file from the remote agent
+   * @return true if the file as deleted
+   */
+  boolean delete() {
+    filePath.delete();
+  }
+
+  /**
    * delete the temp scan file referenced in a ScanResult produced as a copy of a RemoteScanResult.
    * @param scanResult to cleanup
    * @return true if the file was deleted

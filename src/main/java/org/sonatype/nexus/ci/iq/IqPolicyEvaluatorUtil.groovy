@@ -77,8 +77,9 @@ class IqPolicyEvaluatorUtil
 
       def scanResult
       def evaluationResult
+      def remoteScanResult
       try {
-        def remoteScanResult = launcher.getChannel().call(remoteScanner)
+        remoteScanResult = launcher.getChannel().call(remoteScanner)
         scanResult = remoteScanResult.copyToLocalScanResult()
 
         def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
@@ -92,7 +93,9 @@ class IqPolicyEvaluatorUtil
         File workDirectory = new File(workspace.getRemote())
         evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
       } finally {
+        // clean up scan files on master and agent
         RemoteScanResult.deleteLocalScanResult(scanResult)
+        remoteScanResult?.delete()
       }
 
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
