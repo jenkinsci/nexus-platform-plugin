@@ -15,13 +15,18 @@ package org.sonatype.nexus.ci.iq
 import com.sonatype.insight.scan.model.Scan
 
 import hudson.FilePath
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class RemoteScanResultTest extends Specification
 {
+  @Rule
+  private TemporaryFolder temp = new TemporaryFolder()
+
   def 'create and delete remote scan results'() {
     given: 'a file on an agent'
-      final agentFile = File.createTempFile('scan-', '.txt')
+      final agentFile = temp.newFile()
       agentFile.withWriter { w -> w.print('content') }
       final filePath = new FilePath(agentFile)
     and: 'a scan'
