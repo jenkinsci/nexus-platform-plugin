@@ -29,10 +29,21 @@ class RemoteScanResult
     this.scan = scan
   }
 
+  /**
+   * create a copy as a ScanResult with a local copy of the scan file
+   * @return a local ScanResult
+   */
   ScanResult copyToLocalScanResult() {
     def localFile = File.createTempFile('scan', '.xml.gz')
-    localFile.deleteOnExit()
     new FileOutputStream(localFile).withStream { filePath.copyTo(it) }
     return new ScanResult(scan, localFile)
+  }
+
+  /**
+   * delete the remote scan file from the remote agent
+   * @return true if the file as deleted
+   */
+  boolean delete() {
+    filePath.delete();
   }
 }

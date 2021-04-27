@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.iq
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -74,17 +75,29 @@ class IqPolicyEvaluatorUtil
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
               advancedProperties, envVars)
-      def scanResult = launcher.getChannel().call(remoteScanner).copyToLocalScanResult()
 
-      def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
-          .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId, envVars)
-      def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
-      if (repositoryUrl != null) {
-        iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+      def scanResult
+      def evaluationResult
+      def remoteScanResult
+      try {
+        remoteScanResult = launcher.getChannel().call(remoteScanner)
+        scanResult = remoteScanResult.copyToLocalScanResult()
+
+        def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
+            .getRepositoryUrlFinder(workspace, loggerBridge, GlobalNexusConfiguration.instanceId, applicationId,
+                envVars)
+        def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
+        if (repositoryUrl != null) {
+          iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+        }
+
+        File workDirectory = new File(workspace.getRemote())
+        evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
+      } finally {
+        // clean up scan files on master and agent
+        scanResult?.scanFile?.delete()
+        remoteScanResult?.delete()
       }
-
-      File workDirectory = new File(workspace.getRemote())
-      def evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
 
       def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
       run.addAction(healthAction)
