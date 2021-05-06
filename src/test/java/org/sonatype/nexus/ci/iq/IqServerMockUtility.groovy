@@ -85,6 +85,8 @@ class IqServerMockUtility
             "token": "",
             "provider": ""
             }""")))
+    givenThat(get(urlPathEqualTo('/rest/product/features'))
+        .willReturn(okJson('[]')))
     givenThat(get(urlPathEqualTo('/rest/policy/stages'))
         .willReturn(okJson('''[
             {"stageTypeId":"develop","stageName":"Develop"},
