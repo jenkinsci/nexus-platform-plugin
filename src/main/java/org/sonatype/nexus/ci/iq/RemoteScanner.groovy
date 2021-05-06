@@ -62,7 +62,7 @@ class RemoteScanner
                 final String instanceId,
                 final Properties advancedProperties,
                 final Map<String, String> envVars,
-                final Set<String> licensedFeatures)
+                final Set<String> licensedFeatures = Collections.emptySet())
   {
     this.appId = appId
     this.stageId = stageId

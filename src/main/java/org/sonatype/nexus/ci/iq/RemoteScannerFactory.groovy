@@ -31,7 +31,7 @@ class RemoteScannerFactory
                                         final String instanceId,
                                         final Properties advancedProperties,
                                         final Map<String, String> envVars,
-                                        final Set<String> licensedFeatures)
+                                        final Set<String> licensedFeatures = Collections.emptySet())
   {
     new RemoteScanner(appId, stageId, scanPatterns, moduleExcludes, workspace, proprietaryConfig, log, instanceId,
         advancedProperties, envVars, licensedFeatures)

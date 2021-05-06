@@ -448,7 +448,7 @@ class IqPolicyEvaluatorTest
       1 * listener.error('nexusPolicyEvaluation step requires a node context. Please specify an agent or a node block')
   }
 
-  def 'it adds or updates soure control with the retrieved repo url'() {
+  def 'it adds or updates source control with the retrieved repo url'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'),
           [new ScanPattern("*.jar")], [],
