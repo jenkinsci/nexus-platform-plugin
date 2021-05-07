@@ -86,7 +86,7 @@ class IqPolicyEvaluatorTest
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
     GlobalNexusConfiguration.instanceId >> 'instance-id'
-    iqClient.getLicensedFeatures() >> Collections.emptySet()
+    iqClient.getLicensedFeatures() >> []
     iqClient.evaluateApplication("appId", "stage", _, _) >> new ApplicationPolicyEvaluation(
         0, 0, 0, 0, 0, 0, 0, 0, 0, [], reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
