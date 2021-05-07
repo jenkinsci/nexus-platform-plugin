@@ -72,7 +72,7 @@ class IqPolicyEvaluatorUtil
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
 
-      def licensedFeatures = iqClient.getLicensedFeatures()
+      def licensedFeatures = [] //iqClient.getLicensedFeatures()
 
       def remoteScanner = RemoteScannerFactory.
           getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
