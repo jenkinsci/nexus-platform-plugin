@@ -86,6 +86,7 @@ class IqPolicyEvaluatorTest
     NxiqConfiguration.serverUrl >> URI.create("http://server/path")
     NxiqConfiguration.credentialsId >> '123-cred-456'
     GlobalNexusConfiguration.instanceId >> 'instance-id'
+    iqClient.getLicensedFeatures() >> []
     iqClient.evaluateApplication("appId", "stage", _, _) >> new ApplicationPolicyEvaluation(
         0, 0, 0, 0, 0, 0, 0, 0, 0, [], reportUrl)
     IqClientFactory.getIqClient(*_) >> iqClient
@@ -114,7 +115,7 @@ class IqPolicyEvaluatorTest
 
     then: 'performs a remote scan'
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ["*.jar"], [], workspace,
-          proprietaryConfig, _ as Logger, 'instance-id', _, _) >> remoteScanner
+          proprietaryConfig, _ as Logger, 'instance-id', _, _, _) >> remoteScanner
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'evaluates the result'
@@ -137,7 +138,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * RemoteScannerFactory.
           getRemoteScanner("appId", "stage", ['/path1/some-scan-pattern/path2/'], _, workspace, _, _ as Logger,
-              'instance-id', _, _) >> remoteScanner
+              'instance-id', _, _, _) >> remoteScanner
   }
 
   def 'it ignores when no environment variables set for scan pattern'() {
@@ -153,7 +154,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * RemoteScannerFactory.
           getRemoteScanner("appId", "stage", ['/path1/$NONEXISTENT_SCAN_PATTERN/path2/'], _, workspace, _, _ as Logger,
-              'instance-id', _, _) >> remoteScanner
+              'instance-id', _, _, _) >> remoteScanner
   }
 
   def 'it passes module excludes to the remote scanner'() {
@@ -448,7 +449,7 @@ class IqPolicyEvaluatorTest
       1 * listener.error('nexusPolicyEvaluation step requires a node context. Please specify an agent or a node block')
   }
 
-  def 'it adds or updates soure control with the retrieved repo url'() {
+  def 'it adds or updates source control with the retrieved repo url'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep("stage", new SelectedApplication('appId'),
           [new ScanPattern("*.jar")], [],
@@ -465,7 +466,7 @@ class IqPolicyEvaluatorTest
 
     then: 'performs a remote scan'
       1 * RemoteScannerFactory.getRemoteScanner("appId", "stage", ["*.jar"], [], workspace,
-          proprietaryConfig, _ as Logger, 'instance-id', _, _) >> remoteScanner
+          proprietaryConfig, _ as Logger, 'instance-id', _, _, _) >> remoteScanner
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'performs a remote scan'
