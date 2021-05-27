@@ -105,19 +105,19 @@ class IqClientFactory
   private static String getUserAgent() {
     if (!userAgent) {
       userAgent = String.format("%s/%s (Java %s; %s %s; Jenkins %s)",
-          "Sonatype_CLM_CI_Jenkins",
+          'Sonatype_CLM_CI_Jenkins',
           getPluginVersion(),
-          System.getProperty("java.version"),
-          System.getProperty("os.name"),
-          System.getProperty("os.version"),
+          System.getProperty('java.version'),
+          System.getProperty('os.name'),
+          System.getProperty('os.version'),
           Jenkins.VERSION
       );
     }
-    return userAgent;
+    return userAgent
   }
 
   private static String getPluginVersion() {
-    def pluginWrapper = Jenkins.getInstance()?.pluginManager?.getPlugin("Nexus Platform Plugin")
+    def pluginWrapper = Jenkins.getInstance()?.pluginManager?.getPlugin('nexus-jenkins-plugin')
     return pluginWrapper ? pluginWrapper.version : 'unknown'
   }
 }
