@@ -36,6 +36,8 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
 import spock.lang.Specification
 
+import static org.hamcrest.CoreMatchers.*
+
 class IqClientFactoryTest
   extends Specification
 {
@@ -317,5 +319,27 @@ class IqClientFactoryTest
       1 * iqClientBuilder.withInstanceId('instanceId') >> iqClientBuilder
       0 * iqClientBuilder.withServerConfig(_)
       0 * iqClientBuilder.withProxyConfig(_)
+  }
+
+  def 'getIqClient uses custom user agent string'() {
+    setup:
+      def url = 'https://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+
+    when:
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      1 * iqClientBuilder.withServerConfig(_) >> iqClientBuilder
+      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(
+          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith('Jenkins 2.7)'))) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
   }
 }
