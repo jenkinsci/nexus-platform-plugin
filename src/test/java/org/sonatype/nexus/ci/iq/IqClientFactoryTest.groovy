@@ -126,7 +126,8 @@ class IqClientFactoryTest
     then:
       1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
 
     and:
       1 * CredentialsMatchers.withId("123-cred-456")
@@ -154,7 +155,8 @@ class IqClientFactoryTest
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('jobSpecificCredentialsId')
   }
 
@@ -180,7 +182,8 @@ class IqClientFactoryTest
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('credentialsId')
   }
 
@@ -229,6 +232,7 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
+      iqClientBuilder.withUserAgent(_) >> iqClientBuilder
 
     when:
       clientGetter()
@@ -274,6 +278,7 @@ class IqClientFactoryTest
       GroovyMock(InternalIqClientBuilder, global: true)
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
+      iqClientBuilder.withUserAgent(_) >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
       iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
@@ -307,6 +312,7 @@ class IqClientFactoryTest
       IqClientFactory.getIqLocalClient(logger, 'instanceId')
 
     then:
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
       1 * iqClientBuilder.withLogger(logger) >> iqClientBuilder
       1 * iqClientBuilder.withInstanceId('instanceId') >> iqClientBuilder
       0 * iqClientBuilder.withServerConfig(_)

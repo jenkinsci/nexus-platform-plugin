@@ -37,6 +37,8 @@ import static com.google.common.base.Preconditions.checkNotNull
 
 class IqClientFactory
 {
+  private static String userAgent
+
   static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration()) {
     def serverUrl = conf.serverUrl ?: NxiqConfiguration.serverUrl
     def context = conf.context ?: Jenkins.instance
@@ -47,6 +49,7 @@ class IqClientFactory
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
         .withProxyConfig(proxyConfig)
+        .withUserAgent(getUserAgent())
         .withLogger(conf.log)
         .build()
   }
@@ -54,6 +57,7 @@ class IqClientFactory
   static InternalIqClient getIqLocalClient(Logger log, String instanceId) {
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withInstanceId(instanceId)
+        .withUserAgent(getUserAgent())
         .withLogger(log)
         .build()
   }
@@ -96,5 +100,24 @@ class IqClientFactory
     } else {
       throw new IllegalArgumentException(Messages.IqClientFactory_UnsupportedCredentials(credentials.class.simpleName))
     }
+  }
+
+  private static String getUserAgent() {
+    if (!userAgent) {
+      userAgent = String.format("%s/%s (Java %s; %s %s; Jenkins %s)",
+          "Sonatype_CLM_CI_Jenkins",
+          getPluginVersion(),
+          System.getProperty("java.version"),
+          System.getProperty("os.name"),
+          System.getProperty("os.version"),
+          Jenkins.VERSION
+      );
+    }
+    return userAgent;
+  }
+
+  private static String getPluginVersion() {
+    def pluginWrapper = Jenkins.getInstance()?.pluginManager?.getPlugin("Nexus Platform Plugin")
+    return pluginWrapper ? pluginWrapper.version : 'unknown'
   }
 }
