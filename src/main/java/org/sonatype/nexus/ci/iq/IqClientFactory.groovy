@@ -117,7 +117,7 @@ class IqClientFactory
   }
 
   private static String getPluginVersion() {
-    def pluginWrapper = Jenkins.getInstance()?.pluginManager?.getPlugin('nexus-jenkins-plugin')
+    def pluginWrapper = Jenkins.instance?.pluginManager?.getPlugin('nexus-jenkins-plugin')
     return pluginWrapper ? pluginWrapper.version : 'unknown'
   }
 }
