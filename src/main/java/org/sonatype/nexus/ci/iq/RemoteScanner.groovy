@@ -79,6 +79,8 @@ class RemoteScanner
 
   @Override
   RemoteScanResult call() throws RuntimeException {
+    setClassLoaderForCurrentThread()
+
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
@@ -114,5 +116,17 @@ class RemoteScanner
         .collect { f -> new File(workDirectory, f) }
         .sort()
         .asImmutable()
+  }
+
+  /**
+   * Make sure the plugin class loader is used as a context class loader by the current thread.
+   * Jenkins uses a class loader hierarchy and some old libraries assume there is only one class loader (e.g. stax-api).
+   * Class loading in Jenkins: https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/
+   */
+  private void setClassLoaderForCurrentThread() {
+    // get plugin's ClassLoader
+    ClassLoader classLoader = this.class.classLoader
+    // set context ClassLoader for current thread
+    Thread.currentThread().setContextClassLoader(classLoader)
   }
 }

@@ -208,7 +208,7 @@
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
       <artifactId>nexus-platform-api</artifactId>
-      <version>3.35-SNAPSHOT</version>
+      <version>3.38-SNAPSHOT</version>
       <classifier>internal</classifier>
     </dependency>
 
@@ -407,6 +407,12 @@
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
+          <configuration>
+            <maskClasses>
+              com.fasterxml.jackson.
+              org.cyclonedx.
+            </maskClasses>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
