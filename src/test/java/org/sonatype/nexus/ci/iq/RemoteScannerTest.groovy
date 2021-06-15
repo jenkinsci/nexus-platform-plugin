@@ -50,6 +50,7 @@ class RemoteScannerTest
     iqClient = Mock()
     InternalIqClientBuilder.create() >> iqClientBuilder
     iqClientBuilder.withLogger(log) >> iqClientBuilder
+    iqClientBuilder.withUserAgent(_) >> iqClientBuilder
     iqClientBuilder.withInstanceId(_) >> iqClientBuilder
     iqClientBuilder.build() >> iqClient
   }

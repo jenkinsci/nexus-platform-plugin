@@ -36,6 +36,8 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
 import spock.lang.Specification
 
+import static org.hamcrest.CoreMatchers.*
+
 class IqClientFactoryTest
   extends Specification
 {
@@ -126,7 +128,8 @@ class IqClientFactoryTest
     then:
       1 * iqClientBuilder.withServerConfig { it.address == URI.create("https://server/url/") } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
 
     and:
       1 * CredentialsMatchers.withId("123-cred-456")
@@ -154,7 +157,8 @@ class IqClientFactoryTest
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('jobSpecificCredentialsId')
   }
 
@@ -180,7 +184,8 @@ class IqClientFactoryTest
         config.address == URI.create('http://localhost/')
       } >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
-      iqClientBuilder.withLogger(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
       1 * CredentialsMatchers.withId('credentialsId')
   }
 
@@ -229,6 +234,7 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
+      iqClientBuilder.withUserAgent(_) >> iqClientBuilder
 
     when:
       clientGetter()
@@ -274,6 +280,7 @@ class IqClientFactoryTest
       GroovyMock(InternalIqClientBuilder, global: true)
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
+      iqClientBuilder.withUserAgent(_) >> iqClientBuilder
       iqClientBuilder.withLogger(_) >> iqClientBuilder
       iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
@@ -307,9 +314,32 @@ class IqClientFactoryTest
       IqClientFactory.getIqLocalClient(logger, 'instanceId')
 
     then:
+      1 * iqClientBuilder.withUserAgent(_) >> iqClientBuilder
       1 * iqClientBuilder.withLogger(logger) >> iqClientBuilder
       1 * iqClientBuilder.withInstanceId('instanceId') >> iqClientBuilder
       0 * iqClientBuilder.withServerConfig(_)
       0 * iqClientBuilder.withProxyConfig(_)
+  }
+
+  def 'getIqClient uses custom user agent string'() {
+    setup:
+      def url = 'https://foo.com'
+      def credentialsId = "42"
+      CredentialsMatchers.firstOrNull(_, _) >> credentials
+
+      GroovyMock(InternalIqClientBuilder, global: true)
+      def iqClientBuilder = Mock(InternalIqClientBuilder)
+      InternalIqClientBuilder.create() >> iqClientBuilder
+
+    when:
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
+
+    then:
+      1 * iqClientBuilder.withServerConfig(_) >> iqClientBuilder
+      1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
+      1 * iqClientBuilder.withUserAgent(
+          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith('Jenkins 2.7)'))) >> iqClientBuilder
+      1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
   }
 }

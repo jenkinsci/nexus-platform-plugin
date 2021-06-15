@@ -53,6 +53,7 @@ class ComToOrgMigratorIntegrationTest
     iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
     iqClientBuilder.withServerConfig(_) >> iqClientBuilder
     iqClientBuilder.withLogger(_) >> iqClientBuilder
+    iqClientBuilder.withUserAgent(_) >> iqClientBuilder
     iqClientBuilder.withInstanceId(_) >> iqClientBuilder
 
     iqClient = Mock(InternalIqClient)
