@@ -79,6 +79,23 @@ The conflicting classes and their dependencies are relocated in nexus-java-api, 
 plugin to execute all Stax2 operations. For details see: https://github.com/sonatype/nexus-java-api/pull/163/files
 
 
+### Stax's implementation provided by Jenkins does not work with multiple service implementations
+
+**Problem**:
+
+Stax expects that implementations are provided for several service interfaces e.g. `hidden.javax.xml.stream.XMLOutputFactory`. 
+In case multiple implementations are provided for the same service, the first one found is always used. 
+
+Jenkins provides implementations for all the Stax services, and those implementations will be used by Jenkins and 
+plugins, because Jenkins-core is always loaded first. The current mechanism prevents plugins to provide and use
+different/newer Stax/Stax2 implementations.
+
+**Solution**:
+
+Plugins that require newer Stax/Stax2 functionality have to provide their own relocated Stax/Stax2 stack, to not 
+interfere with the Stax/Stax2 classes used by Jenkins.
+
+
 ### Some (old) libraries assume there is only one class loader
 
 **Problem**:
