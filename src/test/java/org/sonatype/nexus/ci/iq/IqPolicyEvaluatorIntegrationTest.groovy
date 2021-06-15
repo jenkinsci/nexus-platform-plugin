@@ -759,6 +759,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     when: 'the nexus policy evaluator is executed'
       def path = new File(getClass().getResource('sampleRepoWithRemoteUrl.zip').toURI()).absolutePath
+      path = path.replace('\\', '/');
 
       project.definition = new CpsFlowDefinition('node {\n' +
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
