@@ -24,6 +24,13 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.11.20210621-093929.6318134 (June 21st, 2021)
+------------------------------------------------
+- Delete temp files from scan after eval
+- Send licensed features into the scanner
+- Fix runtime error due to stax2 conflict
+- Add jenkins version to user agent
+
 3.11.20210420-142258.bdfc332 (April 20th, 2021)
 ------------------------------------------------
 - Added support for scanning Java class binaries produced by Java 16.
