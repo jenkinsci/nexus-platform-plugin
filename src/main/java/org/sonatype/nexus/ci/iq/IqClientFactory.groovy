@@ -118,6 +118,14 @@ class IqClientFactory
 
   private static String getPluginVersion() {
     def pluginWrapper = Jenkins.instance?.pluginManager?.getPlugin('nexus-jenkins-plugin')
-    return pluginWrapper ? pluginWrapper.version : 'unknown'
+    if (pluginWrapper) {
+      def  version = pluginWrapper.version
+      int index = version.indexOf(' ')
+      if (index > -1) {
+        return version.substring(0, index)
+      }
+      return version
+    }
+    return 'unknown'
   }
 }
