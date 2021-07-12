@@ -84,6 +84,13 @@ class RemoteScanner
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
+    for (String pattern : scanPatterns) {
+      if (pattern.startsWith("container:")) {
+        targets = targets.toList()
+        targets.add(new File(pattern))
+        targets = Collections.unmodifiableList(targets)
+      }
+    }
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
