@@ -29,6 +29,9 @@ class RemoteScanner
   static final List<String> DEFAULT_MODULE_INCLUDES =
       ['**/sonatype-clm/module.xml', '**/nexus-iq/module.xml']
 
+  public static final String CONTAINER = "container:"
+
+
   private final String appId
 
   private final String stageId
@@ -85,7 +88,7 @@ class RemoteScanner
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
     for (String pattern : scanPatterns) {
-      if (pattern.startsWith("container:")) {
+      if (pattern.startsWith(CONTAINER)) {
         targets = targets.toList()
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
