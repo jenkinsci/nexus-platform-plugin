@@ -80,6 +80,27 @@ class RemoteScannerTest
       expectedFiles = (matchedFiles + matchedDirs).collect { new File(workspace.getRemote(), it) }
   }
 
+  def "creates a list of container targets from the result of a directory scan"() {
+    setup:
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['container:alpine:3.6'], [], workspace, proprietaryConfig, log,
+          "instance-id", null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.call()
+
+    then:
+      iqClient.scan(*_) >> { arguments ->
+        arguments[3] == ['container:alpine:3.6']
+
+        new ScanResult(null, new File('container:alpine:3.6'))
+      }
+
+    where:
+      workspace = new FilePath(new File('/file/path'))
+  }
+
   def 'creates a list of module indices from the results of a directory scan'() {
     setup:
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,

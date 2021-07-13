@@ -208,7 +208,7 @@
     <dependency>
       <groupId>com.sonatype.nexus</groupId>
       <artifactId>nexus-platform-api</artifactId>
-      <version>3.39.1-01</version>
+      <version>3.41.1-01</version>
     </dependency>
 
     <!-- Begin Jenkins plugins we depend on -->
