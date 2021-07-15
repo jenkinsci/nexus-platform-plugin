@@ -110,6 +110,7 @@ class IqPolicyEvaluatorUtil
       }
       
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId, NxiqConfiguration.hideReports)
+      run.setResult(result)
       if (result == Result.FAILURE) {
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
             evaluationResult)
@@ -117,8 +118,8 @@ class IqPolicyEvaluatorUtil
 
       if (scanResult.scan.summary.errorCount > 0) {
         result = Result.UNSTABLE;
+        run.setResult(result)
       }
-      run.setResult(result)
 
       return evaluationResult
     }

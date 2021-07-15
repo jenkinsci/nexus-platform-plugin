@@ -373,6 +373,35 @@ class IqPolicyEvaluatorTest
       1 * remoteScanResult.delete() >> true
   }
 
+  def 'evaluation throws exception when build results in failure with error count'() {
+    setup:
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+          false, '131-cred', null, null)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0,
+          [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
+      def scan = Mock(Scan)
+      def summary = Mock(ScanSummary)
+      scanResult.scan >> scan
+      scan.summary >> summary
+      summary.errorCount >> 1
+
+    when:
+      buildStep.perform(run, launcher, Mock(BuildListener))
+
+    then:
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >> policyEvaluation
+      1 * run.setResult(Result.FAILURE)
+
+    and:
+      PolicyEvaluationException ex = thrown()
+      ex.message == 'IQ Server evaluation of application appId failed'
+      ex.policyEvaluation == policyEvaluation
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
+      1 * remoteScanResult.delete() >> true
+  }
+
   @Unroll
   def 'prints an error message on failure when configured with hideReports = #hideReports'() {
     setup:
