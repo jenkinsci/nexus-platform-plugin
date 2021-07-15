@@ -392,6 +392,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >> policyEvaluation
       1 * run.setResult(Result.FAILURE)
+      0 * run.setResult(Result.UNSTABLE)
 
     and:
       PolicyEvaluationException ex = thrown()
