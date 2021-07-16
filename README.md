@@ -24,6 +24,12 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+
+3.11.20210716-075132.3b66565 (July 16, 2021)
+------------------------------------------------
+- Add support for nexus container analysis
+- Make build unstable on scan error
+
 3.11.20210621-093929.6318134 (June 21st, 2021)
 ------------------------------------------------
 - Delete temp files from scan after eval
