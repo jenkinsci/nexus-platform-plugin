@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.insight.scan.model.Scan
+import com.sonatype.insight.scan.model.ScanSummary
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
@@ -319,6 +321,34 @@ class IqPolicyEvaluatorTest
       [new PolicyAlert(null, [new Action(Action.ID_NOTIFY)])] || Result.SUCCESS
   }
 
+  def 'evaluation summary error count determines unstable status'() {
+    setup:
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+          false, '131-cred', null, null)
+      def scan = Mock(Scan)
+      def summary = Mock(ScanSummary)
+      scanResult.scan >> scan
+      scan.summary >> summary
+      summary.errorCount >> 1
+
+    when:
+      buildStep.perform(run, launcher, Mock(BuildListener))
+
+    then:
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
+          new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, alerts, reportUrl)
+      1 * run.setResult(buildResult)
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
+      1 * remoteScanResult.delete() >> true
+
+    where:
+      alerts                                                  || buildResult
+      []                                                      || Result.UNSTABLE
+      [new PolicyAlert(null, [new Action(Action.ID_NOTIFY)])] || Result.UNSTABLE
+  }
+
   def 'evaluation throws exception when build results in failure'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
@@ -333,6 +363,37 @@ class IqPolicyEvaluatorTest
       1 * iqClient.verifyOrCreateApplication(*_) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >> policyEvaluation
       1 * run.setResult(Result.FAILURE)
+
+    and:
+      PolicyEvaluationException ex = thrown()
+      ex.message == 'IQ Server evaluation of application appId failed'
+      ex.policyEvaluation == policyEvaluation
+    and: 'delete the temp scan file'
+      1 * localScanFile.delete() >> true
+      1 * remoteScanResult.delete() >> true
+  }
+
+  def 'evaluation throws exception when build results in failure with error count'() {
+    setup:
+      def scan = Mock(Scan)
+      def summary = Mock(ScanSummary)
+      scanResult.scan >> scan
+      scan.summary >> summary
+      summary.errorCount >> 1
+
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+          false, '131-cred', null, null)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0,
+          [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
+
+    when:
+      buildStep.perform(run, launcher, Mock(BuildListener))
+
+    then:
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >> policyEvaluation
+      1 * run.setResult(Result.FAILURE)
+      0 * run.setResult(Result.UNSTABLE)
 
     and:
       PolicyEvaluationException ex = thrown()

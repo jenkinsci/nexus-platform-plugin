@@ -14,7 +14,6 @@ package org.sonatype.nexus.ci.iq
 
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
-import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
@@ -115,6 +114,10 @@ class IqPolicyEvaluatorUtil
       if (result == Result.FAILURE) {
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
             evaluationResult)
+      }
+
+      if (scanResult.scan?.summary?.errorCount > 0) {
+        run.setResult(Result.UNSTABLE)
       }
 
       return evaluationResult
