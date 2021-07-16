@@ -116,7 +116,7 @@ class IqPolicyEvaluatorUtil
             evaluationResult)
       }
 
-      if (scanResult.scan != null && scanResult.scan.summary != null && scanResult.scan.summary.errorCount > 0) {
+      if (scanResult.scan?.summary?.errorCount > 0) {
         result = Result.UNSTABLE;
         run.setResult(result)
       }
