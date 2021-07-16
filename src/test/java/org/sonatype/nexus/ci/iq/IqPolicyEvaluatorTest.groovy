@@ -375,15 +375,16 @@ class IqPolicyEvaluatorTest
 
   def 'evaluation throws exception when build results in failure with error count'() {
     setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
-          false, '131-cred', null, null)
-      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0,
-          [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
       def scan = Mock(Scan)
       def summary = Mock(ScanSummary)
       scanResult.scan >> scan
       scan.summary >> summary
       summary.errorCount >> 1
+
+      def buildStep = new IqPolicyEvaluatorBuildStep('stage', new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+          false, '131-cred', null, null)
+      def policyEvaluation = new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0,
+          [new PolicyAlert(null, [new Action(Action.ID_FAIL)])], reportUrl)
 
     when:
       buildStep.perform(run, launcher, Mock(BuildListener))
