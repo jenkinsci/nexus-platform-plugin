@@ -92,7 +92,7 @@ class RemoteScannerTest
 
     then:
       iqClient.scan(*_) >> { arguments ->
-        arguments[3] == ['container:alpine:3.6']
+        assert arguments[3][0] == new File('container:alpine:3.6')
 
         new ScanResult(null, new File('container:alpine:3.6'))
       }
