@@ -25,6 +25,12 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.11.20210729-123253.8df0e2b (July 30, 2021)
+------------------------------------------------
+- Handle yarn v2 files
+- Exclude package-lock.json in favour of npm-shrinkwrap.json
+- Bug fixes
+
 3.11.20210716-143001.0533f8f (July 16, 2021)
 ------------------------------------------------
 - Add change log for 3.11.20210716-075132.3b66565 (July 16, 2021)
