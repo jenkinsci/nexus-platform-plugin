@@ -25,6 +25,10 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.11.20210811-095455.fdf8fec (August 11, 2021)
+------------------------------------------------
+- Bug fixes
+
 3.11.20210729-123253.8df0e2b (July 30, 2021)
 ------------------------------------------------
 - Handle yarn v2 files
