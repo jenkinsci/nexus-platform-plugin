@@ -61,6 +61,7 @@ switch (currentBuild.fullProjectName) {
         mavenProfiles: ['sonatype'],
         downstreamJobName: 'extra-tests',
         notificationSender: postHandler,
+        deployBranch: 'main',
         iqPolicyEvaluation: iqPolicyEvaluation,
         runFeatureBranchPolicyEvaluations: true
     )
