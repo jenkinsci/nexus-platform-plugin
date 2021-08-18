@@ -110,7 +110,7 @@ switch (currentBuild.fullProjectName) {
       if (currentBuild.result == 'FAILURE') {
         return
       }
-      if (scm.branches[0].name != '*/master') {
+      if (scm.branches[0].name != '*/main') {
         return
       }
       stage('Deploy to Sonatype') {
