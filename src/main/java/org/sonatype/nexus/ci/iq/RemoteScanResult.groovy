@@ -44,6 +44,6 @@ class RemoteScanResult
    * @return true if the file as deleted
    */
   boolean delete() {
-    filePath.delete();
+    filePath.delete()
   }
 }

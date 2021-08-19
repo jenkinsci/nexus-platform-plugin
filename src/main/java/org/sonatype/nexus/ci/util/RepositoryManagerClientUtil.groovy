@@ -66,7 +66,7 @@ class RepositoryManagerClientUtil
     }
 
     if (nxrmConfig.version != NEXUS_3) {
-      throw new RepositoryManagerException("The specified instance is not a Nexus Repository Manager 3 server")
+      throw new RepositoryManagerException('The specified instance is not a Nexus Repository Manager 3 server')
     }
 
     if (validateUrl(nxrmConfig.serverUrl).kind == Kind.ERROR) {

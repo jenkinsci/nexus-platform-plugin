@@ -39,7 +39,7 @@ class ComponentUploaderNxrm3
     def resolvedTagName = envVars.expand(tagName)
     if (resolvedTagName?.trim()) {
       def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
-      nxrmClient.getTag(resolvedTagName).orElseGet({ nxrmClient.createTag(resolvedTagName) })
+      nxrmClient.getTag(resolvedTagName).orElseGet { nxrmClient.createTag(resolvedTagName) }
     }
   }
 
@@ -101,7 +101,7 @@ class ComponentUploaderNxrm3
   @PackageScope
   RepositoryManagerV3Client getRepositoryManagerClient(final NxrmConfiguration nxrmConfiguration) {
     try {
-      checkArgument(nxrmConfiguration.class == Nxrm3Configuration.class,
+      checkArgument(nxrmConfiguration.class == Nxrm3Configuration,
           'Nexus Repository Manager 3.x server is required')
       Nxrm3Configuration nxrm3Configuration = nxrmConfiguration as Nxrm3Configuration
       nexus3Client(nxrm3Configuration.serverUrl, nxrm3Configuration.credentialsId)

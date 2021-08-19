@@ -28,6 +28,16 @@ import org.kohsuke.stapler.QueryParameter
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
 {
+  String id
+
+  /**
+   * Used as a unique identifier per instance to ensure unique Display Name and Id
+   */
+
+  String internalId
+
+  String displayName
+
   String serverUrl
 
   @Deprecated
@@ -42,10 +52,19 @@ class NxiqConfiguration
    * @since 3.10
    */
   boolean hideReports
-  
+
+  @SuppressWarnings('ParameterCount')
   @DataBoundConstructor
-  NxiqConfiguration(final String serverUrl, final String credentialsId, final boolean hideReports)
+  NxiqConfiguration(final String id,
+                    final String internalId,
+                    final String displayName,
+                    final String serverUrl,
+                    final String credentialsId,
+                    final boolean hideReports)
   {
+    this.id = id
+    this.internalId = internalId
+    this.displayName = displayName
     this.serverUrl = serverUrl
     this.credentialsId = credentialsId
     this.hideReports = hideReports
@@ -56,23 +75,6 @@ class NxiqConfiguration
     return Jenkins.getInstance().getDescriptorOrDie(this.getClass())
   }
 
-  static URI getServerUrl() {
-    def serverUrl = getIqConfig()?.@serverUrl
-    serverUrl ? new URI(serverUrl) : null
-  }
-
-  static String getCredentialsId() {
-    getIqConfig()?.@credentialsId
-  }
-
-  static NxiqConfiguration getIqConfig() {
-    return GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs?.find { true }
-  }
-  
-  static boolean getHideReports() {
-    getIqConfig()?.@hideReports
-  }
-
   @Extension
   static class DescriptorImpl
       extends Descriptor<NxiqConfiguration>
@@ -80,6 +82,30 @@ class NxiqConfiguration
     @Override
     String getDisplayName() {
       Messages.NxiqConfiguration_DisplayName()
+    }
+
+    FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
+      for (NxiqConfiguration config : globalConfigurations.iqConfigs) {
+        if (config.internalId != internalId && config.displayName == value) {
+          return FormValidation.error('Display Name must be unique')
+        }
+      }
+      return FormUtil.validateNotEmpty(value, 'Display Name is required')
+    }
+
+    FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
+      def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
+      for (NxiqConfiguration config : globalConfigurations.iqConfigs) {
+        if (config.internalId != internalId && config.id == value) {
+          return FormValidation.error('Server ID must be unique')
+        }
+      }
+      def validation = FormUtil.validateNoWhitespace(value, 'Server ID must not contain whitespace')
+      if (validation.kind == Kind.OK) {
+        validation = FormUtil.validateNotEmpty(value, 'Server ID is required')
+      }
+      return validation
     }
 
     @SuppressWarnings('unused')

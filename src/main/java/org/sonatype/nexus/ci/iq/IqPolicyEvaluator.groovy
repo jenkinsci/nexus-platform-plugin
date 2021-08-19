@@ -14,6 +14,10 @@ package org.sonatype.nexus.ci.iq
 
 interface IqPolicyEvaluator
 {
+  String getIqInstanceId()
+
+  void setIqInstanceId(String iqInstanceId)
+
   String getIqStage()
 
   IqApplication getIqApplication()

@@ -17,6 +17,7 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
+import org.sonatype.nexus.ci.util.IqUtil
 import org.sonatype.nexus.ci.util.LoggerBridge
 
 import hudson.AbortException
@@ -33,9 +34,9 @@ import static com.google.common.base.Preconditions.checkArgument
 
 class IqPolicyEvaluatorUtil
 {
-  private static final String MINIMAL_SERVER_VERSION_REQUIRED = "1.69.0"
+  private static final String MINIMAL_SERVER_VERSION_REQUIRED = '1.69.0'
 
-  @SuppressWarnings(['AbcMetric', 'ParameterCount'])
+  @SuppressWarnings(['AbcMetric', 'ParameterCount', 'CyclomaticComplexity'])
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
                                                     final FilePath workspace,
@@ -44,6 +45,13 @@ class IqPolicyEvaluatorUtil
                                                     final EnvVars envVars)
   {
     ensureInNodeContext(run, workspace, launcher, listener)
+    NxiqConfiguration iqConfig = null
+    if (iqPolicyEvaluator.iqInstanceId) {
+      iqConfig = IqUtil.getIqConfiguration(iqPolicyEvaluator.iqInstanceId)
+    }
+    if (!iqConfig) {
+      iqConfig = IqUtil.getFirstIqConfiguration()
+    }
 
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
@@ -57,9 +65,11 @@ class IqPolicyEvaluatorUtil
 
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
-      def iqClient = IqClientFactory.getIqClient(
-          new IqClientFactoryConfiguration(credentialsId: iqPolicyEvaluator.jobCredentialsId, context: run.parent,
-              log: loggerBridge))
+      def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
+          serverUrl: (iqConfig == null || iqConfig.serverUrl == null) ? null : new URI(iqConfig.serverUrl),
+          credentialsId: iqPolicyEvaluator.jobCredentialsId ?: iqConfig?.credentialsId,
+          context: run.parent,
+          log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
       def verified = iqClient.verifyOrCreateApplication(applicationId)
@@ -101,15 +111,16 @@ class IqPolicyEvaluatorUtil
         remoteScanResult?.delete()
       }
 
-      def healthAction = new PolicyEvaluationHealthAction(applicationId, iqStage, run, evaluationResult)
+      def healthAction = new PolicyEvaluationHealthAction(iqConfig?.displayName, iqConfig?.serverUrl, applicationId,
+          iqStage, run, evaluationResult)
       run.addAction(healthAction)
 
-      if (!NxiqConfiguration.hideReports){
+      if (!iqConfig?.hideReports) {
         def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
         run.addAction(reportAction)
       }
       
-      Result result = handleEvaluationResult(evaluationResult, listener, applicationId, NxiqConfiguration.hideReports)
+      Result result = handleEvaluationResult(evaluationResult, listener, applicationId, iqConfig?.hideReports)
       run.setResult(result)
       if (result == Result.FAILURE) {
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
@@ -149,8 +160,9 @@ class IqPolicyEvaluatorUtil
     Properties advanced = new Properties()
     if (StringUtils.isNotEmpty(inputPropertiesString)) {
       try {
-        new StringReader(inputPropertiesString).withCloseable {advanced.load(it)}
-      } catch (IOException e) {
+        new StringReader(inputPropertiesString).withCloseable { advanced.load(it) }
+      }
+      catch (IOException e) {
         loggerBridge.error("Unable to parse advanced properties: ${e.message}", e)
       }
     }
@@ -174,7 +186,7 @@ class IqPolicyEvaluatorUtil
                                                boolean hideReports)
   {
     def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
-    if(!hideReports) {
+    if (!hideReports) {
       listener.logger.println(policyFailureMessageFormatter.message)
     }
 

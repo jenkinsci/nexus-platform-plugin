@@ -14,6 +14,7 @@ package org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 
 import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
+import org.sonatype.nexus.ci.util.IqUtil
 
 def t = namespace(lib.JenkinsTagLib)
 
@@ -90,6 +91,18 @@ def policyUI = {
     div() {
       span(class: 'iq-title', Messages.IqPolicyEvaluation_ReportName())
       a(href: "${action.getUrlName()}", target: "_blank", "(view report)")
+    }
+    if (IqUtil.isMultipleIqServersEnabled() && action.getIqDisplayName()) {
+      div() {
+        span(class: 'iq-label', Messages.IqPolicyEvaluation_IqDisplayNameLabel() + ' : ')
+        span("${action.getIqDisplayName()}")
+      }
+    }
+    if (IqUtil.isMultipleIqServersEnabled() && action.getIqServerUrl()) {
+      div() {
+        span(class: 'iq-label', Messages.IqPolicyEvaluation_IqServerUrlLabel() + ' : ')
+        span("${action.getIqServerUrl()}")
+      }
     }
     if (action.getApplicationId()) {
       div() {

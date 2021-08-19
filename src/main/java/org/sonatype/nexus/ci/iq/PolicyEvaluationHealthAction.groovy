@@ -47,13 +47,24 @@ class PolicyEvaluationHealthAction
   
   private final int grandfatheredPolicyViolationCount
 
+  private final iqDisplayName 
+
+  private final String iqServerUrl
+
   private final String applicationId
 
   private final String iqStage
 
-  PolicyEvaluationHealthAction(final String applicationId, final String iqStage, final Run run,
+  @SuppressWarnings('ParameterCount')
+  PolicyEvaluationHealthAction(final String iqDisplayName,
+                               final String iqServerUrl,
+                               final String applicationId,
+                               final String iqStage,
+                               final Run run,
                                final ApplicationPolicyEvaluation policyEvaluationResult)
   {
+    this.iqDisplayName = iqDisplayName
+    this.iqServerUrl = iqServerUrl
     this.applicationId = applicationId
     this.iqStage = iqStage
     this.run = run
@@ -106,6 +117,14 @@ class PolicyEvaluationHealthAction
 
   int getGrandfatheredPolicyViolationCount() {
     return grandfatheredPolicyViolationCount
+  }
+
+  String getIqDisplayName() {
+    return iqDisplayName
+  }
+
+  String getIqServerUrl() {
+    return iqServerUrl
   }
 
   String getApplicationId() {

@@ -15,6 +15,7 @@ package org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
 import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 import org.sonatype.nexus.ci.iq.PolicyEvaluationProjectAction
+import org.sonatype.nexus.ci.util.IqUtil
 
 import jenkins.model.Jenkins
 import groovy.json.JsonBuilder
@@ -119,6 +120,18 @@ if (action) {
       div() {
         span(class: 'iq-title', Messages.IqPolicyEvaluation_LatestReportName())
         a(href: "${action.getUrlName()}", target: "_blank", "(view report)")
+      }
+      if (IqUtil.isMultipleIqServersEnabled() && action.getIqDisplayName()) {
+        div() {
+          span(class: 'iq-label', Messages.IqPolicyEvaluation_IqDisplayNameLabel() + ' : ')
+          span("${action.getIqDisplayName()}")
+        }
+      }
+      if (IqUtil.isMultipleIqServersEnabled() && action.getIqServerUrl()) {
+        div() {
+          span(class: 'iq-label', Messages.IqPolicyEvaluation_IqServerUrlLabel() + ' : ')
+          span("${action.getIqServerUrl()}")
+        }
       }
       if (action.getApplicationId()) {
         div() {

@@ -12,9 +12,9 @@
  */
 package org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep
 
-import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqApplication
 import org.sonatype.nexus.ci.iq.Messages
+import org.sonatype.nexus.ci.util.IqUtil
 
 import jenkins.model.Jenkins
 
@@ -22,12 +22,10 @@ def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
 def l = namespace(lib.LayoutTagLib)
 
-def nxiqConfiguration = NxiqConfiguration.iqConfig
-
 l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
 
 f.section(title: descriptor.displayName) {
-  if (!nxiqConfiguration) {
+  if (!IqUtil.hasIqConfiguration()) {
     tr {
       td(class: 'setting-leftspace') {
 
@@ -42,6 +40,20 @@ f.section(title: descriptor.displayName) {
           a(href: Jenkins.instance.rootUrl + "/configure", "Configure System")
         }
       }
+    }
+  }
+
+  String iqInstanceId = instance?.iqInstanceId
+  if ((iqInstanceId && !IqUtil.getIqConfiguration(iqInstanceId)) || !iqInstanceId) {
+    iqInstanceId = IqUtil.getFirstIqConfiguration()?.id
+  }
+  if (IqUtil.isMultipleIqServersEnabled()) {
+    f.entry(title: _('IQ Instance'), field: 'iqInstanceId') {
+      f.select(value: "${iqInstanceId}")
+    }
+  } else {
+    f.invisibleEntry() {
+      input(type: 'hidden', name: 'iqInstanceId', value: "${iqInstanceId}")
     }
   }
 
@@ -92,7 +104,7 @@ f.section(title: descriptor.displayName) {
             title: _(org.sonatype.nexus.ci.config.Messages.Configuration_TestConnection()),
             progress: _('Testing...'),
             method: 'verifyCredentials',
-            with: 'jobCredentialsId'
+            with: 'iqInstanceId,jobCredentialsId'
         )
       }
     }

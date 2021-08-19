@@ -21,11 +21,11 @@ class PolicyEvaluationException
 {
   private final ApplicationPolicyEvaluation policyEvaluation
 
-  public ApplicationPolicyEvaluation getPolicyEvaluation() {
+  ApplicationPolicyEvaluation getPolicyEvaluation() {
     return policyEvaluation
   }
 
-  public PolicyEvaluationException(String message, ApplicationPolicyEvaluation policyEvaluation) {
+  PolicyEvaluationException(String message, ApplicationPolicyEvaluation policyEvaluation) {
     super(message)
     this.policyEvaluation = policyEvaluation
   }

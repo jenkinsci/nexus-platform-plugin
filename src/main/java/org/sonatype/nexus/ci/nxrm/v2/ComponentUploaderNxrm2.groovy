@@ -85,7 +85,7 @@ class ComponentUploaderNxrm2
   @PackageScope
   RepositoryManagerV2Client getRepositoryManagerClient(final NxrmConfiguration nexusConfiguration) {
     try {
-      checkArgument(nxrmConfiguration.class == Nxrm2Configuration.class,
+      checkArgument(nxrmConfiguration.class == Nxrm2Configuration,
           'Nexus Repository Manager 2.x server is required')
       return nexus2Client(nexusConfiguration.serverUrl, nexusConfiguration.credentialsId)
     }

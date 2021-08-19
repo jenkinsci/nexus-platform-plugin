@@ -32,7 +32,7 @@ class GlobalNexusConfiguration
   GlobalNexusConfiguration() {
     load()
     if (!instanceId) {
-      instanceId = generateInstanceId()
+      instanceId = generateRandomId()
       save()
     }
   }
@@ -65,7 +65,7 @@ class GlobalNexusConfiguration
     getGlobalNexusConfiguration()?.@instanceId
   }
 
-  private generateInstanceId() {
+  static generateRandomId() {
     UUID.randomUUID().toString().replace('-', '')
   }
 }

@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 
+import org.sonatype.nexus.ci.util.IqUtil
+
 def f = namespace(lib.FormTagLib)
 
 f.section(title: descriptor.displayName) {
@@ -22,11 +24,11 @@ f.section(title: descriptor.displayName) {
     )
   }
 
-  f.entry(title: _('Nexus IQ Server')) {
+  f.entry(title: _("Nexus IQ Server${IqUtil.isMultipleIqServersEnabled() ? 's' : ''}")) {
     f.repeatableHeteroProperty(
         field: 'iqConfigs',
         addCaption: _('Add Nexus IQ Server'),
-        oneEach: 'true'
+        oneEach: "${!IqUtil.isMultipleIqServersEnabled()}"
     )
   }
 }

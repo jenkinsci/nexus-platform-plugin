@@ -29,12 +29,15 @@ import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import org.kohsuke.stapler.AncestorInPath
 import org.kohsuke.stapler.DataBoundConstructor
+import org.kohsuke.stapler.DataBoundSetter
 import org.kohsuke.stapler.QueryParameter
 
 class IqPolicyEvaluatorBuildStep
     extends Builder
     implements IqPolicyEvaluator, BuildStep
 {
+  String iqInstanceId
+
   String iqStage
 
   IqApplication iqApplication
@@ -53,7 +56,8 @@ class IqPolicyEvaluatorBuildStep
 
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
-  IqPolicyEvaluatorBuildStep(final String iqStage,
+  IqPolicyEvaluatorBuildStep(final String iqInstanceId,
+                             final String iqStage,
                              final IqApplication iqApplication,
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> iqModuleExcludes,
@@ -62,6 +66,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean enableDebugLogging,
                              final String advancedProperties)
   {
+    this.iqInstanceId = iqInstanceId
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
     this.iqScanPatterns = iqScanPatterns
@@ -70,6 +75,12 @@ class IqPolicyEvaluatorBuildStep
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
+  }
+
+  @DataBoundSetter
+  @Override
+  void setIqInstanceId(String iqInstanceId) {
+    this.iqInstanceId = iqInstanceId ?: IqUtil.getFirstIqConfiguration()?.id
   }
 
   @Override
@@ -98,14 +109,27 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
+    FormValidation doCheckIqInstanceId(@QueryParameter String value) {
+      IqUtil.doCheckIqInstanceId(value)
+    }
+
+    @Override
+    ListBoxModel doFillIqInstanceIdItems() {
+      IqUtil.doFillIqInstanceIdItems()
+    }
+
+    @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    ListBoxModel doFillIqStageItems(@QueryParameter String iqInstanceId,
+                                    @QueryParameter String jobCredentialsId,
+                                    @AncestorInPath Job job) {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       // JobCredentialsId is an empty String if not set
-      IqUtil.doFillIqStageItems(jobCredentialsId, job)
+      IqUtil.doFillIqStageItems(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
     }
 
     @Override
@@ -134,15 +158,20 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath Job job) {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
-        job)
+    ListBoxModel doFillJobCredentialsIdItems(@QueryParameter String iqInstanceId, @AncestorInPath Job job)
+    {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration?.serverUrl, nxiqConfiguration?.credentialsId, job)
     }
 
     @Override
-    FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
+    FormValidation doVerifyCredentials(@QueryParameter String iqInstanceId,
+                                       @QueryParameter String jobCredentialsId,
+                                       @AncestorInPath Job job)
     {
-      IqUtil.verifyJobCredentials(jobCredentialsId, job)
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      IqUtil.
+          verifyJobCredentials(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
     }
   }
 }

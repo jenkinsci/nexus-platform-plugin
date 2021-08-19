@@ -103,7 +103,8 @@ class IqServerMockUtility
    * Configure Jenkins with Credentials for IQ Server and utilize those in the global IQ configuration.
    */
   static def configureJenkins(Jenkins jenkins, int port, boolean hideReports = false) {
-    def nxiqConfiguration = [new NxiqConfiguration("http://localhost:$port", 'cred-id', hideReports)]
+    def nxiqConfiguration = [new NxiqConfiguration('id', 'int-id', 'display-name', "http://localhost:$port", 'cred-id',
+        hideReports)]
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
     GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs = []
     def credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'cred-id', 'name', 'user',

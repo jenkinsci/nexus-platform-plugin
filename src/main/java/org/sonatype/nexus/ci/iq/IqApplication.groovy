@@ -41,7 +41,7 @@ abstract class IqApplication
       extends AbstractSingleValueConverter
   {
     boolean canConvert(Class clazz) {
-      return clazz == IqApplication.class
+      return clazz == IqApplication
     }
 
     Object fromString(String str) {
