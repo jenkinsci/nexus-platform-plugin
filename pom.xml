@@ -60,7 +60,7 @@
     <forkCount>1</forkCount>
     <java.level>8</java.level>
     <slf4j.version>1.7.7</slf4j.version>
-    <nexus-platform-api.version>3.44.1-SNAPSHOT</nexus-platform-api.version>
+    <nexus-platform-api.version>3.44.1-01</nexus-platform-api.version>
 
     <buildsupport.version>10</buildsupport.version>
     <buildsupport.license-maven-plugin.version>2.11</buildsupport.license-maven-plugin.version>
