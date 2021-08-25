@@ -25,6 +25,12 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.11.20210824-103237.60c1db0 (August 25, 2021)
+------------------------------------------------
+- Made mount folder for nexus container analysis customisable
+- Made default mount folder /tmp for nexus container analysis
+- Improvements in log statements for nexus container analysis
+
 3.11.20210811-095455.fdf8fec (August 11, 2021)
 ------------------------------------------------
 - Bug fixes
