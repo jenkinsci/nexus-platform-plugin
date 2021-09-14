@@ -25,7 +25,7 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
-3.11.20210913-125050.6635ba0 (September 13, 2021)
+3.11.20210914-082541.6f533b7 (September 14, 2021)
 -------------------------------------------------
 - Bug fixes
 
