@@ -25,6 +25,10 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.11.20210913-125050.6635ba0 (September 13, 2021)
+-------------------------------------------------
+- Bug fixes
+
 3.11.20210824-103237.60c1db0 (August 25, 2021)
 ------------------------------------------------
 - Made mount folder for nexus container analysis customisable
