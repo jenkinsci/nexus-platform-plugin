@@ -25,6 +25,11 @@ Please use the links below to find information about using the plugin with your 
 Changelog
 =========
 
+3.11.20210920-123737.0869e33 (September 20, 2021)
+-------------------------------------------------
+- Added support for using environment variables and credentials for required values for container scanning
+- Made default mount folder for nexus container analysis workspace temp folder
+
 3.11.20210915-164919.37a20aa (September 16, 2021)
 -------------------------------------------------
 - Bug fixes
