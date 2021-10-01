@@ -33,6 +33,7 @@ Changelog
 3.11.20210915-164919.37a20aa (September 16, 2021)
 -------------------------------------------------
 - Bug fixes
+- NPM manifest file scans now include dependency information and can identify InnerSource components
 
 3.11.20210824-103237.60c1db0 (August 25, 2021)
 ------------------------------------------------
