@@ -24,6 +24,9 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.12.20211019-085324.d8da475 (October 21th, 2021)
+------------------------------------------------
+- Added support for scanning Java class binaries produced by Java 17.
 
 3.11.20210920-123737.0869e33 (September 20, 2021)
 -------------------------------------------------
