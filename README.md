@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.12.20211110-124942.5dc6cea (November 11th, 2021)
+------------------------------------------------
+- Fixed java.lang.NoClassDefFoundError: io/jenkins/cli/shaded/org/xml/sax/ContentHandler.
+
 3.12.20211019-085324.d8da475 (October 21th, 2021)
 ------------------------------------------------
 - Added support for scanning Java class binaries produced by Java 17.
