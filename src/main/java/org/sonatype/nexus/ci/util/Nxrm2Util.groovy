@@ -14,7 +14,8 @@ package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.repository.v2.RepositoryInfo
 
-import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.getGlobalNexusConfiguration
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_2
 import static org.sonatype.nexus.ci.util.RepositoryManagerClientUtil.nexus2Client
 
@@ -24,7 +25,7 @@ class Nxrm2Util
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<RepositoryInfo> getApplicableRepositories(final String nexusInstanceId) {
-    def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
+    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
 
     if (configuration.version != NEXUS_2) {
       throw new IllegalArgumentException('Specified Nexus Repository Manager instance is not a 2.x server')

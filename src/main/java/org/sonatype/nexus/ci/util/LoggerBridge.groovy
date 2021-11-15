@@ -60,7 +60,7 @@ final class LoggerBridge
     return debugEnabled
   }
 
-  public void setDebugEnabled(boolean debugEnabled) {
+  void setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled
   }
 

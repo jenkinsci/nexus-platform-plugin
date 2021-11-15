@@ -43,6 +43,9 @@ class ComToOrgMigratorTest
       orgGlobalNexusConfiguration.instanceId == 'instanceId'
 
       orgGlobalNexusConfiguration.iqConfigs.size() == 1
+      assert orgGlobalNexusConfiguration.iqConfigs[0].id
+      assert orgGlobalNexusConfiguration.iqConfigs[0].internalId
+      assert orgGlobalNexusConfiguration.iqConfigs[0].displayName
       orgGlobalNexusConfiguration.iqConfigs[0].@serverUrl == 'serverUrl'
       orgGlobalNexusConfiguration.iqConfigs[0].credentialsId == 'credentialsId'
 

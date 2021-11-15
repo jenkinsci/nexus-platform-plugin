@@ -46,7 +46,7 @@ class NxrmUtil
 
   static ListBoxModel doFillNexusInstanceIdItems(NxrmVersion version) {
     newListBoxModel({ it.displayName }, { it.id },
-        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.findAll({ it.version == version }))
+        GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.findAll { it.version == version })
   }
 
   static FormValidation doCheckNexusRepositoryId(final String value) {

@@ -28,7 +28,7 @@ class GlobalNexusConfigurationTest
 
   void setup() {
     nxrmConfiguration = [new Nxrm2Configuration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id')]
-    nxiqConfiguration = [new NxiqConfiguration('http://server/url', 'creds-id', false)]
+    nxiqConfiguration = [new NxiqConfiguration('id', 'int-id', 'display-name', 'http://server/url', 'creds-id', false)]
   }
 
   def 'new instance ID is generated and loaded from configuration file'() {

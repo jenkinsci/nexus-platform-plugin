@@ -20,6 +20,7 @@ import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 
 import org.sonatype.nexus.ci.config.NxiqConfiguration
+import org.sonatype.nexus.ci.util.IqUtil
 import org.sonatype.nexus.ci.util.ProxyUtil
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers
@@ -40,9 +41,12 @@ class IqClientFactory
   private static String userAgent
 
   static InternalIqClient getIqClient(IqClientFactoryConfiguration conf = new IqClientFactoryConfiguration()) {
-    def serverUrl = conf.serverUrl ?: NxiqConfiguration.serverUrl
+    NxiqConfiguration firstIqConfig = IqUtil.getFirstIqConfiguration()
+    URI firstIqConfigServerUrl = (firstIqConfig == null || firstIqConfig.serverUrl == null) ? null : new URI(
+        firstIqConfig.serverUrl)
+    def serverUrl = conf.serverUrl ?: firstIqConfigServerUrl
     def context = conf.context ?: Jenkins.instance
-    def credentialsId = conf.credentialsId ?: NxiqConfiguration.credentialsId
+    def credentialsId = conf.credentialsId ?: firstIqConfig?.credentialsId
     def credentials = findCredentials(serverUrl, credentialsId, context)
     def serverConfig = getServerConfig(serverUrl, credentials)
     def proxyConfig = getProxyConfig(serverUrl)
@@ -103,16 +107,14 @@ class IqClientFactory
   }
 
   private static String getUserAgent() {
-    if (!userAgent) {
-      userAgent = String.format("%s/%s (Java %s; %s %s; Jenkins %s)",
-          'Sonatype_CLM_CI_Jenkins',
-          getPluginVersion(),
-          System.getProperty('java.version'),
-          System.getProperty('os.name'),
-          System.getProperty('os.version'),
-          Jenkins.VERSION
-      );
-    }
+    userAgent = userAgent ?: String.format('%s/%s (Java %s; %s %s; Jenkins %s)',
+        'Sonatype_CLM_CI_Jenkins',
+        getPluginVersion(),
+        System.getProperty('java.version'),
+        System.getProperty('os.name'),
+        System.getProperty('os.version'),
+        Jenkins.VERSION
+    )
     return userAgent
   }
 
@@ -122,7 +124,7 @@ class IqClientFactory
       def  version = pluginWrapper.version
       int index = version.indexOf(' ')
       if (index > -1) {
-        return version.substring(0, index)
+        return version[0..index]
       }
       return version
     }

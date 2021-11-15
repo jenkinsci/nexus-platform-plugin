@@ -58,8 +58,11 @@ class ComToOrgMigrator
         newGlobalConfiguration.nxrmConfigs.add(newNxrmConfiguration)
       }
       //noinspection GrDeprecatedAPIUsage
+      String randomInternalId = GlobalNexusConfiguration.generateRandomId()
       oldGlobalConfiguration.iqConfigs.each { com.sonatype.nexus.ci.config.NxiqConfiguration iqConfiguration ->
-        def newIqConfiguration = new NxiqConfiguration(iqConfiguration.serverUrl, iqConfiguration.credentialsId, false)
+        String randomId = GlobalNexusConfiguration.generateRandomId()
+        def newIqConfiguration = new NxiqConfiguration(randomId, randomInternalId, randomId, iqConfiguration.serverUrl,
+            iqConfiguration.credentialsId, false)
         newGlobalConfiguration.iqConfigs.add(newIqConfiguration)
       }
 

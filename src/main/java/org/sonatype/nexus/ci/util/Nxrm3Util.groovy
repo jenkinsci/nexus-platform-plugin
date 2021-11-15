@@ -14,10 +14,11 @@ package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.repository.v3.Repository
 
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
+
 import hudson.util.ListBoxModel
 
 import static com.sonatype.nexus.api.common.NexusStringUtils.isNotBlank
-import static org.sonatype.nexus.ci.config.GlobalNexusConfiguration.getGlobalNexusConfiguration
 import static org.sonatype.nexus.ci.config.NxrmVersion.NEXUS_3
 import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModel
 import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModelWithEmptyOption
@@ -31,7 +32,7 @@ class Nxrm3Util
    * Return Nexus repositories which are applicable for package upload. These are maven2 hosted repositories.
    */
   static List<Repository> getApplicableRepositories(final String nexusInstanceId) {
-    def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
+    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
 
     if (configuration.version != NEXUS_3) {
       throw new IllegalArgumentException(INSTANCE_IS_NOT_NXRM3)
@@ -47,8 +48,10 @@ class Nxrm3Util
   static List<Repository> getApplicableRepositories(final String serverUrl, final String credentialsId,
                                                     final String format = null) {
     nexus3Client(serverUrl, credentialsId).getRepositories()
-        .findAll { ('hosted'.equalsIgnoreCase(it.type)) && (isNotBlank(format) ?
-        format.equalsIgnoreCase(it.format) : true)}
+        .findAll {
+          ('hosted'.equalsIgnoreCase(it.type)) && (isNotBlank(format) ?
+              format.equalsIgnoreCase(it.format) : true)
+        }
   }
 
   /**
@@ -59,7 +62,7 @@ class Nxrm3Util
       return newListBoxModelWithEmptyOption()
     }
 
-    def configuration = globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
+    def configuration = GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs.find { it.id == nexusInstanceId }
 
     if (configuration.version != NEXUS_3) {
       throw new IllegalArgumentException(INSTANCE_IS_NOT_NXRM3)

@@ -42,9 +42,9 @@ class Nxrm3Configuration
 
   private static final String DOT = '.'
 
-  private static final String INVALID_VERSION_WARNING = "Some operations require Nexus Repository Manager " +
+  private static final String INVALID_VERSION_WARNING = 'Some operations require Nexus Repository Manager ' +
       "Professional server version ${MAJOR_VERSION_REQ}.${MINOR_VERSION_REQ}.${PATCH_VERSION_REQ} or " +
-      "newer; use of an incompatible server could result in failed builds."
+      'newer; use of an incompatible server could result in failed builds.'
 
   private static final String CONNECTION_SUCCEEDED = 'Nexus Repository Manager 3.x connection succeeded'
 

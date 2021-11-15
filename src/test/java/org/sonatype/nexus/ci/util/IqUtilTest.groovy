@@ -37,13 +37,126 @@ class IqUtilTest
 
   Job job = Mock(Job)
 
+  def 'getIqConfigurations returns a list of IQ configurations'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
+          'credentialsId1', false))
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id2', 'internalId2', 'displayName2', 'serverUrl2',
+          'credentialsId2', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def iqConfigurations = IqUtil.getIqConfigurations()
+
+    then:
+      iqConfigurations.size() == 2
+      iqConfigurations.get(0).id == 'id1'
+      iqConfigurations.get(1).id == 'id2'
+  }
+
+  def 'hasIqConfiguration returns true if there is an IQ configuration'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id', 'internalId', 'displayName', 'serverUrl',
+          'credentialsId', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def result = IqUtil.hasIqConfiguration()
+
+    then:
+      result
+  }
+
+  def 'hasIqConfiguration returns false if there is no IQ configuration'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def result = IqUtil.hasIqConfiguration()
+
+    then:
+      !result
+  }
+
+  def 'getIqConfiguration returns the IQ configuration matching the given IQ Instance id'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
+          'credentialsId1', false))
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id2', 'internalId2', 'displayName2', 'serverUrl2',
+          'credentialsId2', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def iqConfiguration = IqUtil.getIqConfiguration('id1')
+
+    then:
+      assert iqConfiguration
+      iqConfiguration.id == 'id1'
+  }
+  
+  def 'getIqConfiguration returns null if no IQ configuration matches the given IQ Instance id'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
+          'credentialsId1', false))
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id2', 'internalId2', 'displayName2', 'serverUrl2',
+          'credentialsId2', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def iqConfiguration = IqUtil.getIqConfiguration('id3')
+
+    then:
+      !iqConfiguration
+  }
+  
+  def 'getFirstIqConfiguration returns the first IQ configuration'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
+          'credentialsId1', false))
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id2', 'internalId2', 'displayName2', 'serverUrl2',
+          'credentialsId2', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def iqConfiguration = IqUtil.getFirstIqConfiguration()
+
+    then:
+      assert iqConfiguration
+      iqConfiguration.id == 'id1'
+  }
+  
+  def 'getFirstIqConfiguration returns null if there are no IQ configurations'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def iqConfiguration = IqUtil.getFirstIqConfiguration()
+
+    then:
+      !iqConfiguration
+  }
+
   def 'doFillIqApplicationItems populates Iq Application items'() {
     setup:
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -58,7 +171,7 @@ class IqUtilTest
       ]
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems(credentialsId, job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job)
 
     then:
       applicationItems.size() == 3
@@ -77,7 +190,22 @@ class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems('', job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(null, 'credentialsId', job)
+
+    then:
+      applicationItems.size() == 1
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'doFillIqApplicationItems returns list with empty options no credentials is configured'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+    when: 'doFillIqApplicationItems is called'
+      def applicationItems = IqUtil.doFillIqApplicationItems('serverUrl', null, job)
 
     then:
       applicationItems.size() == 1
@@ -91,7 +219,7 @@ class IqUtilTest
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -104,7 +232,7 @@ class IqUtilTest
       iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
-      def applicationItems = IqUtil.doFillIqApplicationItems('jobCredentialsId', job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, 'jobCredentialsId', job)
 
     then:
       applicationItems.size() == 2
@@ -114,13 +242,36 @@ class IqUtilTest
       applicationItems.get(1).value == 'publicId'
   }
 
+  def 'doFillIqInstanceIdItems populates IQ Instance id items'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
+          'credentialsId1', false))
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id2', 'internalId2', 'displayName2', 'serverUrl2',
+          'credentialsId2', false))
+      globalConfiguration.save()
+
+    when: 'doFillIqInstanceIdItems is called'
+      def iqInstanceIdItems = IqUtil.doFillIqInstanceIdItems()
+
+    then:
+      iqInstanceIdItems.size() == 3
+      iqInstanceIdItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      iqInstanceIdItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      iqInstanceIdItems.get(1).name == 'displayName1'
+      iqInstanceIdItems.get(1).value == 'id1'
+      iqInstanceIdItems.get(2).name == 'displayName2'
+      iqInstanceIdItems.get(2).value == 'id2'
+  }
+
   def 'doFillIqStageItems populates stage items'() {
     setup:
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -135,7 +286,7 @@ class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems(credentialsId, job)
+      def stageItems = IqUtil.doFillIqStageItems(serverUrl, credentialsId, job)
 
     then:
       stageItems.size() == 3
@@ -154,7 +305,7 @@ class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('', job)
+      def stageItems = IqUtil.doFillIqStageItems(null, '', job)
 
     then:
       stageItems.size() == 1
@@ -179,7 +330,32 @@ class IqUtilTest
       ]
 
     when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('jobCredentialsId', job)
+      def stageItems = IqUtil.doFillIqStageItems(null, 'jobCredentialsId', job)
+
+    then:
+      stageItems.size() == 1
+      stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'doFillIqStageItems returns list with empty options when no credentials is configured'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
+
+      iqClient.getLicensedStages(_) >> [
+          new Stage('id1', 'build'),
+          new Stage('id2', 'operate')
+      ]
+
+    when: 'doFillIqStageItems is called'
+      def stageItems = IqUtil.doFillIqStageItems('serverUrl', null, job)
 
     then:
       stageItems.size() == 1
@@ -195,7 +371,8 @@ class IqUtilTest
 
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, globalCredentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, globalCredentialsId,
+          false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -206,7 +383,7 @@ class IqUtilTest
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
     when:
-      def validation = IqUtil.verifyJobCredentials(creds, job)
+      def validation = IqUtil.verifyJobCredentials(serverUrl, creds, job)
 
     then:
       validation.kind == Kind.OK

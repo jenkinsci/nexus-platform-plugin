@@ -16,6 +16,7 @@ import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationSummary
 import com.sonatype.nexus.api.iq.Context
 
+import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.Messages
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.iq.IqClientFactory
@@ -26,8 +27,31 @@ import hudson.model.ModelObject
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 
+import static org.sonatype.nexus.ci.util.FormUtil.newListBoxModel
+import static org.sonatype.nexus.ci.util.FormUtil.validateNotEmpty
+
 class IqUtil
 {
+  static List<NxiqConfiguration> getIqConfigurations() {
+    GlobalNexusConfiguration.globalNexusConfiguration?.iqConfigs
+  }
+
+  static boolean hasIqConfiguration() {
+    getIqConfigurations()?.size() > 0
+  }
+
+  static NxiqConfiguration getIqConfiguration(String iqInstanceId) {
+    getIqConfigurations()?.find { it.id == iqInstanceId }
+  }
+
+  static NxiqConfiguration getFirstIqConfiguration() {
+    getIqConfigurations()?.find { true }
+  }
+
+  static boolean isMultipleIqServersEnabled() {
+    System.getProperty("allowMultipleIqServers") != null
+  }
+
   /**
    * Return Nexus IQ Server applications which are applicable for evaluation.
    */
@@ -40,10 +64,20 @@ class IqUtil
     return client.getApplicationsForApplicationEvaluation()
   }
 
-  static ListBoxModel doFillIqStageItems(final String credentialsId, final Job job) {
-    if (NxiqConfiguration.iqConfig) {
+  static FormValidation doCheckIqInstanceId(final String value) {
+    return validateNotEmpty(value, 'IQ Instance is required')
+  }
+
+  static ListBoxModel doFillIqInstanceIdItems() {
+    return newListBoxModel({ NxiqConfiguration it -> it.displayName }, { NxiqConfiguration it -> it.id },
+        GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs)
+  }
+
+  static ListBoxModel doFillIqStageItems(final String serverUrl, final String credentialsId, final Job job) {
+    if (serverUrl && credentialsId) {
       def client = IqClientFactory.
-          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
+          getIqClient(new IqClientFactoryConfiguration(serverUrl: new URI(serverUrl), credentialsId: credentialsId,
+              context: job))
       FormUtil.newListBoxModel({ it.name }, { it.id }, client.getLicensedStages(Context.CI))
     }
     else {
@@ -51,19 +85,16 @@ class IqUtil
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems(final String credentialsId, final Job job) {
-    if (NxiqConfiguration.iqConfig) {
+  static ListBoxModel doFillIqApplicationItems(final String serverUrl, final String credentialsId, final Job job) {
+    if (serverUrl && credentialsId) {
       def client = IqClientFactory.
-          getIqClient(new IqClientFactoryConfiguration(credentialsId: credentialsId, context: job))
+          getIqClient(new IqClientFactoryConfiguration(serverUrl: new URI(serverUrl), credentialsId: credentialsId,
+              context: job))
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
     }
     else {
       FormUtil.newListBoxModelWithEmptyOption()
     }
-  }
-
-  static FormValidation verifyJobCredentials(final String jobCredentialsId, final ModelObject context) {
-    return verifyJobCredentials(NxiqConfiguration.serverUrl.toString(), jobCredentialsId, context)
   }
 
   static FormValidation verifyJobCredentials(final String serverUrl,
