@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
@@ -41,6 +42,38 @@ abstract class IqPolicyEvaluatorDescriptorTest
   org.sonatype.nexus.ci.iq.ManualApplication.DescriptorImpl getManualApplication()
   {
     return (org.sonatype.nexus.ci.iq.ManualApplication.DescriptorImpl) jenkins.getInstance().getDescriptor(ManualApplication.class)
+  }
+
+  def 'it validates that IQ Instance is required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when:
+      "validating IQ Instance $iqInstanceId"
+      def validation = descriptor.doCheckIqInstanceId(iqInstanceId)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      iqInstanceId   | kind       | message
+      ''             | Kind.ERROR | 'IQ Instance is required'
+      null           | Kind.ERROR | 'IQ Instance is required'
+      'iqInstanceId' | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that IQ Instance items are filled'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+
+    when:
+      descriptor.doFillIqInstanceIdItems()
+
+    then:
+      1 * IqUtil.doFillIqInstanceIdItems()
   }
 
   def 'it validates that stage is required'() {
@@ -174,7 +207,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       ListBoxModel appList
 
     when:
-      appList = descriptor.doFillApplicationIdItems('', job)
+      appList = descriptor.doFillApplicationIdItems('', '', job)
 
     then:
       appList.size() == 1
@@ -182,16 +215,39 @@ abstract class IqPolicyEvaluatorDescriptorTest
       appList.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
+  def 'it uses IQ Instance serverUrl and credentialsId to fill application items'() {
+    setup:
+      def descriptor = getSelectedApplication()
+      // create a config so that IqUtil.doFillApplicationIdItems will go down the path that uses custom credentials
+      GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('id', 'int-id',
+          'display-name', 'http://server/url',
+          'credentialsId', false)]
+      def job = Mock(Job)
+
+    when:
+      descriptor.doFillApplicationIdItems('id',null, job)
+
+    then:
+      // this is a bit odd, but because we're mixing Groovy and Java classes SelectedApplication, we can't
+      // use GroovyMock to verify interactions.  What we are testing here is that IqUtil.doFillIqApplicationItems
+      // was invoked with 'credentialsId'.  Since the Jenkins credential hasn't been created
+      // IqUtil.doFillIqApplicationItems will throw an exception, and then we can check the exception message
+      // to make sure that IqUtil.doFillIqApplicationItems received the expected parameter.
+      IllegalArgumentException ex = thrown()
+      ex.message == 'No credentials were found for credentials credentialsId'
+  }
+
   def 'it uses custom credentials for application items'() {
     setup:
       def descriptor = getSelectedApplication()
       // create a config so that IqUtil.doFillApplicationIdItems will go down the path that uses custom credentials
-      GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('http://server/url',
+      GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = [new NxiqConfiguration('id', 'int-id',
+          'display-name', 'http://server/url',
           null, false)]
       def job = Mock(Job)
 
     when:
-      descriptor.doFillApplicationIdItems('credentialsId', job)
+      descriptor.doFillApplicationIdItems('id','credentialsId', job)
 
     then:
       // this is a bit odd, but because we're mixing Groovy and Java classes SelectedApplication, we can't
@@ -210,10 +266,10 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqStageItems('', job)
+      descriptor.doFillIqStageItems('', '', job)
 
     then:
-      1 * IqUtil.doFillIqStageItems('', job)
+      1 * IqUtil.doFillIqStageItems(null, null, job)
   }
 
   def 'it uses custom credentials for stage items'() {
@@ -223,23 +279,40 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillIqStageItems('credentialsId', job)
+      descriptor.doFillIqStageItems('', 'credentialsId', job)
 
     then:
-      1 * IqUtil.doFillIqStageItems('credentialsId', job)
+      1 * IqUtil.doFillIqStageItems(null, 'credentialsId', job)
+  }
+
+  def 'it uses IQ Instance serverUrl and credentialsId for stage items'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+      IqUtil.getIqConfiguration('iqInstanceId') >>
+          new NxiqConfiguration('id', 'internalId', 'displayName', 'serverUrl', 'credentialsId', false)
+      def job = Mock(Job)
+
+    when:
+      descriptor.doFillIqStageItems('iqInstanceId', null, job)
+
+    then:
+      1 * IqUtil.doFillIqStageItems('serverUrl', 'credentialsId', job)
   }
 
   def 'it validates that credentials items are filled'() {
     setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id', 'internalId', 'displayName',
+          'http://server/path', 'credentialsId', false))
+      globalConfiguration.save()
       def descriptor = getDescriptor()
       GroovyMock(FormUtil, global: true)
-      GroovyMock(NxiqConfiguration, global: true)
-      NxiqConfiguration.serverUrl >> URI.create("http://server/path")
-      NxiqConfiguration.credentialsId >> 'credentialsId'
       def job = Mock(Job)
 
     when:
-      descriptor.doFillJobCredentialsIdItems(job)
+      descriptor.doFillJobCredentialsIdItems('id', job)
 
     then:
       1 * FormUtil.newCredentialsItemsListBoxModel("http://server/path", 'credentialsId', job)
@@ -252,10 +325,25 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doVerifyCredentials('credentialsId', job)
+      descriptor.doVerifyCredentials(null, 'credentialsId', job)
 
     then:
-      1 * IqUtil.verifyJobCredentials('credentialsId', job)
+      1 * IqUtil.verifyJobCredentials(null, 'credentialsId', job)
+  }
+
+  def 'it validates that credentials items are verified using IQ Instance serverUrl and credentialsId'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+      IqUtil.getIqConfiguration('id') >> new NxiqConfiguration('id', 'internalId', 'displayName',
+          'serverUrl', 'credentialsId', false)
+      def job = Mock(Job)
+
+    when:
+      descriptor.doVerifyCredentials('id', null, job)
+
+    then:
+      1 * IqUtil.verifyJobCredentials('serverUrl', 'credentialsId', job)
   }
 
   def 'it sets job specific credentials'() {
@@ -263,7 +351,8 @@ abstract class IqPolicyEvaluatorDescriptorTest
       GroovyMock(NxiqConfiguration, global: true)
 
     when:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, 'jobSpecificCredentialsId', null, null)
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, null, 'jobSpecificCredentialsId',
+          null, null)
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'

@@ -29,7 +29,7 @@ class RemoteScanner
   static final List<String> DEFAULT_MODULE_INCLUDES =
       ['**/sonatype-clm/module.xml', '**/nexus-iq/module.xml']
 
-  public static final String CONTAINER = "container:"
+  public static final String CONTAINER = 'container:'
 
   private final String appId
 
@@ -51,7 +51,7 @@ class RemoteScanner
 
   private final Map<String, String> envVars
 
-  private Set<String> licensedFeatures
+  private final Set<String> licensedFeatures
 
   @SuppressWarnings('ParameterCount')
   RemoteScanner(final String appId,

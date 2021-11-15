@@ -15,7 +15,7 @@ package org.sonatype.nexus.ci.config;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 
-public class ComToOrgMigratorInitializer
+public class MigratorInitializer
 {
   @Initializer(before = InitMilestone.PLUGINS_STARTED)
   public static void migrateAliases() {
@@ -25,5 +25,6 @@ public class ComToOrgMigratorInitializer
   @Initializer(after = InitMilestone.JOB_LOADED, before = InitMilestone.COMPLETED)
   public static void migrateGlobalConfiguration() {
     ComToOrgMigrator.migrateGlobalConfiguration();
+    IqConfigNoIdToIdMigrator.migrateGlobalConfiguration();
   }
 }

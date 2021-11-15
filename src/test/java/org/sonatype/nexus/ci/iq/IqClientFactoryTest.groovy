@@ -36,7 +36,9 @@ import org.jvnet.hudson.test.JenkinsRule
 import org.slf4j.Logger
 import spock.lang.Specification
 
-import static org.hamcrest.CoreMatchers.*
+import static org.hamcrest.CoreMatchers.allOf
+import static org.hamcrest.CoreMatchers.endsWith
+import static org.hamcrest.CoreMatchers.startsWith
 
 class IqClientFactoryTest
   extends Specification
@@ -114,12 +116,14 @@ class IqClientFactoryTest
 
   def 'it uses configured serverUrl and credentialsId'() {
     setup:
-      GroovyMock(NxiqConfiguration, global: true)
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(new NxiqConfiguration('id', 'internalId', 'displayName', 'https://server/url/',
+          '123-cred-456', false))
+      globalConfiguration.save()
       GroovyMock(InternalIqClientBuilder, global: true)
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
-      NxiqConfiguration.serverUrl >> URI.create("https://server/url/")
-      NxiqConfiguration.credentialsId >> "123-cred-456"
       CredentialsMatchers.firstOrNull(_, _) >> credentials
 
     when:
@@ -138,7 +142,8 @@ class IqClientFactoryTest
   def 'it uses job specific credentials when provided'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', 'credentialsId', false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', 'http://localhost/',
+          'credentialsId', false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -165,7 +170,8 @@ class IqClientFactoryTest
   def 'it interprets an empty String job credentials as not provided'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration('http://localhost/', 'credentialsId', false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', 'http://localhost/',
+          'credentialsId', false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -195,7 +201,7 @@ class IqClientFactoryTest
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -221,7 +227,7 @@ class IqClientFactoryTest
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -268,7 +274,7 @@ class IqClientFactoryTest
       final String credentialsId = '123-cred-456'
 
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      def nxiqConfiguration = new NxiqConfiguration(serverUrl, credentialsId, false)
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
@@ -305,7 +311,8 @@ class IqClientFactoryTest
 
     def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
     globalConfiguration.iqConfigs = []
-    globalConfiguration.iqConfigs.add(new NxiqConfiguration('http://localhost/', 'credentialsId', false))
+    globalConfiguration.iqConfigs.add(new NxiqConfiguration('id', 'internalId', 'displayName', 'http://localhost/',
+        'credentialsId', false))
     globalConfiguration.save()
 
     def logger = Mock(Logger)

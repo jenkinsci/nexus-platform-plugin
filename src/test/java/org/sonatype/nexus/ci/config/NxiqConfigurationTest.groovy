@@ -29,6 +29,96 @@ class NxiqConfigurationTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
+  def 'it validates that display name is unique'() {
+    setup:
+      saveConfig('id', 'displayName')
+
+    when:
+      "validating $displayName"
+      def validation = descriptor.doCheckDisplayName(displayName, 'otherId')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      displayName           | kind       | message
+      'displayName'         | Kind.ERROR | 'Display Name must be unique'
+      'Other Display Name'  | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that display name is required'() {
+    when:
+      "validating $displayName"
+      def validation = descriptor.doCheckDisplayName(displayName, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      displayName              | kind       | message
+      ''                       | Kind.ERROR | 'Display Name is required'
+      null                     | Kind.ERROR | 'Display Name is required'
+      'Other Display Name'     | Kind.OK    | '<div/>'
+  }
+  
+  def 'it validates that id is unique'() {
+    setup:
+      saveConfig('id', 'foo')
+
+    when:
+      "validating $id"
+      def validation = descriptor.doCheckId(id, 'otherId')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id          | kind       | message
+      'id'        | Kind.ERROR | 'Server ID must be unique'
+      'other_id'  | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that id is required'() {
+    when:
+      "validating $id"
+      def validation = descriptor.doCheckId(id, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id           | kind       | message
+      ''           | Kind.ERROR | 'Server ID is required'
+      null         | Kind.ERROR | 'Server ID is required'
+      'other_id'   | Kind.OK    | '<div/>'
+  }
+
+  def 'it validates that id is contains no whitespace'() {
+    when:
+      "validating $id"
+      def validation = descriptor.doCheckId(id, 'id')
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml().startsWith(message)
+
+    where:
+      id            | kind       | message
+      ' id'         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'i d'         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'id '         | Kind.ERROR | 'Server ID must not contain whitespace'
+      'other_id'    | Kind.OK    | '<div/>'
+  }
+
   def 'it validates the server url is a valid url'() {
     setup:
       def configuration = (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().
@@ -127,5 +217,16 @@ class NxiqConfigurationTest
     where:
       serverUrl << ['serverUrl']
       credentialsId << ['credentialsId']
+  }
+
+  def saveConfig(String id, String displayName) {
+    def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+    globalConfiguration.iqConfigs = []
+    globalConfiguration.iqConfigs.add(new NxiqConfiguration(id, 'internalId', displayName, 'http://foo.com', 'credId', false))
+    globalConfiguration.save()
+  }
+
+  NxiqConfiguration.DescriptorImpl getDescriptor() {
+    (NxiqConfiguration.DescriptorImpl) jenkins.getInstance().getDescriptor(NxiqConfiguration.class)
   }
 }

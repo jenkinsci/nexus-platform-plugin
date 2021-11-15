@@ -12,12 +12,14 @@
  */
 package org.sonatype.nexus.ci.iq;
 
+import org.sonatype.nexus.ci.config.NxiqConfiguration;
 import org.sonatype.nexus.ci.util.IqUtil;
 
 import hudson.Extension;
 import hudson.RelativePath;
 import hudson.model.Job;
 import hudson.util.ListBoxModel;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -45,9 +47,16 @@ public class SelectedApplication
       return Messages.IqPolicyEvaluation_SelectApplication();
     }
 
-    public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
+    public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String iqInstanceId,
+                                                 @RelativePath("..") @QueryParameter String jobCredentialsId,
+                                                 @AncestorInPath Job job)
+    {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId);
       // JobCredentialsId is an empty String if not set
-      return IqUtil.doFillIqApplicationItems(jobCredentialsId, job);
+      String serverUrl = nxiqConfiguration == null ? null : nxiqConfiguration.getServerUrl();
+      String credentialsId = StringUtils.isNotBlank(jobCredentialsId) ? jobCredentialsId :
+          (nxiqConfiguration == null ? null : nxiqConfiguration.getCredentialsId());
+      return IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job);
     }
   }
 }

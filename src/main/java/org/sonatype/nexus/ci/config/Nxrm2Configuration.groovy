@@ -66,7 +66,7 @@ class Nxrm2Configuration
 
         return ok(
             "Nexus Repository Manager 2.x connection succeeded (${repositories.size()} hosted release Maven 2 " +
-                "repositories)")
+                'repositories)')
       }
       catch (RepositoryManagerException e) {
         return error(e, 'Nexus Repository Manager 2.x connection failed')

@@ -32,6 +32,8 @@ class IqPolicyEvaluatorWorkflowStep
     extends AbstractStepImpl
     implements IqPolicyEvaluator
 {
+  String iqInstanceId
+
   String iqStage
 
   IqApplication iqApplication
@@ -49,27 +51,27 @@ class IqPolicyEvaluatorWorkflowStep
   String advancedProperties
 
   @DataBoundSetter
-  public void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
+  void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
     this.iqScanPatterns = iqScanPatterns
   }
 
   @DataBoundSetter
-  public void setIqModuleExcludes(final List<ModuleExclude> iqModuleExcludes) {
+  void setIqModuleExcludes(final List<ModuleExclude> iqModuleExcludes) {
     this.iqModuleExcludes = iqModuleExcludes
   }
 
   @DataBoundSetter
-  public void setFailBuildOnNetworkError(final boolean failBuildOnNetworkError) {
+  void setFailBuildOnNetworkError(final boolean failBuildOnNetworkError) {
     this.failBuildOnNetworkError = failBuildOnNetworkError
   }
 
   @DataBoundSetter
-  public void setJobCredentialsId(final String jobCredentialsId) {
+  void setJobCredentialsId(final String jobCredentialsId) {
     this.jobCredentialsId = jobCredentialsId
   }
 
   @DataBoundSetter
-  public void setEnableDebugLogging(final boolean enableDebugLogging) {
+  void setEnableDebugLogging(final boolean enableDebugLogging) {
     this.enableDebugLogging = enableDebugLogging
   }
 
@@ -80,7 +82,7 @@ class IqPolicyEvaluatorWorkflowStep
 
   @SuppressWarnings('Instanceof')
   @DataBoundSetter
-  public void setIqApplication(final Object iqApplication) {
+  void setIqApplication(final Object iqApplication) {
     if (iqApplication instanceof IqApplication) {
       this.iqApplication = iqApplication
     }
@@ -91,14 +93,21 @@ class IqPolicyEvaluatorWorkflowStep
       this.iqApplication = ((UninstantiatedDescribable) iqApplication).instantiate()
     }
     else {
-      throw new IllegalArgumentException("iqApplication is not a valid format")
+      throw new IllegalArgumentException('iqApplication is not a valid format')
     }
   }
 
   @DataBoundConstructor
-  IqPolicyEvaluatorWorkflowStep(final String iqStage)
+  IqPolicyEvaluatorWorkflowStep(final String iqInstanceId, final String iqStage)
   {
+    this.iqInstanceId = iqInstanceId
     this.iqStage = iqStage
+  }
+
+  @DataBoundSetter
+  @Override
+  void setIqInstanceId(String iqInstanceId) {
+    this.iqInstanceId = iqInstanceId ?: IqUtil.getFirstIqConfiguration()?.id
   }
 
   @Extension
@@ -121,13 +130,26 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
+    FormValidation doCheckIqInstanceId(final String value) {
+      IqUtil.doCheckIqInstanceId(value)
+    }
+
+    @Override
+    ListBoxModel doFillIqInstanceIdItems() {
+      IqUtil.doFillIqInstanceIdItems()
+    }
+
+    @Override
     FormValidation doCheckIqStage(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 
     @Override
-    ListBoxModel doFillIqStageItems(@QueryParameter String jobCredentialsId, @AncestorInPath Job job) {
-      IqUtil.doFillIqStageItems(jobCredentialsId, job)
+    ListBoxModel doFillIqStageItems(@QueryParameter String iqInstanceId,
+                                    @QueryParameter String jobCredentialsId,
+                                    @AncestorInPath Job job) {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      IqUtil.doFillIqStageItems(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
     }
 
     @Override
@@ -151,9 +173,9 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@AncestorInPath final Job job) {
-      FormUtil.newCredentialsItemsListBoxModel(NxiqConfiguration.serverUrl.toString(), NxiqConfiguration.credentialsId,
-          job)
+    ListBoxModel doFillJobCredentialsIdItems(@QueryParameter String iqInstanceId, @AncestorInPath final Job job) {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration?.serverUrl, nxiqConfiguration?.credentialsId, job)
     }
 
     @Override
@@ -162,9 +184,13 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doVerifyCredentials(@QueryParameter String jobCredentialsId, @AncestorInPath Job job)
+    FormValidation doVerifyCredentials(@QueryParameter String iqInstanceId,
+                                       @QueryParameter String jobCredentialsId,
+                                       @AncestorInPath Job job)
     {
-      IqUtil.verifyJobCredentials(jobCredentialsId, job)
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      IqUtil.
+          verifyJobCredentials(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
     }
   }
 }
