@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.config
 
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -25,41 +24,17 @@ class IqConfigNoIdToIdMigrator
     LOGGER.debug(Messages.IqConfigNoIdToIdMigrator_MigratingGlobalConfiguration())
     GlobalNexusConfiguration globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
     List<NxiqConfiguration> iqConfigs = globalNexusConfiguration.iqConfigs
-    int updated = 0
-    int total = iqConfigs == null ? 0 : iqConfigs.size()
-    if (iqConfigs) {
-      String internalId = null
-      for (NxiqConfiguration nxiqConfiguration : globalNexusConfiguration.iqConfigs) {
-        if (nxiqConfiguration.internalId) {
-          internalId = nxiqConfiguration.internalId
-          break
-        }
-      }
-      if (internalId == null) {
-        internalId = GlobalNexusConfiguration.generateRandomId()
-      }
-      for (NxiqConfiguration nxiqConfiguration : globalNexusConfiguration.iqConfigs) {
-        boolean changed = false
-        if (nxiqConfiguration.internalId == null) {
-          nxiqConfiguration.internalId = internalId
-          changed = true
-        }
-        if (nxiqConfiguration.id == null) {
-          nxiqConfiguration.id = GlobalNexusConfiguration.generateRandomId()
-          changed = true
-        }
-        if (nxiqConfiguration.displayName == null) {
-          nxiqConfiguration.displayName = nxiqConfiguration.id
-          changed = true
-        }
-        if (changed) {
-          updated++
-        }
-      }
-      if (updated > 0) {
+    if (iqConfigs && iqConfigs.size == 1) {
+      NxiqConfiguration nxiqConfiguration = globalNexusConfiguration.iqConfigs.get(0)
+      if (nxiqConfiguration.internalId == null) {
+        nxiqConfiguration.internalId = GlobalNexusConfiguration.generateRandomId()
+        nxiqConfiguration.id = 'NexusIQServer'
+        nxiqConfiguration.displayName = 'Nexus IQ Server'
+
         globalNexusConfiguration.save()
+
+        LOGGER.info(Messages.IqConfigNoIdToIdMigrator_MigratingGlobalConfigurationFinished())
       }
     }
-    LOGGER.debug(Messages.IqConfigNoIdToIdMigrator_MigratingGlobalConfigurationFinished(updated, total))
   }
 }

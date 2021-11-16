@@ -35,16 +35,36 @@ class IqConfigNoIdToIdMigratorTest
 
     then:
       globalNexusConfiguration.iqConfigs.size() == 1
-      assert globalNexusConfiguration.iqConfigs[0].id
       assert globalNexusConfiguration.iqConfigs[0].internalId
-      assert globalNexusConfiguration.iqConfigs[0].displayName
-      globalNexusConfiguration.iqConfigs[0].id == globalNexusConfiguration.iqConfigs[0].displayName
+      globalNexusConfiguration.iqConfigs[0].id == 'NexusIQServer'
+      globalNexusConfiguration.iqConfigs[0].displayName == 'Nexus IQ Server'
       globalNexusConfiguration.iqConfigs[0].serverUrl == 'serverUrl'
       globalNexusConfiguration.iqConfigs[0].credentialsId == 'credentialsId'
       !globalNexusConfiguration.iqConfigs[0].hideReports
   }
 
-  def migrateGlobalConfigurationIqConfigsToHaveIds_Null() {
+  def migrateGlobalConfigurationIqConfigsToHaveIds_AlreadyMigrated() {
+    setup:
+      def globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalNexusConfiguration.iqConfigs = [
+          new NxiqConfiguration('testId', 'testInternalId', 'Test DisplayName', 'serverUrl', 'credentialsId', false)
+      ]
+      globalNexusConfiguration.save()
+
+    when:
+      IqConfigNoIdToIdMigrator.migrateGlobalConfiguration()
+
+    then:
+      globalNexusConfiguration.iqConfigs.size() == 1
+      globalNexusConfiguration.iqConfigs[0].internalId == 'testInternalId'
+      globalNexusConfiguration.iqConfigs[0].id == 'testId'
+      globalNexusConfiguration.iqConfigs[0].displayName == 'Test DisplayName'
+      globalNexusConfiguration.iqConfigs[0].serverUrl == 'serverUrl'
+      globalNexusConfiguration.iqConfigs[0].credentialsId == 'credentialsId'
+      !globalNexusConfiguration.iqConfigs[0].hideReports
+  }
+
+  def migrateGlobalConfigurationIqConfigsToHaveIds_NullIqConfigs() {
     setup:
       def globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
 
@@ -55,7 +75,7 @@ class IqConfigNoIdToIdMigratorTest
       !globalNexusConfiguration.iqConfigs
   }
 
-  def migrateGlobalConfigurationIqConfigsToHaveIds_Empty() {
+  def migrateGlobalConfigurationIqConfigsToHaveIds_EmptyIqConfigs() {
     setup:
       def globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalNexusConfiguration.iqConfigs = []
@@ -66,35 +86,5 @@ class IqConfigNoIdToIdMigratorTest
 
     then:
       !globalNexusConfiguration.iqConfigs
-  }
-
-  def migrateGlobalConfigurationIqConfigsToHaveIds_SomeNotMigrated() {
-    setup:
-      def globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalNexusConfiguration.iqConfigs = [
-          new NxiqConfiguration(null, null, null, 'serverUrl', 'credentialsId', true),
-          new NxiqConfiguration('id2', 'internalId', 'displayName', 'serverUrl', 'credentialsId', false)
-      ]
-      globalNexusConfiguration.save()
-
-    when:
-      IqConfigNoIdToIdMigrator.migrateGlobalConfiguration()
-
-    then:
-      globalNexusConfiguration.iqConfigs.size() == 2
-      assert globalNexusConfiguration.iqConfigs[0].id
-      globalNexusConfiguration.iqConfigs[0].internalId == 'internalId'
-      assert globalNexusConfiguration.iqConfigs[0].displayName
-      globalNexusConfiguration.iqConfigs[0].id == globalNexusConfiguration.iqConfigs[0].displayName
-      globalNexusConfiguration.iqConfigs[0].serverUrl == 'serverUrl'
-      globalNexusConfiguration.iqConfigs[0].credentialsId == 'credentialsId'
-      globalNexusConfiguration.iqConfigs[0].hideReports
-
-      globalNexusConfiguration.iqConfigs[1].id == 'id2'
-      globalNexusConfiguration.iqConfigs[1].internalId == 'internalId'
-      globalNexusConfiguration.iqConfigs[1].displayName == 'displayName'
-      globalNexusConfiguration.iqConfigs[1].serverUrl == 'serverUrl'
-      globalNexusConfiguration.iqConfigs[1].credentialsId == 'credentialsId'
-      !globalNexusConfiguration.iqConfigs[1].hideReports
   }
 }
