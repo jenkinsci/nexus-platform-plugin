@@ -101,7 +101,7 @@ class NxiqConfigurationTest
       'other_id'   | Kind.OK    | '<div/>'
   }
 
-  def 'it validates that id is contains no whitespace'() {
+  def 'it validates that id contains no whitespace'() {
     when:
       "validating $id"
       def validation = descriptor.doCheckId(id, 'id')

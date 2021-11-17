@@ -25,25 +25,12 @@ f.section(title: descriptor.displayName) {
         value: "${instance != null ? instance.internalId : UUID.randomUUID().toString()}")
   }
 
-  if (IqUtil.isMultipleIqServersEnabled()) {
-    f.entry(title: _('Display Name'), field: 'displayName') {
-      f.textbox(clazz: 'required')
-    }
+  f.entry(title: _('Display Name'), field: 'displayName') {
+    f.textbox(clazz: 'required')
+  }
 
-    f.entry(title: _('Server ID'), field: 'id') {
-      f.textbox(clazz: 'required')
-    }
-  } else {
-    String iqInstanceId = instance != null ? instance.id : UUID.randomUUID().toString()
-    String displayName = instance != null ? instance.displayName : iqInstanceId
-
-    f.invisibleEntry() {
-      input(type: 'hidden', name: 'displayName', value: "${displayName}")
-    }
-
-    f.invisibleEntry() {
-      input(type: 'hidden', name: 'id', value: "${iqInstanceId}")
-    }
+  f.entry(title: _('Server ID'), field: 'id') {
+    f.textbox(clazz: 'required')
   }
 
   f.entry(title: _(Messages.Configuration_ServerUrl()), field: 'serverUrl') {

@@ -95,11 +95,12 @@ class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def iqConfiguration = IqUtil.getIqConfiguration('id1')
+      def iqConfiguration = IqUtil.getIqConfiguration('id2')
 
     then:
       assert iqConfiguration
-      iqConfiguration.id == 'id1'
+    iqConfiguration.id == 'id2'
+    iqConfiguration.internalId == 'internalId2'
   }
   
   def 'getIqConfiguration returns null if no IQ configuration matches the given IQ Instance id'() {
@@ -183,7 +184,7 @@ class IqUtilTest
       applicationItems.get(2).value == 'publicId2'
   }
 
-  def 'doFillIqApplicationItems returns list with empty options no server is configured'() {
+  def 'doFillIqApplicationItems returns list with empty options when no server is configured'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
@@ -198,7 +199,7 @@ class IqUtilTest
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
-  def 'doFillIqApplicationItems returns list with empty options no credentials is configured'() {
+  def 'doFillIqApplicationItems returns list with empty options when no credentials is configured'() {
     setup:
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
