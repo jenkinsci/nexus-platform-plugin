@@ -24,11 +24,10 @@ f.section(title: descriptor.displayName) {
     )
   }
 
-  f.entry(title: _("Nexus IQ Server${IqUtil.isMultipleIqServersEnabled() ? 's' : ''}")) {
+  f.entry(title: _("Nexus IQ Servers")) {
     f.repeatableHeteroProperty(
         field: 'iqConfigs',
-        addCaption: _('Add Nexus IQ Server'),
-        oneEach: "${!IqUtil.isMultipleIqServersEnabled()}"
+        addCaption: _('Add Nexus IQ Server')
     )
   }
 }

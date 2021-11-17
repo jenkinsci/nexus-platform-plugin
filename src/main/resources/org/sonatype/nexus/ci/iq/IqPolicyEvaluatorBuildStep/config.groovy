@@ -47,14 +47,8 @@ f.section(title: descriptor.displayName) {
   if ((iqInstanceId && !IqUtil.getIqConfiguration(iqInstanceId)) || !iqInstanceId) {
     iqInstanceId = IqUtil.getFirstIqConfiguration()?.id
   }
-  if (IqUtil.isMultipleIqServersEnabled()) {
-    f.entry(title: _('IQ Instance'), field: 'iqInstanceId') {
-      f.select(value: "${iqInstanceId}")
-    }
-  } else {
-    f.invisibleEntry() {
-      input(type: 'hidden', name: 'iqInstanceId', value: "${iqInstanceId}")
-    }
+  f.entry(title: _('IQ Instance'), field: 'iqInstanceId') {
+    f.select(value: "${iqInstanceId}")
   }
 
   f.entry(title: _(Messages.IqPolicyEvaluation_Stage()), field: 'iqStage') {

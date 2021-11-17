@@ -53,10 +53,6 @@ class IqPolicyEvaluatorIntegrationTest
   @Rule
   public JenkinsRule jenkins = new JenkinsRule()
 
-  List<? extends NxrmConfiguration> nxrmConfiguration
-
-  List<NxiqConfiguration> nxiqConfiguration
-
   UsernamePasswordCredentials credentials
 
   InternalIqClientBuilder iqClientBuilder
@@ -77,7 +73,7 @@ class IqPolicyEvaluatorIntegrationTest
     println "Testing Jenkins version: ${Jenkins.getStoredVersion()}"
   }
 
-  def 'Declarative pipeline build successful with mandatory parameters'() {
+  def 'Pipeline build successful without IQ instance specified (mandatory parameters only)'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -104,6 +100,42 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [createAlert(Action.ID_NOTIFY)],
               'http://server/link/to/report')
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Pipeline build successful with IQ instance specified'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      List<NxiqConfiguration> nxiqConfiguration = [
+              new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
+              new NxiqConfiguration('id2', 'int-id2', 'display-name2', 'http://server/url1', 'cred-id', false)
+      ]
+      configureJenkins(nxiqConfiguration)
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('' +
+              'pipeline { \n' +
+              'agent any \n' +
+              'stages { \n' +
+              'stage("Example") { \n' +
+              'steps { \n' +
+              'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
+              'nexusPolicyEvaluation iqInstanceId: \'id2\', failBuildOnNetworkError: false, iqApplication: \'app\', ' +
+              'iqStage: \'stage\'\n'+
+              '} \n' +
+              '} \n' +
+              '} \n' +
+              '} \n')
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+              new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [createAlert(Action.ID_NOTIFY)],
+                      'http://server/link/to/report')
 
     and: 'the build is successful'
       jenkins.assertBuildStatusSuccess(build)
@@ -147,7 +179,7 @@ class IqPolicyEvaluatorIntegrationTest
 
 
 
-  def 'Declarative pipeline build successful with selectedApplication call'() {
+  def 'Pipeline build successful with selectedApplication call'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
@@ -216,7 +248,7 @@ class IqPolicyEvaluatorIntegrationTest
       }
   }
 
-  def 'Freestyle build (happy path)'() {
+  def 'Freestyle build successful without IQ instance specified'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
@@ -232,6 +264,31 @@ class IqPolicyEvaluatorIntegrationTest
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
+
+    then: 'the return code is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Freestyle build successful with IQ instance specified'() {
+    given: 'a jenkins project'
+      FreeStyleProject project = jenkins.createFreeStyleProject()
+      project.buildersList.
+              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+                      null, null))
+      List<NxiqConfiguration> nxiqConfiguration = [
+              new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
+              new NxiqConfiguration('id2', 'int-id2', 'display-name2', 'http://server/url1', 'cred-id', false)
+      ]
+      configureJenkins(nxiqConfiguration)
+
+    when: 'the build is scheduled'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
+              'http://server/link/to/report')
 
     then: 'the return code is successful'
       jenkins.assertBuildStatusSuccess(build)
@@ -913,9 +970,13 @@ class IqPolicyEvaluatorIntegrationTest
   }
 
   def configureJenkins() {
-    nxiqConfiguration = [new NxiqConfiguration('id', 'int-id', 'display-name', 'http://server/url', 'cred-id', false)]
+    List<NxiqConfiguration> nxiqConfiguration =
+            [new NxiqConfiguration('id', 'int-id', 'display-name', 'http://server/url', 'cred-id', false)]
+    configureJenkins(nxiqConfiguration)
+  }
+
+  def configureJenkins(List<NxiqConfiguration> nxiqConfiguration) {
     GlobalNexusConfiguration.globalNexusConfiguration.iqConfigs = nxiqConfiguration
-    GlobalNexusConfiguration.globalNexusConfiguration.nxrmConfigs = nxrmConfiguration
     credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, 'cred-id', 'name', 'user', 'password')
     CredentialsProvider.lookupStores(jenkins.jenkins).first().addCredentials(Domain.global(), credentials)
   }

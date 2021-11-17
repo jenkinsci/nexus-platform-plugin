@@ -33,7 +33,6 @@ class NxiqConfiguration
   /**
    * Used as a unique identifier per instance to ensure unique Display Name and Id
    */
-
   String internalId
 
   String displayName

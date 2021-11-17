@@ -48,10 +48,6 @@ class IqUtil
     getIqConfigurations()?.find { true }
   }
 
-  static boolean isMultipleIqServersEnabled() {
-    System.getProperty("allowMultipleIqServers") != null
-  }
-
   /**
    * Return Nexus IQ Server applications which are applicable for evaluation.
    */

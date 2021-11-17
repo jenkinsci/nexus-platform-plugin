@@ -92,13 +92,13 @@ def policyUI = {
       span(class: 'iq-title', Messages.IqPolicyEvaluation_ReportName())
       a(href: "${action.getUrlName()}", target: "_blank", "(view report)")
     }
-    if (IqUtil.isMultipleIqServersEnabled() && action.getIqDisplayName()) {
+    if (action.getIqDisplayName()) {
       div() {
         span(class: 'iq-label', Messages.IqPolicyEvaluation_IqDisplayNameLabel() + ' : ')
         span("${action.getIqDisplayName()}")
       }
     }
-    if (IqUtil.isMultipleIqServersEnabled() && action.getIqServerUrl()) {
+    if (action.getIqServerUrl()) {
       div() {
         span(class: 'iq-label', Messages.IqPolicyEvaluation_IqServerUrlLabel() + ' : ')
         span("${action.getIqServerUrl()}")
