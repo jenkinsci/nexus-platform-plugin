@@ -130,7 +130,7 @@ class IqPolicyEvaluatorWorkflowStep
     }
 
     @Override
-    FormValidation doCheckIqInstanceId(final String value) {
+    FormValidation doCheckIqInstanceId(@QueryParameter final String value) {
       IqUtil.doCheckIqInstanceId(value)
     }
 
