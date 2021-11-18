@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20211117-154915.1ea721a (November 18th, 2021)
+------------------------------------------------
+- Added support for multiple Nexus IQ Servers.
+
 3.12.20211110-124942.5dc6cea (November 11th, 2021)
 ------------------------------------------------
 - Fixed java.lang.NoClassDefFoundError: io/jenkins/cli/shaded/org/xml/sax/ContentHandler.
