@@ -41,7 +41,7 @@ Closure iqPolicyEvaluation = {
 
     try {
       def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'target/nexus-jenkins-plugin.hpi']], iqStage: stage, jobCredentialsId: ''
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
       gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
           "${evaluation.applicationCompositionReportUrl}"
     }
