@@ -346,7 +346,7 @@ class IqClientFactoryTest
       1 * iqClientBuilder.withServerConfig(_) >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
       1 * iqClientBuilder.withUserAgent(
-          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith('Jenkins 2.7)'))) >> iqClientBuilder
+          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith('Jenkins 2.249.1)'))) >> iqClientBuilder
       1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
   }
 }
