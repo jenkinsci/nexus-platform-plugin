@@ -116,7 +116,7 @@ switch (currentBuild.fullProjectName) {
       }
       stage('Deploy to Sonatype') {
         withGpgCredentials('gnupg') {
-          mvn mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: '']),
+          mvn mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: '-X']),
               mvnReleaseCommand
         }
       }
