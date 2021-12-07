@@ -17,6 +17,12 @@ Map jenkinsMavenConfig() {
   return common
 }
 
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
 String apiToken = null
 withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                   usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
@@ -116,8 +122,7 @@ switch (currentBuild.fullProjectName) {
       }
       stage('Deploy to Sonatype') {
         withGpgCredentials('gnupg') {
-          mvn mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: '']),
-              mvnReleaseCommand
+          mvn sonatypeMavenConfig(), mvnReleaseCommand
         }
       }
       input 'Push tags and deploy to Jenkins Update Center?'
