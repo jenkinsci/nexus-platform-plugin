@@ -84,10 +84,10 @@ switch (currentBuild.fullProjectName) {
           version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
           mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
               "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
-              "release:perform -B"
+              "release:perform -X -B"
           mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
               "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
-              "deploy:deploy-file -B"
+              "deploy:deploy-file -X -B"
           currentBuild.displayName = "#${currentBuild.number} - ${version}"
         }
         stage('License Check') {
