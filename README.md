@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20211207-082721.a97491c (December 7th, 2021)
+------------------------------------------------
+- Updated the min Jenkins version required to 2.249.1
+- Removed obsolete dependencies
+
 3.13.20211117-154915.1ea721a (November 18th, 2021)
 ------------------------------------------------
 - Added support for multiple Nexus IQ Servers.
