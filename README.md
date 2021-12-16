@@ -86,6 +86,7 @@ Changelog
 3.11.20210420-142258.bdfc332 (April 20th, 2021)
 ------------------------------------------------
 - Added support for scanning Java class binaries produced by Java 16.
+- Fix XStream parser error when scanning nuget manifests
 
 3.11.20210323-112924.daaeac7 (March 24th, 2021)
 ------------------------------------------------
