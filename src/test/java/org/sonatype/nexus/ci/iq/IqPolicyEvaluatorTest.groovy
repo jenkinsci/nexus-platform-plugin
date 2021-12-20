@@ -12,8 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.insight.scan.model.Scan
-import com.sonatype.insight.scan.model.ScanSummary
+import hidden.com.sonatype.insight.scan.model.Scan
+import hidden.com.sonatype.insight.scan.model.ScanSummary
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation

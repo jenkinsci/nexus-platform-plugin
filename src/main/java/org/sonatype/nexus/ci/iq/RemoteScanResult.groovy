@@ -12,9 +12,9 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
+import hidden.com.sonatype.insight.scan.model.Scan
 import hudson.FilePath
 
 class RemoteScanResult
