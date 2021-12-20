@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.insight.scan.model.Scan
+import hidden.com.sonatype.insight.scan.model.Scan
 
 import hudson.FilePath
 import org.junit.Rule
