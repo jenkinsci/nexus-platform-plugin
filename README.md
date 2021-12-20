@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20211220-113820.efa5a1c (December 20th, 2021)
+------------------------------------------------
+- Conda Matching Improvements
+- Cran and Cargo Matching Improvements
+
 3.13.20211207-082721.a97491c (December 7th, 2021)
 ------------------------------------------------
 - Updated the min Jenkins version required to 2.249.1
