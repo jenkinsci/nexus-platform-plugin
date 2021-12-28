@@ -1,0 +1,223 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+import com.sonatype.jenkins.pipeline.GitHub
+import java.text.SimpleDateFormat
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
+Map jenkinsMavenConfig() {
+  def common = mavenCommon([mavenStandardOptions: ''])
+  common.settingsFile = 'jenkins-settings.xml'
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+String apiToken = null
+withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+  apiToken = env.GITHUB_API_PASSWORD
+}
+GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
+Closure postHandler = {
+  currentBuild, env ->
+    def commitId = getCommitId()
+    if (currentBuild.currentResult == 'SUCCESS') {
+      gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
+    }
+    else {
+      gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
+    }
+}
+
+Closure iqPolicyEvaluation = {
+  stage ->
+    def commitId = getCommitId()
+    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+
+    try {
+      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+          "${evaluation.applicationCompositionReportUrl}"
+    }
+    catch (error) {
+      def evaluation = error.policyEvaluation
+      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+          "${evaluation.applicationCompositionReportUrl}"
+      throw error
+    }
+}
+
+Closure updateChangeLogs = {
+  releaseNotes, version ->
+    try {
+      if(!releaseNotes) {
+        echo 'Skipping change log update. No release notes found'
+        return
+      }
+
+      newDate = getFormattedCommitDate()
+      def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
+
+      // Update README file
+      def readmeFile = readFile('README.md')
+      def updatedReadme = readmeFile.replace("Changelog\n=========", newEntry)
+      writeFile(file: 'README.md', text: updatedReadme)
+    }
+    catch (error) {
+      error "Error updating README file"
+    }
+}
+
+String createNewChangeLogEntry(releaseNotes, version, newDate) {
+  return """Changelog
+=========
+${version} (${newDate})
+------------------------------------------------
+${releaseNotes}
+"""
+}
+
+String getFormattedCommitDate() {
+  commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
+  date = new SimpleDateFormat("yyyy-mm-dd").parse(commitDate)
+  return new SimpleDateFormat("MMMM dd, yyyy").format(date)
+}
+
+Closure checkPublishedPlugin = {
+  version ->
+    try {
+      def response = httpRequest "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
+
+      if(response.status != 200) {
+        error "Error checking published plugin artifacts."
+      }
+
+      def hasHpi = response.content.contains("${version}.hpi")
+      def hasJar = response.content.contains("${version}.jar")
+      def hasPom = response.content.contains("${version}.pom")
+      def hasSources = response.content.contains("${version}-sources.jar")
+
+      if(!hasHpi || !hasJar || !hasPom || !hasSources) {
+        error "Plugin artifacts not found."
+      }
+    }
+    catch (error) {
+      error "Error checking published plugin artifacts"
+    }
+}
+
+node('ubuntu-zion') {
+  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
+  def releaseNotes, platformApiVersion, branch
+
+  try {
+    stage('Preparation') {
+      deleteDir()
+
+      // Checkout and config
+      checkout scm
+      runSafely 'git config --global user.email sonatype-ci@sonatype.com'
+      runSafely 'git config --global user.name Sonatype CI'
+
+      // Setup common variables
+      pom = readMavenPom file: 'pom.xml'
+      commitId = getCommitId()
+      commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
+      version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
+      platformApiVersion = getVersionFromBuildName(env.platformApiBuild_NAME)
+      releaseNotes = params.releaseNotes
+      branch = 'main'
+
+      // Setup maven commands
+      mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
+          "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
+          "release:perform -B"
+      mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
+          "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
+          "deploy:deploy-file -B"
+
+      // Update display name
+      currentBuild.displayName = "#${currentBuild.number} - ${version}"
+    }
+    stage('License Check') {
+      licenseCheck(jenkinsMavenConfig())
+    }
+    stage('Build') {
+      mvn jenkinsMavenConfig(), "org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false " +
+        "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
+
+      mvn jenkinsMavenConfig(), 'clean package'
+    }
+    stage('Nexus Lifecycle Analysis') {
+      iqPolicyEvaluation('release')
+    }
+    stage('Archive Results') {
+      junit '**/target/surefire-reports/TEST-*.xml'
+      archive 'target/*.hpi'
+    }
+  }
+  finally {
+    postHandler(env, currentBuild)
+  }
+
+  if (currentBuild.result == 'FAILURE') {
+    return
+  }
+  if (scm.branches[0].name != '*/main') {
+    return
+  }
+  stage('Update changelogs') {
+    updateChangeLogs releaseNotes, version
+  }
+  stage('Deploy to Sonatype') {
+    withGpgCredentials('gnupg') {
+      mvn sonatypeMavenConfig(), mvnReleaseCommand
+    }
+  }
+  stage('Push code and tags') {
+    // Add and commit changes
+    runSafely "git add pom.xml"
+    runSafely "git add README.md"
+    runSafely "git commit -a -m 'Updating code for release ${version}'"
+
+    // Push changes
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                      usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+
+      // Setup remote url with credentials
+      runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+                                                  ".com/jenkinsci/nexus-platform-plugin.git"
+
+      // Get latest commits to not have issues on push
+      runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+      // Push tags
+      runSafely "git push ${pom.artifactId}-${version}"
+
+      // Push code changes
+      runSafely "git push origin HEAD:${branch}"
+    }
+  }
+  stage('Deploy to Jenkins.io') {
+    mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
+        "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
+    mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
+        "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
+  }
+  stage('Check plugin deployment') {
+    checkPublishedPlugin version
+  }
+}
