@@ -92,7 +92,7 @@ ${releaseNotes}
 
 String getFormattedCommitDate() {
   commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
-  date = new SimpleDateFormat("yyyy-mm-dd").parse(commitDate)
+  date = new SimpleDateFormat("yyyy-MM-dd").parse(commitDate)
   return new SimpleDateFormat("MMMM dd, yyyy").format(date)
 }
 
