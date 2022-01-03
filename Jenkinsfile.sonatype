@@ -17,34 +17,32 @@ withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsI
 }
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
-Closure postHandler = {
-  currentBuild, env ->
-    def commitId = getCommitId()
-    if (currentBuild.currentResult == 'SUCCESS') {
-      gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
-    }
-    else {
-      gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
-    }
+postHandler(currentBuild, env) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
+  }
 }
 
-Closure iqPolicyEvaluation = {
-  stage ->
-    def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+iqPolicyEvaluation(stage) {
+  def commitId = getCommitId()
+  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
-    try {
-      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-          "${evaluation.applicationCompositionReportUrl}"
-    }
-    catch (error) {
-      def evaluation = error.policyEvaluation
-      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-          "${evaluation.applicationCompositionReportUrl}"
-      throw error
-    }
+  try {
+    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+        "${evaluation.applicationCompositionReportUrl}"
+  }
+  catch (error) {
+    def evaluation = error.policyEvaluation
+    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+        "${evaluation.applicationCompositionReportUrl}"
+    throw error
+  }
 }
 
 mavenSnapshotPipeline(

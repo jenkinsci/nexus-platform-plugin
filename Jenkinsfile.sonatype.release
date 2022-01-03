@@ -25,60 +25,57 @@ Map sonatypeMavenConfig() {
 }
 
 String apiToken = null
-withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-  apiToken = env.GITHUB_API_PASSWORD
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+    apiToken = env.GITHUB_API_PASSWORD
 }
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
-Closure postHandler = {
-  currentBuild, env ->
-    def commitId = getCommitId()
-    if (currentBuild.currentResult == 'SUCCESS') {
-      gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
-    }
-    else {
-      gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
-    }
+postHandler(currentBuild, env) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
+  }
 }
 
-Closure iqPolicyEvaluation = {
-  stage ->
-    def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+iqPolicyEvaluation(stage) {
+  def commitId = getCommitId()
+  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
-    try {
-      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-          "${evaluation.applicationCompositionReportUrl}"
-    }
-    catch (error) {
-      def evaluation = error.policyEvaluation
-      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-          "${evaluation.applicationCompositionReportUrl}"
-      throw error
-    }
+  try {
+    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+        "${evaluation.applicationCompositionReportUrl}"
+  }
+  catch (error) {
+    def evaluation = error.policyEvaluation
+    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+        "${evaluation.applicationCompositionReportUrl}"
+    throw error
+  }
 }
 
-Closure updateChangeLogs = {
-  releaseNotes, version ->
-    try {
-      if(!releaseNotes) {
-        echo 'Skipping change log update. No release notes found'
-        return
-      }
-
-      newDate = getFormattedCommitDate()
-      def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
-
-      // Update README file
-      def readmeFile = readFile('README.md')
-      def updatedReadme = readmeFile.replace("Changelog\n=========", newEntry)
-      writeFile(file: 'README.md', text: updatedReadme)
+updateChangeLogs(releaseNotes, version) {
+  try {
+    if(!releaseNotes) {
+      echo 'Skipping change log update. No release notes found'
+      return
     }
-    catch (error) {
-      error "Error updating README file"
-    }
+
+    newDate = getFormattedCommitDate()
+    def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
+
+    // Update README file
+    def readmeFile = readFile('README.md')
+    def updatedReadme = readmeFile.replace("Changelog\n=========", newEntry)
+    writeFile(file: 'README.md', text: updatedReadme)
+  }
+  catch (error) {
+    error "Error updating README file"
+  }
 }
 
 String createNewChangeLogEntry(releaseNotes, version, newDate) {
@@ -96,27 +93,27 @@ String getFormattedCommitDate() {
   return new SimpleDateFormat("MMMM dd, yyyy").format(date)
 }
 
-Closure checkPublishedPlugin = {
-  version ->
-    try {
-      def response = httpRequest "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
+checkPublishedPlugin(version) {
+  try {
+    def url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
+    def response = httpRequest url
 
-      if(response.status != 200) {
-        error "Error checking published plugin artifacts."
-      }
-
-      def hasHpi = response.content.contains("${version}.hpi")
-      def hasJar = response.content.contains("${version}.jar")
-      def hasPom = response.content.contains("${version}.pom")
-      def hasSources = response.content.contains("${version}-sources.jar")
-
-      if(!hasHpi || !hasJar || !hasPom || !hasSources) {
-        error "Plugin artifacts not found."
-      }
+    if(response.status != 200) {
+      error "Error checking published plugin artifacts. URL: ${url} Response: ${response.status}"
     }
-    catch (error) {
-      error "Error checking published plugin artifacts"
+
+    def hasHpi = response.content.contains("${version}.hpi")
+    def hasJar = response.content.contains("${version}.jar")
+    def hasPom = response.content.contains("${version}.pom")
+    def hasSources = response.content.contains("${version}-sources.jar")
+
+    if(![hasHpi, hasJar, hasPom, hasSources].every()) {
+      error "Plugin artifacts not found."
     }
+  }
+  catch (error) {
+    error "Error checking published plugin artifacts"
+  }
 }
 
 node('ubuntu-zion') {
@@ -189,9 +186,8 @@ node('ubuntu-zion') {
   }
   stage('Push code and tags') {
     // Add and commit changes
-    runSafely "git add pom.xml"
-    runSafely "git add README.md"
-    runSafely "git commit -a -m 'Updating code for release ${version}'"
+    runSafely "git add pom.xml README.md"
+    runSafely "git commit -m 'Updating code for release ${version}'"
 
     // Push changes
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
