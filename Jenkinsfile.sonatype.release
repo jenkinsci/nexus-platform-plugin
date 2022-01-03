@@ -7,115 +7,13 @@
 import com.sonatype.jenkins.pipeline.GitHub
 import java.text.SimpleDateFormat
 
-String getCommitId() {
-  return runSafely ('git rev-parse HEAD', true)
-}
-
-Map jenkinsMavenConfig() {
-  def common = mavenCommon([mavenStandardOptions: ''])
-  common.settingsFile = 'jenkins-settings.xml'
-  common.mavenVersion = 'Maven 3.6.x'
-  return common
-}
-
-Map sonatypeMavenConfig() {
-  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
-  common.mavenVersion = 'Maven 3.6.x'
-  return common
-}
-
 String apiToken = null
 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
     usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
   apiToken = env.GITHUB_API_PASSWORD
 }
+
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
-
-void postHandler(currentBuild, env) {
-  def commitId = getCommitId()
-  if (currentBuild.currentResult == 'SUCCESS') {
-    gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
-  }
-  else {
-    gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
-  }
-}
-
-void iqPolicyEvaluation(stage) {
-  def commitId = getCommitId()
-  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
-
-  try {
-    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-        "${evaluation.applicationCompositionReportUrl}"
-  }
-  catch (error) {
-    def evaluation = error.policyEvaluation
-    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-        "${evaluation.applicationCompositionReportUrl}"
-    throw error
-  }
-}
-
-void updateChangeLogs(releaseNotes, version) {
-  try {
-    if(!releaseNotes) {
-      echo 'Skipping change log update. No release notes found'
-      return
-    }
-
-    newDate = getFormattedCommitDate()
-    def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
-
-    // Update README file
-    def readmeFile = readFile('README.md')
-    def updatedReadme = readmeFile.replace("Changelog\n=========", newEntry)
-    writeFile(file: 'README.md', text: updatedReadme)
-  }
-  catch (error) {
-    error "Error updating README file"
-  }
-}
-
-String createNewChangeLogEntry(releaseNotes, version, newDate) {
-  return """Changelog
-=========
-${version} (${newDate})
-------------------------------------------------
-${releaseNotes}
-"""
-}
-
-String getFormattedCommitDate() {
-  commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
-  date = new SimpleDateFormat("yyyy-MM-dd").parse(commitDate)
-  return new SimpleDateFormat("MMMM dd, yyyy").format(date)
-}
-
-void checkPublishedPlugin(version) {
-  try {
-    def url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
-    def response = httpRequest url
-
-    if(response.status != 200) {
-      error "Error checking published plugin artifacts. URL: ${url} Response: ${response.status}"
-    }
-
-    def hasHpi = response.content.contains("${version}.hpi")
-    def hasJar = response.content.contains("${version}.jar")
-    def hasPom = response.content.contains("${version}.pom")
-    def hasSources = response.content.contains("${version}-sources.jar")
-
-    if(![hasHpi, hasJar, hasPom, hasSources].every()) {
-      error "Plugin artifacts not found."
-    }
-  }
-  catch (error) {
-    error "Error checking published plugin artifacts"
-  }
-}
 
 node('ubuntu-zion') {
   def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
@@ -127,8 +25,8 @@ node('ubuntu-zion') {
 
       // Checkout and config
       checkout scm
-      runSafely 'git config --global user.email sonatype-ci@sonatype.com'
-      runSafely 'git config --global user.name Sonatype CI'
+      runSafely 'git config user.email sonatype-ci@sonatype.com'
+      runSafely 'git config user.name Sonatype CI'
 
       // Setup common variables
       pom = readMavenPom file: 'pom.xml'
@@ -187,7 +85,7 @@ node('ubuntu-zion') {
   }
   stage('Push code and tags') {
     // Add and commit changes
-    runSafely "git add pom.xml README.md"
+    runSafely 'git add pom.xml README.md'
     runSafely "git commit -m 'Updating code for release ${version}'"
 
     // Push changes
@@ -215,5 +113,108 @@ node('ubuntu-zion') {
   }
   stage('Check plugin deployment') {
     checkPublishedPlugin(version)
+  }
+}
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
+Map jenkinsMavenConfig() {
+  def common = mavenCommon([mavenStandardOptions: ''])
+  common.settingsFile = 'jenkins-settings.xml'
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+void postHandler(currentBuild, env) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
+  }
+}
+
+void iqPolicyEvaluation(stage) {
+  def commitId = getCommitId()
+  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+
+  try {
+    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+        "${evaluation.applicationCompositionReportUrl}"
+  }
+  catch (error) {
+    def evaluation = error.policyEvaluation
+    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+        "${evaluation.applicationCompositionReportUrl}"
+    throw error
+  }
+}
+
+void updateChangeLogs(releaseNotes, version) {
+  try {
+    if(!releaseNotes) {
+      echo 'Skipping change log update. No release notes found'
+      return
+    }
+
+    newDate = getFormattedCommitDate()
+    def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
+
+    // Update README file
+    def readmeFile = readFile('README.md')
+    def updatedReadme = readmeFile.replace('Changelog\n=========', newEntry)
+    writeFile(file: 'README.md', text: updatedReadme)
+  }
+  catch (error) {
+    error "Error updating README file"
+  }
+}
+
+String createNewChangeLogEntry(releaseNotes, version, newDate) {
+  return """Changelog
+=========
+${version} (${newDate})
+------------------------------------------------
+${releaseNotes}
+"""
+}
+
+String getFormattedCommitDate() {
+  commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
+  date = new SimpleDateFormat("yyyy-MM-dd").parse(commitDate)
+  return new SimpleDateFormat("MMMM dd, yyyy").format(date)
+}
+
+void checkPublishedPlugin(version) {
+  try {
+    def url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
+    def response = httpRequest url
+
+    if(response.status != 200) {
+      error "Error checking published plugin artifacts. URL: ${url} Response: ${response.status}"
+    }
+
+    def hasHpi = response.content.contains("${version}.hpi")
+    def hasJar = response.content.contains("${version}.jar")
+    def hasPom = response.content.contains("${version}.pom")
+    def hasSources = response.content.contains("${version}-sources.jar")
+
+    if(![hasHpi, hasJar, hasPom, hasSources].every()) {
+      error 'Plugin artifacts not found.'
+    }
+  }
+  catch (error) {
+    error 'Error checking published plugin artifacts.'
   }
 }

@@ -6,16 +6,17 @@
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
 import com.sonatype.jenkins.pipeline.GitHub
 
-String getCommitId() {
-  return runSafely ('git rev-parse HEAD', true)
-}
-
 String apiToken = null
 withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                   usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
   apiToken = env.GITHUB_API_PASSWORD
 }
+
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
 
 Closure postHandler = {
   currentBuild, env ->
