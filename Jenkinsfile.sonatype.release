@@ -210,7 +210,7 @@ void checkPublishedPlugin(version) {
     def hasPom = response.content.contains("${version}.pom")
     def hasSources = response.content.contains("${version}-sources.jar")
 
-    if(![hasHpi, hasJar, hasPom, hasSources].every()) {
+    if(!hasHpi || !hasJar || !hasPom || !hasSources) {
       error 'Plugin artifacts not found.'
     }
   }
