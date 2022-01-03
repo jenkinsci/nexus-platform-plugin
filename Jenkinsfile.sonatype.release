@@ -26,11 +26,12 @@ Map sonatypeMavenConfig() {
 
 String apiToken = null
 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-    apiToken = env.GITHUB_API_PASSWORD
+    usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+  apiToken = env.GITHUB_API_PASSWORD
 }
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
-postHandler(currentBuild, env) {
+
+void postHandler(currentBuild, env) {
   def commitId = getCommitId()
   if (currentBuild.currentResult == 'SUCCESS') {
     gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
@@ -40,7 +41,7 @@ postHandler(currentBuild, env) {
   }
 }
 
-iqPolicyEvaluation(stage) {
+void iqPolicyEvaluation(stage) {
   def commitId = getCommitId()
   gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
@@ -58,7 +59,7 @@ iqPolicyEvaluation(stage) {
   }
 }
 
-updateChangeLogs(releaseNotes, version) {
+void updateChangeLogs(releaseNotes, version) {
   try {
     if(!releaseNotes) {
       echo 'Skipping change log update. No release notes found'
@@ -93,7 +94,7 @@ String getFormattedCommitDate() {
   return new SimpleDateFormat("MMMM dd, yyyy").format(date)
 }
 
-checkPublishedPlugin(version) {
+void checkPublishedPlugin(version) {
   try {
     def url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
     def response = httpRequest url
@@ -167,7 +168,7 @@ node('ubuntu-zion') {
     }
   }
   finally {
-    postHandler(env, currentBuild)
+    postHandler(currentBuild, env)
   }
 
   if (currentBuild.result == 'FAILURE') {
@@ -177,7 +178,7 @@ node('ubuntu-zion') {
     return
   }
   stage('Update changelogs') {
-    updateChangeLogs releaseNotes, version
+    updateChangeLogs(releaseNotes, version)
   }
   stage('Deploy to Sonatype') {
     withGpgCredentials('gnupg') {
@@ -191,8 +192,7 @@ node('ubuntu-zion') {
 
     // Push changes
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                      usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-
+        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
       // Setup remote url with credentials
       runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
                                                   ".com/jenkinsci/nexus-platform-plugin.git"
@@ -214,6 +214,6 @@ node('ubuntu-zion') {
         "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
   }
   stage('Check plugin deployment') {
-    checkPublishedPlugin version
+    checkPublishedPlugin(version)
   }
 }

@@ -10,6 +10,19 @@ String getCommitId() {
   return runSafely ('git rev-parse HEAD', true)
 }
 
+Map jenkinsMavenConfig() {
+  def common = mavenCommon([mavenStandardOptions: ''])
+  common.settingsFile = 'jenkins-settings.xml'
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
 String apiToken = null
 withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                   usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
@@ -17,41 +30,119 @@ withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsI
 }
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
-postHandler(currentBuild, env) {
-  def commitId = getCommitId()
-  if (currentBuild.currentResult == 'SUCCESS') {
-    gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
-  }
-  else {
-    gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
-  }
+Closure postHandler = {
+  currentBuild, env ->
+    def commitId = getCommitId()
+    if (currentBuild.currentResult == 'SUCCESS') {
+      gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
+    }
+    else {
+      gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
+    }
 }
 
-iqPolicyEvaluation(stage) {
-  def commitId = getCommitId()
-  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+Closure iqPolicyEvaluation = {
+  stage ->
+    def commitId = getCommitId()
+    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
-  try {
-    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-        "${evaluation.applicationCompositionReportUrl}"
-  }
-  catch (error) {
-    def evaluation = error.policyEvaluation
-    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-        "${evaluation.applicationCompositionReportUrl}"
-    throw error
-  }
+    try {
+      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+          "${evaluation.applicationCompositionReportUrl}"
+    }
+    catch (error) {
+      def evaluation = error.policyEvaluation
+      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+          "${evaluation.applicationCompositionReportUrl}"
+      throw error
+    }
 }
 
-mavenSnapshotPipeline(
-  mavenOptions: '-D skipTests',
-  mavenVersion: 'Maven 3.6.x',
-  mavenProfiles: ['sonatype'],
-  downstreamJobName: 'extra-tests',
-  notificationSender: postHandler,
-  deployBranch: 'main',
-  iqPolicyEvaluation: iqPolicyEvaluation,
-  runFeatureBranchPolicyEvaluations: true
-)
+switch (currentBuild.fullProjectName) {
+  case ~/.*snapshot.*/:
+    mavenSnapshotPipeline(
+        mavenOptions: '-D skipTests',
+        mavenVersion: 'Maven 3.6.x',
+        mavenProfiles: ['sonatype'],
+        downstreamJobName: 'extra-tests',
+        notificationSender: postHandler,
+        deployBranch: 'main',
+        iqPolicyEvaluation: iqPolicyEvaluation,
+        runFeatureBranchPolicyEvaluations: true
+    )
+    break
+  case ~/.*\/release$/:
+    node('ubuntu-zion') {
+      def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
+
+      try {
+        stage('Preparation') {
+          deleteDir()
+
+          checkout scm
+          runSafely 'git config user.email sonatype-ci@sonatype.com'
+          runSafely 'git config user.name Sonatype CI'
+
+          commitId = getCommitId()
+          commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
+          pom = readMavenPom file: 'pom.xml'
+          version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
+          mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
+              "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
+              "release:perform -B"
+          mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
+              "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
+              "deploy:deploy-file -B"
+          currentBuild.displayName = "#${currentBuild.number} - ${version}"
+          releaseNotes = params.releaseNotes
+        }
+        stage('License Check') {
+          licenseCheck(jenkinsMavenConfig())
+        }
+        stage('Build') {
+          mvn jenkinsMavenConfig(), 'clean package'
+        }
+        stage('Nexus Lifecycle Analysis') {
+          iqPolicyEvaluation('release')
+        }
+        stage('Archive Results') {
+          junit '**/target/surefire-reports/TEST-*.xml'
+          archive 'target/*.hpi'
+        }
+      }
+      finally {
+        postHandler(env, currentBuild)
+      }
+
+      if (currentBuild.result == 'FAILURE') {
+        return
+      }
+      if (scm.branches[0].name != '*/main') {
+        return
+      }
+      stage('Deploy to Sonatype') {
+        withGpgCredentials('gnupg') {
+          mvn sonatypeMavenConfig(), mvnReleaseCommand
+        }
+      }
+      input 'Push tags and deploy to Jenkins Update Center?'
+      stage('Push tags') {
+        withCredentials([[$class          : 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                          usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+          runSafely "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+              ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
+        }
+      }
+      stage('Deploy to Jenkins.io') {
+        mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
+            "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
+        mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
+            "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
+      }
+    }
+    break
+  default:
+      error "${currentBuild.fullProjectName} does not follow naming conventions."
+}
