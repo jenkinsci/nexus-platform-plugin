@@ -58,7 +58,7 @@ node('ubuntu-zion') {
       mvn jenkinsMavenConfig(), 'clean package'
     }
     stage('Nexus Lifecycle Analysis') {
-      iqPolicyEvaluation('release')
+      iqPolicyEvaluation(gitHub, 'release')
     }
     stage('Archive Results') {
       junit '**/target/surefire-reports/TEST-*.xml'
@@ -66,7 +66,7 @@ node('ubuntu-zion') {
     }
   }
   finally {
-    postHandler(currentBuild, env)
+    postHandler(gitHub, currentBuild, env)
   }
 
   if (currentBuild.result == 'FAILURE') {
@@ -133,7 +133,7 @@ Map sonatypeMavenConfig() {
   return common
 }
 
-void postHandler(currentBuild, env) {
+void postHandler(gitHub, currentBuild, env) {
   def commitId = getCommitId()
   if (currentBuild.currentResult == 'SUCCESS') {
     gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
@@ -143,7 +143,7 @@ void postHandler(currentBuild, env) {
   }
 }
 
-void iqPolicyEvaluation(stage) {
+void iqPolicyEvaluation(gitHub, stage) {
   def commitId = getCommitId()
   gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
 
