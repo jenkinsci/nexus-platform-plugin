@@ -16,8 +16,7 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 node('ubuntu-zion') {
-  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
-  def releaseNotes, platformApiVersion, branch
+  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand, releaseNotes, branch
 
   try {
     stage('Preparation') {
@@ -33,7 +32,6 @@ node('ubuntu-zion') {
       commitId = getCommitId()
       commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
       version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
-      platformApiVersion = getVersionFromBuildName(env.platformApiBuild_NAME)
       releaseNotes = params.releaseNotes
       branch = 'main'
 
@@ -52,9 +50,6 @@ node('ubuntu-zion') {
       licenseCheck(jenkinsMavenConfig())
     }
     stage('Build') {
-      mvn jenkinsMavenConfig(), "org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false " +
-        "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
-
       mvn jenkinsMavenConfig(), 'clean package'
     }
     stage('Nexus Lifecycle Analysis') {
@@ -85,8 +80,8 @@ node('ubuntu-zion') {
   }
   stage('Push code and tags') {
     // Add and commit changes
-    runSafely 'git add pom.xml README.md'
-    runSafely "git commit -m 'Updating code for release ${version}'"
+    runSafely 'git add README.md'
+    runSafely "git commit -m 'Updating change logs for release ${version}'"
 
     // Push changes
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',

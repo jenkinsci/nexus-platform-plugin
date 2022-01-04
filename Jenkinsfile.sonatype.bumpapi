@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+
+node('ubuntu-zion') {
+  def platformApiVersion, branch
+
+  stage('Preparation') {
+    deleteDir()
+
+    // Checkout and config
+    checkout scm
+    runSafely 'git config user.email sonatype-ci@sonatype.com'
+    runSafely 'git config user.name Sonatype CI'
+
+    // Setup common variables
+    platformApiVersion = getVersionFromBuildName(env.platformApiBuild_NAME)
+    branch = 'main'
+  }
+  stage('Bump Nexus Platform API Version') {
+    mvn sonatypeMavenConfig(), "org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false " +
+      "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
+  }
+  stage('Build & Test') {
+    mvn sonatypeMavenConfig(), 'clean verify'
+  }
+  stage('Archive Results') {
+    junit '**/target/surefire-reports/TEST-*.xml'
+    archive 'target/*.hpi'
+  }
+  stage('Push code and tags') {
+    // Add and commit changes
+    runSafely 'git add pom.xml'
+    runSafely "git commit -m 'Bumping nexus plarform api version to ${platformApiVersion}'"
+
+    // Push changes
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                      usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+      // Setup remote url with credentials
+      runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+          ".com/jenkinsci/nexus-platform-plugin.git"
+
+      // Get latest commits to not have issues on push
+      runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+      // Push code changes
+      runSafely "git push origin HEAD:${branch}"
+    }
+  }
+}
+
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
