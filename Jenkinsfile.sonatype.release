@@ -37,11 +37,11 @@ node('ubuntu-zion') {
 
       // Setup maven commands
       mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
-          "-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare " +
-          "release:perform -B"
-      mvnDeployCommand = "-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org " +
+          '-DpushChanges=false -DlocalCheckout=true -DpreparationGoals=initialize clean release:prepare ' +
+          'release:perform -B'
+      mvnDeployCommand = '-Durl=https://repo.jenkins-ci.org/releases -DrepositoryId=maven.jenkins-ci.org ' +
           "-DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} -DgeneratePom=false " +
-          "deploy:deploy-file -B"
+          'deploy:deploy-file -B'
 
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
@@ -67,7 +67,7 @@ node('ubuntu-zion') {
   if (currentBuild.result == 'FAILURE') {
     return
   }
-  if (scm.branches[0].name != '*/main') {
+  if (scm.branches[0].name != "*/${branch}") {
     return
   }
   stage('Update changelogs') {
@@ -88,7 +88,7 @@ node('ubuntu-zion') {
         usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
       // Setup remote url with credentials
       runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
-                                                  ".com/jenkinsci/nexus-platform-plugin.git"
+                                                  '.com/jenkinsci/nexus-platform-plugin.git'
 
       // Get latest commits to not have issues on push
       runSafely "git pull --no-rebase --no-edit origin ${branch}"
@@ -101,9 +101,9 @@ node('ubuntu-zion') {
     }
   }
   stage('Deploy to Jenkins.io') {
-    mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi " +
+    mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +
         "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
-    mvn jenkinsMavenConfig(), "-Dfile=target/checkout/target/nexus-jenkins-plugin.jar " +
+    mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ' +
         "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
   }
   stage('Check plugin deployment') {
@@ -172,7 +172,7 @@ void updateChangeLogs(releaseNotes, version) {
     writeFile(file: 'README.md', text: updatedReadme)
   }
   catch (error) {
-    error "Error updating README file"
+    error 'Error updating README file'
   }
 }
 
@@ -187,8 +187,8 @@ ${releaseNotes}
 
 String getFormattedCommitDate() {
   commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
-  date = new SimpleDateFormat("yyyy-MM-dd").parse(commitDate)
-  return new SimpleDateFormat("MMMM dd, yyyy").format(date)
+  date = new SimpleDateFormat('yyyy-MM-dd').parse(commitDate)
+  return new SimpleDateFormat('MMMM dd, yyyy').format(date)
 }
 
 void checkPublishedPlugin(version) {
