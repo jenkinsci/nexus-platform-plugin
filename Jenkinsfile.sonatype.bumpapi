@@ -21,11 +21,11 @@ node('ubuntu-zion') {
     branch = 'main'
   }
   stage('Bump Nexus Platform API Version') {
-    mvn sonatypeMavenConfig(), "org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false " +
+    mvn jenkinsMavenConfig(), "org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false " +
       "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
   }
   stage('Build & Test') {
-    mvn sonatypeMavenConfig(), 'clean verify'
+    mvn jenkinsMavenConfig(), 'clean verify'
   }
   stage('Archive Results') {
     junit '**/target/surefire-reports/TEST-*.xml'
@@ -52,8 +52,9 @@ node('ubuntu-zion') {
   }
 }
 
-Map sonatypeMavenConfig() {
-  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenProfiles: ['sonatype'], mavenStandardOptions: ''])
+Map jenkinsMavenConfig() {
+  def common = mavenCommon([mavenStandardOptions: ''])
+  common.settingsFile = 'jenkins-settings.xml'
   common.mavenVersion = 'Maven 3.6.x'
   return common
 }
