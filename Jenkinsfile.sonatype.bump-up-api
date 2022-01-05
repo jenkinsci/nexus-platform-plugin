@@ -36,10 +36,6 @@ node('ubuntu-zion') {
   stage('Build & Test') {
     mvn jenkinsMavenConfig(), 'clean verify -DskipTests'
   }
-  stage('Archive Results') {
-    junit '**/target/surefire-reports/TEST-*.xml'
-    archive 'target/*.hpi'
-  }
   stage('Run Downstream') {
     runDownstream('extra-tests')
   }
