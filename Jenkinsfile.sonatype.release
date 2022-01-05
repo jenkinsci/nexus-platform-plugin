@@ -70,15 +70,10 @@ node('ubuntu-zion') {
   if (scm.branches[0].name != "*/${branch}") {
     return
   }
-  stage('Update changelogs') {
+  stage('Update and push code') {
+    // Update change logs
     updateChangeLogs(releaseNotes, version)
-  }
-  stage('Deploy to Sonatype') {
-    withGpgCredentials('gnupg') {
-      mvn sonatypeMavenConfig(), mvnReleaseCommand
-    }
-  }
-  stage('Push code and tags') {
+
     // Add and commit changes
     runSafely 'git add README.md'
     runSafely "git commit -m 'Updating change logs for release ${version}'"
@@ -93,12 +88,17 @@ node('ubuntu-zion') {
       // Get latest commits to not have issues on push
       runSafely "git pull --no-rebase --no-edit origin ${branch}"
 
-      // Push tags
-      runSafely "git push ${pom.artifactId}-${version}"
-
       // Push code changes
       runSafely "git push origin HEAD:${branch}"
     }
+  }
+  stage('Deploy to Sonatype') {
+    withGpgCredentials('gnupg') {
+      mvn sonatypeMavenConfig(), mvnReleaseCommand
+    }
+  }
+  stage('Push tags') {
+    runSafely "git push ${pom.artifactId}-${version}"
   }
   stage('Deploy to Jenkins.io') {
     mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +

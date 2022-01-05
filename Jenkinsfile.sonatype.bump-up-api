@@ -4,6 +4,15 @@
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+import com.sonatype.jenkins.pipeline.GitHub
+
+String apiToken = null
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+  apiToken = env.GITHUB_API_PASSWORD
+}
+
+GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 node('ubuntu-zion') {
   def platformApiVersion, branch
@@ -25,13 +34,19 @@ node('ubuntu-zion') {
       "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
   }
   stage('Build & Test') {
-    mvn jenkinsMavenConfig(), 'clean verify'
+    mvn jenkinsMavenConfig(), 'clean verify -DskipTests'
   }
   stage('Archive Results') {
     junit '**/target/surefire-reports/TEST-*.xml'
     archive 'target/*.hpi'
   }
-  stage('Push code and tags') {
+  stage('Run Downstream') {
+    runDownstream('extra-tests')
+  }
+  stage('Evaluate Policies') {
+    iqPolicyEvaluation(gitHub, 'release')
+  }
+  stage('Push code') {
     // Add and commit changes
     runSafely 'git add pom.xml'
     runSafely "git commit -m 'Bumping nexus plarform api version to ${platformApiVersion}'"
@@ -52,9 +67,31 @@ node('ubuntu-zion') {
   }
 }
 
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
 Map jenkinsMavenConfig() {
   def common = mavenCommon([mavenStandardOptions: ''])
   common.settingsFile = 'jenkins-settings.xml'
   common.mavenVersion = 'Maven 3.6.x'
   return common
+}
+
+void iqPolicyEvaluation(gitHub, stage) {
+  def commitId = getCommitId()
+  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+
+  try {
+    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+        "${evaluation.applicationCompositionReportUrl}"
+  }
+  catch (error) {
+    def evaluation = error.policyEvaluation
+    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+        "${evaluation.applicationCompositionReportUrl}"
+    throw error
+  }
 }
