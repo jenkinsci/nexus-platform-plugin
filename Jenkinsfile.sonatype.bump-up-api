@@ -4,15 +4,6 @@
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
-import com.sonatype.jenkins.pipeline.GitHub
-
-String apiToken = null
-withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-  apiToken = env.GITHUB_API_PASSWORD
-}
-
-GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 node('ubuntu-zion') {
   def platformApiVersion, branch
@@ -36,12 +27,6 @@ node('ubuntu-zion') {
   stage('Build & Test') {
     mvn jenkinsMavenConfig(), 'clean verify -DskipTests'
   }
-  stage('Run Downstream') {
-    runDownstream('extra-tests')
-  }
-  stage('Evaluate Policies') {
-    iqPolicyEvaluation(gitHub, 'release')
-  }
   stage('Push code') {
     // Add and commit changes
     runSafely 'git add pom.xml'
@@ -61,6 +46,16 @@ node('ubuntu-zion') {
       runSafely "git push origin HEAD:${branch}"
     }
   }
+  stage('Run Downstream') {
+    def downstreamProjectName = "extra-tests/${branch}"
+    env['DOWNSTREAM_JOB_NAME'] = downstreamProjectName
+    build job: downstreamProjectName, propagate: true, wait: true,
+        parameters: [string(name: 'commit_sha', value: getCommitId())]
+  }
+  stage('Evaluate Policies') {
+    nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: 'build', jobCredentialsId: ''
+  }
 }
 
 String getCommitId() {
@@ -72,22 +67,4 @@ Map jenkinsMavenConfig() {
   common.settingsFile = 'jenkins-settings.xml'
   common.mavenVersion = 'Maven 3.6.x'
   return common
-}
-
-void iqPolicyEvaluation(gitHub, stage) {
-  def commitId = getCommitId()
-  gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
-
-  try {
-    def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-        iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-    gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-        "${evaluation.applicationCompositionReportUrl}"
-  }
-  catch (error) {
-    def evaluation = error.policyEvaluation
-    gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-        "${evaluation.applicationCompositionReportUrl}"
-    throw error
-  }
 }
