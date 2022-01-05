@@ -98,6 +98,8 @@ node('ubuntu-zion') {
     }
   }
   stage('Push tags') {
+    // Getting the latest commits
+    runSafely "git pull --no-rebase --no-edit origin ${branch}"
     runSafely "git push ${pom.artifactId}-${version}"
   }
   stage('Deploy to Jenkins.io') {
