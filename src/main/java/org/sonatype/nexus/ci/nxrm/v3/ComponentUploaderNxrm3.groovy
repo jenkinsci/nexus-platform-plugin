@@ -88,7 +88,10 @@ class ComponentUploaderNxrm3
         final String uploadFailed = 'Upload of maven component with GAV ' +
             "[${groupId}:${artifactId}:${version}] failed"
 
+        final String reasonFailed = "Failed to upload due to ${ex.getCause()} - ${ex.getMessage()}"
+
         logger.println(uploadFailed)
+        logger.println(reasonFailed)
         logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
         run.setResult(Result.FAILURE)
         throw new IOException(uploadFailed, ex)
