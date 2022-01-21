@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20220121-121645.a0ca2c5 (January 21, 2022)
+------------------------------------------------
+- Added support for scanning IaC targets
+
 3.13.20211220-113820.efa5a1c (December 20th, 2021)
 ------------------------------------------------
 - Conda Matching Improvements
