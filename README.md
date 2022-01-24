@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20220124-204320.8222771 (January 24, 2022)
+------------------------------------------------
+- Bug Fix for False Positives in Image Scans
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#) for Nexus Lifecycle 1.132.0-02.
+
 3.13.20220121-121645.a0ca2c5 (January 21, 2022)
 ------------------------------------------------
 - Added support for scanning IaC targets
