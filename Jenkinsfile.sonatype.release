@@ -34,6 +34,7 @@ node('ubuntu-zion') {
       commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
       version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
       releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
       branch = 'main'
 
       // Setup maven commands
@@ -46,9 +47,6 @@ node('ubuntu-zion') {
 
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
-
-      // Get flag to add IQ release notes link to change log
-      addIQReleaseNotesLink = params.addIQReleaseNotesLink
     }
     stage('License Check') {
       licenseCheck(jenkinsMavenConfig())
@@ -75,6 +73,12 @@ node('ubuntu-zion') {
     return
   }
   stage('Update and push code') {
+    // Check if want to update the change log
+    if(!releaseNotes && !addIQReleaseNotesLink) {
+      echo 'Skipping change log update'
+      return
+    }
+
     // Update change logs
     updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
@@ -165,54 +169,15 @@ void iqPolicyEvaluation(gitHub, stage) {
 }
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
-  if(!releaseNotes && !addIQReleaseNotesLink) {
-    echo 'Skipping change log update'
-    return
-  }
-
   def newDate = getFormattedCommitDate()
-  def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink)
-
-  updateReadmeFile('README.md', 'Changelog\n=========', newEntry)
-}
-
-String createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink) {
-  def iqVersion = addIQReleaseNotesLink ? latestSuccessfulBuild.version('insight/insight-brain/release') : null
-  return """Changelog
-=========
-${version} (${newDate})
-------------------------------------------------
-${getReleaseNotesSummary(releaseNotes, iqVersion)}
-"""
-}
-
-String getReleaseNotesSummary(releaseNotes, iqVersion) {
-  if (iqVersion) {
-    return """
-${releaseNotes}
-${getIQReleaseNotesLogEntry(iqVersion)}
-"""
-  } else {
-    return """
-${releaseNotes}
-"""
-  }
-}
-
-String getIQReleaseNotesLogEntry(iqVersion) {
-  return '- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#)' +
-      "for Nexus Lifecycle ${iqVersion}."
-}
-
-void updateReadmeFile(readmeFilePath, releaseNotesHeader, releaseNotesEntry) {
-  try {
-    def readmeFile = readFile(readmeFilePath)
-    def updatedReadme = readmeFile.replace(releaseNotesHeader, releaseNotesEntry)
-    writeFile(file: readmeFilePath, text: updatedReadme)
-  }
-  catch (error) {
-    error 'Error updating README file'
-  }
+  updateReleaseNotes(
+      'Changelog\n=========',
+      "${version} (${newDate})",
+      '------------------------------------------------',
+      releaseNotes,
+      'README.md',
+      addIQReleaseNotesLink
+  )
 }
 
 String getFormattedCommitDate() {
