@@ -3,7 +3,7 @@
  * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
-@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared@INT-6477-add-shared-lib-to-add-release-notes']) _
 import com.sonatype.jenkins.pipeline.GitHub
 import java.text.SimpleDateFormat
 
@@ -87,7 +87,7 @@ node('ubuntu-zion') {
     updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
     // Add and commit changes
-    runSafely 'git add .'
+    runSafely 'git add README.md'
     runSafely "git commit -m 'Updating change logs for release ${version}'"
 
     // Push changes
@@ -178,43 +178,12 @@ void iqPolicyEvaluation(gitHub, stage) {
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
   def newDate = getFormattedCommitDate()
-  def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink)
-
-  updateReadmeFile('./docs/testfile.md', 'Changelog\n=========', newEntry)
-}
-
-String createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink) {
-  def iqVersion = addIQReleaseNotesLink ? latestSuccessfulBuild.version('insight/insight-brain/release') : null
-  return """Changelog
-=========
-${version} (${newDate})
-------------------------------------------------
-${getReleaseNotesSummary(releaseNotes, iqVersion)}
-"""
-}
-
-String getReleaseNotesSummary(releaseNotes, iqVersion) {
-  if (iqVersion) {
-    return "${releaseNotes}\n${getIQReleaseNotesLogEntry(iqVersion)}"
-  } else {
-    return "${releaseNotes}"
-  }
-}
-
-String getIQReleaseNotesLogEntry(iqVersion) {
-  return '- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#)' +
-      "for Nexus Lifecycle ${iqVersion}."
-}
-
-void updateReadmeFile(readmeFilePath, releaseNotesHeader, releaseNotesEntry) {
-  try {
-    def readmeFile = readFile(readmeFilePath)
-    def updatedReadme = readmeFile.replace(releaseNotesHeader, releaseNotesEntry)
-    writeFile(file: readmeFilePath, text: updatedReadme)
-  }
-  catch (error) {
-    error 'Error updating README file'
-  }
+  updateReleaseNotes releaseNotesHeader: 'Changelog\n=========',
+      version: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      releaseNotesFilePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
 }
 
 String getFormattedCommitDate() {
