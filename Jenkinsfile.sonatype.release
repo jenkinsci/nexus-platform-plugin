@@ -178,12 +178,14 @@ void iqPolicyEvaluation(gitHub, stage) {
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
   def newDate = getFormattedCommitDate()
-  updateReleaseNotes releaseNotesHeader: 'Changelog\n=========',
-      version: "${version} (${newDate})",
-      separator: '------------------------------------------------',
-      releaseNotes: releaseNotes,
-      releaseNotesFilePath: 'README.md',
-      addIQReleaseNotesLink: addIQReleaseNotesLink
+  updateReleaseNotes(
+      'Changelog\n=========',
+      "${version} (${newDate})",
+      '------------------------------------------------',
+      releaseNotes,
+      'README.md',
+      addIQReleaseNotesLink
+  )
 }
 
 String getFormattedCommitDate() {
