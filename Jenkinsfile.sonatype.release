@@ -34,6 +34,7 @@ node('ubuntu-zion') {
       commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
       version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
       releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
       branch = 'test-release-script'
 
       // Setup maven commands
@@ -46,10 +47,6 @@ node('ubuntu-zion') {
 
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
-
-      // Get flag to add IQ release notes link to change log
-      echo 'Params: ' + params
-      addIQReleaseNotesLink = params.addIQReleaseNotesLink
     }
     stage('License Check') {
       //licenseCheck(jenkinsMavenConfig())
@@ -199,7 +196,7 @@ String getReleaseNotesSummary(releaseNotes, iqVersion) {
   if (iqVersion) {
     return "${releaseNotes}\n${getIQReleaseNotesLogEntry(iqVersion)}"
   } else {
-    return ${releaseNotes}
+    return "${releaseNotes}"
   }
 }
 
