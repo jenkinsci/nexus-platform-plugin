@@ -77,6 +77,11 @@ node('ubuntu-zion') {
     return
   }
   stage('Update and push code') {
+    if(!releaseNotes && !addIQReleaseNotesLink) {
+      echo 'Skipping change log update'
+      return
+    }
+
     // Update change logs
     updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
@@ -171,15 +176,10 @@ void iqPolicyEvaluation(gitHub, stage) {
 }
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
-  if(!releaseNotes && !addIQReleaseNotesLink) {
-    echo 'Skipping change log update'
-    return
-  }
-
   def newDate = getFormattedCommitDate()
   def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink)
 
-  updateReadmeFile('README.md', 'Changelog\n=========', newEntry)
+  updateReadmeFile('./docs/testfile.md', 'Changelog\n=========', newEntry)
 }
 
 String createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink) {
