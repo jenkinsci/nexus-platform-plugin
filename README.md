@@ -24,6 +24,12 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20220128-201758.1684d27 (January 28, 2022)
+------------------------------------------------
+- Example Notes 4
+- Example Notes 5
+- Example Notes 6
+
 3.13.20220128-151314.65452b0 (January 28, 2022)
 ------------------------------------------------
 - Example Notes 1
