@@ -197,14 +197,9 @@ ${getReleaseNotesSummary(releaseNotes, iqVersion)}
 
 String getReleaseNotesSummary(releaseNotes, iqVersion) {
   if (iqVersion) {
-    return """
-${releaseNotes}
-${getIQReleaseNotesLogEntry(iqVersion)}
-"""
+    return "${releaseNotes}\n${getIQReleaseNotesLogEntry(iqVersion)}"
   } else {
-    return """
-${releaseNotes}
-"""
+    return ${releaseNotes}
   }
 }
 
