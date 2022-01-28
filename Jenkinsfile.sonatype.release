@@ -16,7 +16,8 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 node('ubuntu-zion') {
-  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand, releaseNotes, branch
+  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
+  def releaseNotes, branch, addIQReleaseNotesLink
 
   try {
     stage('Preparation') {
@@ -45,6 +46,9 @@ node('ubuntu-zion') {
 
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
+
+      // Get flag to add IQ release notes link to change log
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
     }
     stage('License Check') {
       licenseCheck(jenkinsMavenConfig())
@@ -72,7 +76,7 @@ node('ubuntu-zion') {
   }
   stage('Update and push code') {
     // Update change logs
-    updateChangeLogs(releaseNotes, version)
+    updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
     // Add and commit changes
     runSafely 'git add README.md'
@@ -160,33 +164,55 @@ void iqPolicyEvaluation(gitHub, stage) {
   }
 }
 
-void updateChangeLogs(releaseNotes, version) {
-  try {
-    if(!releaseNotes) {
-      echo 'Skipping change log update. No release notes found'
-      return
-    }
-
-    newDate = getFormattedCommitDate()
-    def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
-
-    // Update README file
-    def readmeFile = readFile('README.md')
-    def updatedReadme = readmeFile.replace('Changelog\n=========', newEntry)
-    writeFile(file: 'README.md', text: updatedReadme)
+void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
+  if(!releaseNotes && !addIQReleaseNotesLink) {
+    echo 'Skipping change log update'
+    return
   }
-  catch (error) {
-    error 'Error updating README file'
-  }
+
+  def newDate = getFormattedCommitDate()
+  def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink)
+
+  updateReadmeFile('README.md', 'Changelog\n=========', newEntry)
 }
 
-String createNewChangeLogEntry(releaseNotes, version, newDate) {
+String createNewChangeLogEntry(releaseNotes, version, newDate, addIQReleaseNotesLink) {
+  def iqVersion = addIQReleaseNotesLink ? latestSuccessfulBuild.version('insight/insight-brain/release') : null
   return """Changelog
 =========
 ${version} (${newDate})
 ------------------------------------------------
+${getReleaseNotesSummary(releaseNotes, iqVersion)}
+"""
+}
+
+String getReleaseNotesSummary(releaseNotes, iqVersion) {
+  if (iqVersion) {
+    return """
+${releaseNotes}
+${getIQReleaseNotesLogEntry(iqVersion)}
+"""
+  } else {
+    return """
 ${releaseNotes}
 """
+  }
+}
+
+String getIQReleaseNotesLogEntry(iqVersion) {
+  return '- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#)' +
+      "for Nexus Lifecycle ${iqVersion}."
+}
+
+void updateReadmeFile(readmeFilePath, releaseNotesHeader, releaseNotesEntry) {
+  try {
+    def readmeFile = readFile(readmeFilePath)
+    def updatedReadme = readmeFile.replace(releaseNotesHeader, releaseNotesEntry)
+    writeFile(file: readmeFilePath, text: updatedReadme)
+  }
+  catch (error) {
+    error 'Error updating README file'
+  }
 }
 
 String getFormattedCommitDate() {
