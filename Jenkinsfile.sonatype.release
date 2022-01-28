@@ -3,7 +3,7 @@
  * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
-@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared@INT-6477-add-shared-lib-to-add-release-notes']) _
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
 import com.sonatype.jenkins.pipeline.GitHub
 import java.text.SimpleDateFormat
 
@@ -35,7 +35,7 @@ node('ubuntu-zion') {
       version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
       releaseNotes = params.releaseNotes
       addIQReleaseNotesLink = params.addIQReleaseNotesLink
-      branch = 'test-release-script'
+      branch = 'main'
 
       // Setup maven commands
       mvnReleaseCommand = "-Darguments=-DskipTests -DreleaseVersion=${version} -DdevelopmentVersion=${pom.version} " +
@@ -49,21 +49,17 @@ node('ubuntu-zion') {
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
     }
     stage('License Check') {
-      //licenseCheck(jenkinsMavenConfig())
-      echo 'License Check'
+      licenseCheck(jenkinsMavenConfig())
     }
     stage('Build') {
-      //mvn jenkinsMavenConfig(), 'clean package'
-      echo 'Build'
+      mvn jenkinsMavenConfig(), 'clean package'
     }
     stage('Nexus Lifecycle Analysis') {
-      // iqPolicyEvaluation(gitHub, 'release')
-      echo 'Nexus Lifecycle Analysis'
+      iqPolicyEvaluation(gitHub, 'release')
     }
     stage('Archive Results') {
-      // junit '**/target/surefire-reports/TEST-*.xml'
-      // archive 'target/*.hpi'
-      echo 'Archive Results'
+      junit '**/target/surefire-reports/TEST-*.xml'
+      archive 'target/*.hpi'
     }
   }
   finally {
@@ -105,29 +101,25 @@ node('ubuntu-zion') {
     }
   }
   stage('Deploy to Sonatype') {
-    /* withGpgCredentials('gnupg') {
+    withGpgCredentials('gnupg') {
       mvn sonatypeMavenConfig(), mvnReleaseCommand
-    } */
-    echo 'Deploy to Sonatype'
+    }
   }
   stage('Push tags') {
-    /* withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
                       usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
       runSafely "git push https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
           ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
-    } */
-    echo 'Push tags'
+    }
   }
   stage('Deploy to Jenkins.io') {
-    /* mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +
+    mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +
         "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
     mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ' +
-        "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}" */
-    echo 'Deploy to Jenkins.io'
+        "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
   }
   stage('Check plugin deployment') {
-    // checkPublishedPlugin(version)
-    echo 'Check plugin deployment'
+    checkPublishedPlugin(version)
   }
 }
 
