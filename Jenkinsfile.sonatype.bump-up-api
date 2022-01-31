@@ -23,8 +23,6 @@ node('ubuntu-zion') {
     // Getting current nexus platform API version
     pom = readMavenPom file: 'pom.xml'
     currentPlatformApiVersion = pom.properties['nexus-platform-api.version']
-    echo "Current: ${currentPlatformApiVersion}"
-    echo "new: ${platformApiVersion}"
   }
   // Checking if bump is needed
   if (platformApiVersion.equals(currentPlatformApiVersion)) {
