@@ -170,7 +170,7 @@ void iqPolicyEvaluation(gitHub, stage) {
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
   def newDate = getFormattedCommitDate()
-  updateReleaseNotes(
+  updateReleaseNotesMarkdown(
       header: 'Changelog\n=========',
       version: "${version} (${newDate})",
       separator: '------------------------------------------------',
