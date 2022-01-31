@@ -27,7 +27,7 @@ node('ubuntu-zion') {
     echo "new: ${platformApiVersion}"
   }
   // Checking if bump is needed
-  if (!platformApiVersion.equals(currentPlatformApiVersion)) {
+  if (platformApiVersion.equals(currentPlatformApiVersion)) {
     echo "Nexus Platform API is already at version ${platformApiVersion}"
     currentBuild.result = 'UNSTABLE'
     return
