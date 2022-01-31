@@ -172,7 +172,7 @@ void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
   def newDate = getFormattedCommitDate()
   updateReleaseNotesMarkdown(
       header: 'Changelog\n=========',
-      version: "${version} (${newDate})",
+      versionHeader: "${version} (${newDate})",
       separator: '------------------------------------------------',
       releaseNotes: releaseNotes,
       filePath: 'README.md',
