@@ -18,7 +18,7 @@ node('ubuntu-zion') {
 
     // Setup common variables
     platformApiVersion = getVersionFromBuildName(env.platformApiBuild_NAME)
-    branch = 'main'
+    branch = 'test-release-script'
 
     // Getting current nexus platform API version
     pom = readMavenPom file: 'pom.xml'
