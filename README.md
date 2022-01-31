@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.13.20220131-142702.5a7cb6a (January 31, 2022)
+------------------------------------------------
+- Notes 6
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes)for Nexus Lifecycle 1.132.0-02.
+
 3.13.20220131-192226.ce6cc9a (January 31, 2022)
 ------------------------------------------------
 - Notes 4
