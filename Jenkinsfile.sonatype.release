@@ -171,12 +171,12 @@ void iqPolicyEvaluation(gitHub, stage) {
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
   def newDate = getFormattedCommitDate()
   updateReleaseNotes(
-      'Changelog\n=========',
-      "${version} (${newDate})",
-      '------------------------------------------------',
-      releaseNotes,
-      'README.md',
-      addIQReleaseNotesLink
+      header: 'Changelog\n=========',
+      version: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      filePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
   )
 }
 
@@ -204,7 +204,8 @@ void checkPublishedPlugin(version) {
       error 'Plugin artifacts not found.'
     }
   }
-  catch (error) {
+  catch (exception) {
+    echo "Error: ${exception.message}"
     error 'Error checking published plugin artifacts.'
   }
 }
