@@ -16,7 +16,8 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 node('ubuntu-zion') {
-  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand, releaseNotes, branch
+  def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
+  def releaseNotes, branch, addIQReleaseNotesLink
 
   try {
     stage('Preparation') {
@@ -33,6 +34,7 @@ node('ubuntu-zion') {
       commitDate = runSafely("git show -s --format=%cd --date=format:%Y%m%d-%H%M%S ${commitId}", true)
       version = pom.version.replace("-SNAPSHOT", ".${commitDate}.${commitId.substring(0, 7)}")
       releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
       branch = 'main'
 
       // Setup maven commands
@@ -71,8 +73,14 @@ node('ubuntu-zion') {
     return
   }
   stage('Update and push code') {
+    // Check if want to update the change log
+    if(!releaseNotes && !addIQReleaseNotesLink) {
+      echo 'Skipping change log update'
+      return
+    }
+
     // Update change logs
-    updateChangeLogs(releaseNotes, version)
+    updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
     // Add and commit changes
     runSafely 'git add README.md'
@@ -160,33 +168,16 @@ void iqPolicyEvaluation(gitHub, stage) {
   }
 }
 
-void updateChangeLogs(releaseNotes, version) {
-  try {
-    if(!releaseNotes) {
-      echo 'Skipping change log update. No release notes found'
-      return
-    }
-
-    newDate = getFormattedCommitDate()
-    def newEntry = createNewChangeLogEntry(releaseNotes, version, newDate)
-
-    // Update README file
-    def readmeFile = readFile('README.md')
-    def updatedReadme = readmeFile.replace('Changelog\n=========', newEntry)
-    writeFile(file: 'README.md', text: updatedReadme)
-  }
-  catch (error) {
-    error 'Error updating README file'
-  }
-}
-
-String createNewChangeLogEntry(releaseNotes, version, newDate) {
-  return """Changelog
-=========
-${version} (${newDate})
-------------------------------------------------
-${releaseNotes}
-"""
+void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
+  def newDate = getFormattedCommitDate()
+  updateReleaseNotesMarkdown(
+      header: 'Changelog\n=========',
+      versionHeader: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      filePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
+  )
 }
 
 String getFormattedCommitDate() {
@@ -213,7 +204,8 @@ void checkPublishedPlugin(version) {
       error 'Plugin artifacts not found.'
     }
   }
-  catch (error) {
+  catch (exception) {
+    echo "Error: ${exception.message}"
     error 'Error checking published plugin artifacts.'
   }
 }

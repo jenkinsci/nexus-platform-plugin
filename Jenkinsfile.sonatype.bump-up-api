@@ -6,7 +6,7 @@
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
 
 node('ubuntu-zion') {
-  def platformApiVersion, branch
+  def platformApiVersion, branch, currentPlatformApiVersion
 
   stage('Preparation') {
     deleteDir()
@@ -19,7 +19,19 @@ node('ubuntu-zion') {
     // Setup common variables
     platformApiVersion = getVersionFromBuildName(env.platformApiBuild_NAME)
     branch = 'main'
+
+    // Getting current nexus platform API version
+    pom = readMavenPom file: 'pom.xml'
+    currentPlatformApiVersion = pom.properties['nexus-platform-api.version']
   }
+
+  // Checking if bump is needed
+  if (platformApiVersion.equals(currentPlatformApiVersion)) {
+    echo "Nexus Platform API is already at version ${platformApiVersion}"
+    currentBuild.result = 'UNSTABLE'
+    return
+  }
+
   stage('Bump Nexus Platform API Version') {
     mvn jenkinsMavenConfig(), 'org.codehaus.mojo:versions-maven-plugin:2.8.1:set-property -DgenerateBackupPoms=false ' +
       "-DnewVersion=${platformApiVersion} -Dproperty=nexus-platform-api.version"
