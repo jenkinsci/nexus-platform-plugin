@@ -169,7 +169,7 @@ void iqPolicyEvaluation(gitHub, stage) {
 }
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
-  def newDate = getFormattedCommitDate()
+  def newDate = new Date().format( 'MMMM dd, yyyy' )
   updateReleaseNotesMarkdown(
       header: 'Changelog\n=========',
       versionHeader: "${version} (${newDate})",
@@ -178,12 +178,6 @@ void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
       filePath: 'README.md',
       addIQReleaseNotesLink: addIQReleaseNotesLink
   )
-}
-
-String getFormattedCommitDate() {
-  commitDate = runSafely("git show -s --format=%cd --date=format:%Y-%m-%d ${commitId}", true)
-  date = new SimpleDateFormat('yyyy-MM-dd').parse(commitDate)
-  return new SimpleDateFormat('MMMM dd, yyyy').format(date)
 }
 
 void checkPublishedPlugin(version) {
