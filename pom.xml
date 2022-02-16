@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.13</version>
+    <version>4.34</version>
     <relativePath />
   </parent>
 
@@ -90,6 +90,7 @@
     <findbugs.effort>Max</findbugs.effort>
     <animal.sniffer.version>1.20</animal.sniffer.version>
     <spotbugs.skip>true</spotbugs.skip>
+    <fail-on-snapshots>false</fail-on-snapshots>
   </properties>
 
   <dependencyManagement>
@@ -440,6 +441,27 @@
             <goals>
               <goal>index</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>enforce-no-snapshots</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireReleaseDeps>
+                  <message>No Snapshots Allowed!</message>
+                </requireReleaseDeps>
+              </rules>
+              <fail>${fail-on-snapshots}</fail>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -69,7 +69,7 @@ class PipelineSyntaxIntegrationTest
       policyEval.selected
 
     and: 'we are directed to configure an IQ server'
-      String text = clicked.asText()
+      String text = clicked.getVisibleText()
       text.contains(IqPolicyEvaluation_NoIqServersConfigured())
       text.contains(IqPolicyEvaluation_AddIqServers())
   }
@@ -91,7 +91,7 @@ class PipelineSyntaxIntegrationTest
     when: 'we select the same step'
       HtmlPage clicked = policyEval.click()
       client.waitForBackgroundJavaScript(WAIT)
-      String text = clicked.asText()
+      String text = clicked.getVisibleText()
     
     then: 'the step is selected'
       policyEval.selected
