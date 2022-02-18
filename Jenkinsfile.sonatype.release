@@ -14,6 +14,11 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
+def jira = [
+    versionPrefix: 'jenkins', project: 'INT', projectId: '12410',
+    credentialId : 'jenkins-jira', autoRelease: true, failOnError: true
+]
+
 node('ubuntu-zion') {
   def commitId, commitDate, pom, version, mvnReleaseCommand, mvnDeployCommand
   def releaseNotes, branch, addIQReleaseNotesLink
@@ -116,6 +121,9 @@ node('ubuntu-zion') {
         "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
     mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ' +
         "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
+  }
+  stage('Release Jira fix version') {
+    jiraSetFixVersion(jira, version)
   }
   stage('Check plugin deployment') {
     checkPublishedPlugin(version)
