@@ -90,7 +90,6 @@
     <findbugs.effort>Max</findbugs.effort>
     <animal.sniffer.version>1.20</animal.sniffer.version>
     <spotbugs.skip>true</spotbugs.skip>
-    <fail-on-snapshots>false</fail-on-snapshots>
   </properties>
 
   <dependencyManagement>
