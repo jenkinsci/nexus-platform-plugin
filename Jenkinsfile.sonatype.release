@@ -126,7 +126,11 @@ node('ubuntu-zion') {
     jiraSetFixVersion(jira, version)
   }
   stage('Check plugin deployment') {
-    checkPublishedPlugin(version)
+    verifyDownloadLinks(
+        urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
+                   version, '/nexus-jenkins-plugin-', version],
+        urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+    )
   }
 }
 
@@ -185,28 +189,4 @@ void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
       filePath: 'README.md',
       addIQReleaseNotesLink: addIQReleaseNotesLink
   )
-}
-
-void checkPublishedPlugin(version) {
-  try {
-    def url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}/"
-    def response = httpRequest url
-
-    if(response.status != 200) {
-      error "Error checking published plugin artifacts. URL: ${url} Response: ${response.status}"
-    }
-
-    def hasHpi = response.content.contains("${version}.hpi")
-    def hasJar = response.content.contains("${version}.jar")
-    def hasPom = response.content.contains("${version}.pom")
-    def hasSources = response.content.contains("${version}-sources.jar")
-
-    if(!hasHpi || !hasJar || !hasPom || !hasSources) {
-      error 'Plugin artifacts not found.'
-    }
-  }
-  catch (exception) {
-    echo "Error: ${exception.message}"
-    error 'Error checking published plugin artifacts.'
-  }
 }
