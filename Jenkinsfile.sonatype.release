@@ -104,9 +104,9 @@ node('ubuntu-zion') {
       runSafely "git push origin HEAD:${branch}"
     }
   }
-  stage('Deploy to Sonatype') {
+  stage('Deploy to Jenkins.io') {
     withGpgCredentials('gnupg') {
-      mvn sonatypeMavenConfig(), mvnReleaseCommand
+      mvn jenkinsMavenConfig(), mvnReleaseCommand
     }
   }
   stage('Push tags') {
@@ -116,10 +116,10 @@ node('ubuntu-zion') {
           ".com/jenkinsci/nexus-platform-plugin.git ${pom.artifactId}-${version}"
     }
   }
-  stage('Deploy to Jenkins.io') {
-    mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +
+  stage('Deploy to Sonatype') {
+    mvn sonatypeMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.hpi ' +
         "-DpomFile=target/checkout/pom.xml ${mvnDeployCommand}"
-    mvn jenkinsMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ' +
+    mvn sonatypeMavenConfig(), '-Dfile=target/checkout/target/nexus-jenkins-plugin.jar ' +
         "-Dsources=target/checkout/target/nexus-jenkins-plugin-sources.jar ${mvnDeployCommand}"
   }
   stage('Release Jira fix version') {

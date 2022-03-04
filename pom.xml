@@ -25,7 +25,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.13-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <repositories>
@@ -46,9 +46,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/nexus-platform-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nexus-platform-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
+    <connection>scm:git:ssh://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/${gitHubRepo}.git</developerConnection>
+    <url>https://github.com/${gitHubRepo}</url>
   </scm>
 
   <developers>
@@ -60,6 +60,9 @@
   </developers>
 
   <properties>
+    <revision>3.13</revision>
+    <changelist>999999-SNAPSHOT</changelist>
+    <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
     <!-- This is the minimum advertised compatible version -->
     <jenkins.version>2.249.1</jenkins.version>
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
