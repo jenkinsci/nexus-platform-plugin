@@ -12,8 +12,7 @@
     See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -25,7 +24,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.13-SNAPSHOT</version>
+  <version>3.13.20220304-155321.e7fcac5</version>
   <packaging>hpi</packaging>
 
   <repositories>
@@ -49,6 +48,7 @@
     <connection>scm:git:ssh://github.com/jenkinsci/nexus-platform-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nexus-platform-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
+    <tag>nexus-jenkins-plugin-3.13.20220304-155321.e7fcac5</tag>
   </scm>
 
   <developers>
