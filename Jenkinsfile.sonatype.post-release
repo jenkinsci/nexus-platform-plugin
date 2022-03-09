@@ -1,0 +1,123 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+import com.sonatype.jenkins.pipeline.GitHub
+
+String apiToken = null
+withCredentials([string(credentialsId: 'sonatype-ci-oauth', variable: 'API_KEY')]) {
+  apiToken = env.API_KEY
+}
+
+GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
+
+def jira = [
+    versionPrefix: 'jenkins', project: 'INT', projectId: '12410',
+    credentialId : 'jenkins-jira', autoRelease: true, failOnError: true
+]
+
+node('ubuntu-zion') {
+  String pom, version, fileName, releaseNotes, branch, addIQReleaseNotesLink
+
+  try {
+    stage('Preparation') {
+      deleteDir()
+
+      // Checkout and config
+      checkout scm
+      runSafely "git config user.email 'sonatype-zion@sonatype.com'"
+      runSafely "git config user.name 'Sonatype Zion'"
+
+      // Setup common variables
+      pom = readMavenPom file: 'pom.xml'
+      version = params.pluginVersion
+      releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
+      branch = 'main'
+      fileName = "nexus-jenkins-plugin-${version}"
+
+      // Update display name
+      currentBuild.displayName = "#${currentBuild.number} - ${version}"
+    }
+    stage('Download from Jenkins.io') {
+      String url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}"
+
+      // Download all the artifacts using http
+      for (extension in ['.hpi', '.pom', '.jar','-sources.jar']) {
+        httpRequest url: "${url}/${fileName}${extension}", httpMode: 'GET'
+      }
+    }
+    stage('Deploy to Sonatype') {
+      // Maven command to deploy artifacts to sonatype repo
+      String mvnDeployCommand = '-Durl=https://repository.sonatype.org/service/local/staging/deploy/maven2 ' +
+        "-DrepositoryId=sonatype-public -DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} " +
+        '-DgeneratePom=false  deploy:deploy-fileName -B'
+
+      mvn sonatypeMavenConfig(), "-Dfile=${fileName}.hpi -DpomFile=${fileName}.pom ${mvnDeployCommand}"
+      mvn sonatypeMavenConfig(), "-Dfile=${fileName}.jar -Dsources=${fileName}-sources.jar ${mvnDeployCommand}"
+    }
+    stage('Archive Results') {
+      archive '*.hpi'
+    }
+    stage('Update and push code') {
+      // Check if want to update the change log
+      if(!releaseNotes && !addIQReleaseNotesLink) {
+        echo 'Skipping change log update'
+        return
+      }
+
+      // Update change logs
+      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
+
+      // Add and commit changes
+      runSafely 'git add README.md'
+      runSafely "git commit -m 'Updating change logs for release ${version}'"
+      runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+      // Push changes
+      sshagent(credentials: [sonatypeZionCredentialsId()]) {
+        runSafely "git push origin HEAD:${branch}"
+      }
+    }
+    stage('Release Jira fix version') {
+      jiraSetFixVersion(jira, version)
+    }
+  }
+  finally {
+    postHandler(gitHub, currentBuild, env)
+  }
+}
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
+Map sonatypeMavenConfig() {
+  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenStandardOptions: ''])
+  common.mavenVersion = 'Maven 3.6.x'
+  return common
+}
+
+void postHandler(gitHub, currentBuild, env) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'Post Release Tasks Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
+  }
+}
+
+void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
+  def newDate = new Date().format( 'MMMM dd, yyyy' )
+  updateReleaseNotesMarkdown(
+      header: 'Changelog\n=========',
+      versionHeader: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      filePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
+  )
+}

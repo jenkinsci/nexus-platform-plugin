@@ -7,9 +7,8 @@
 import com.sonatype.jenkins.pipeline.GitHub
 
 String apiToken = null
-withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-    usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-  apiToken = env.GITHUB_API_PASSWORD
+withCredentials([string(credentialsId: 'sonatype-ci-oauth', variable: 'API_KEY')]) {
+  apiToken = env.API_KEY
 }
 
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
@@ -32,7 +31,7 @@ Closure postHandler = {
 Closure iqPolicyEvaluation = {
   stage ->
     def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis in running'
+    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
 
     try {
       def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
