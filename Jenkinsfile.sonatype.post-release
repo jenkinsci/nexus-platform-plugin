@@ -7,8 +7,8 @@
 import com.sonatype.jenkins.pipeline.GitHub
 
 String apiToken = null
-withCredentials([string(credentialsId: 'sonatype-ci-oauth', variable: 'API_KEY')]) {
-  apiToken = env.API_KEY
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
 }
 
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
