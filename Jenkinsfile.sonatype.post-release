@@ -19,7 +19,7 @@ def jira = [
 ]
 
 node('ubuntu-zion') {
-  String pom, version, fileName, releaseNotes, branch, addIQReleaseNotesLink
+  String version, releaseNotes, branch, addIQReleaseNotesLink
 
   try {
     stage('Preparation') {
@@ -27,39 +27,16 @@ node('ubuntu-zion') {
 
       // Checkout and config
       checkout scm
-      runSafely "git config user.email 'sonatype-zion@sonatype.com'"
+      runSafely "git config user.email 'zion@sonatype.com'"
       runSafely "git config user.name 'Sonatype Zion'"
 
       // Setup common variables
-      pom = readMavenPom file: 'pom.xml'
       version = params.pluginVersion
       releaseNotes = params.releaseNotes
       addIQReleaseNotesLink = params.addIQReleaseNotesLink
-      branch = 'main'
-      fileName = "nexus-jenkins-plugin-${version}"
 
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
-    }
-    stage('Download from Jenkins.io') {
-      String url = "https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/${version}"
-
-      // Download all the artifacts using http
-      for (extension in ['.hpi', '.pom', '.jar','-sources.jar']) {
-        httpRequest url: "${url}/${fileName}${extension}", httpMode: 'GET'
-      }
-    }
-    stage('Deploy to Sonatype') {
-      // Maven command to deploy artifacts to sonatype repo
-      String mvnDeployCommand = '-Durl=https://repository.sonatype.org/service/local/staging/deploy/maven2 ' +
-        "-DrepositoryId=sonatype-public -DgroupId=${pom.groupId} -DartifactId=${pom.artifactId} -Dversion=${version} " +
-        '-DgeneratePom=false  deploy:deploy-fileName -B'
-
-      mvn sonatypeMavenConfig(), "-Dfile=${fileName}.hpi -DpomFile=${fileName}.pom ${mvnDeployCommand}"
-      mvn sonatypeMavenConfig(), "-Dfile=${fileName}.jar -Dsources=${fileName}-sources.jar ${mvnDeployCommand}"
-    }
-    stage('Archive Results') {
-      archive '*.hpi'
     }
     stage('Update and push code') {
       // Check if want to update the change log
@@ -92,12 +69,6 @@ node('ubuntu-zion') {
 
 String getCommitId() {
   return runSafely ('git rev-parse HEAD', true)
-}
-
-Map sonatypeMavenConfig() {
-  def common = mavenCommon([usePublicSettingsXmlFile: true, mavenStandardOptions: ''])
-  common.mavenVersion = 'Maven 3.6.x'
-  return common
 }
 
 void postHandler(gitHub, currentBuild, env) {
