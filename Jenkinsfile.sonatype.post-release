@@ -46,6 +46,13 @@ node('ubuntu-zion') {
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
     }
+    stage('Check plugin deployment') {
+      verifyDownloadLinks(
+          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
+                     version, '/nexus-jenkins-plugin-', version],
+          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+      )
+    }
     stage('Update and push code') {
       // Check if want to update the change log
       if(!releaseNotes && !addIQReleaseNotesLink) {
