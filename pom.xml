@@ -25,7 +25,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.13-SNAPSHOT</version>
+  <version>${revision}.${changelist}</version>
   <packaging>hpi</packaging>
 
   <repositories>
@@ -46,9 +46,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/nexus-platform-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nexus-platform-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
+    <connection>scm:git:ssh://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/${gitHubRepo}.git</developerConnection>
+    <url>https://github.com/${gitHubRepo}</url>
   </scm>
 
   <developers>
@@ -60,6 +60,9 @@
   </developers>
 
   <properties>
+    <revision>3.13</revision>
+    <changelist>999999-SNAPSHOT</changelist>
+    <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
     <!-- This is the minimum advertised compatible version -->
     <jenkins.version>2.249.1</jenkins.version>
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
@@ -70,21 +73,6 @@
 
     <buildsupport.version>10</buildsupport.version>
     <buildsupport.license-maven-plugin.version>2.11</buildsupport.license-maven-plugin.version>
-
-    <public.serverId>sonatype-public</public.serverId>
-    <public.nexusUrl>https://repository.sonatype.org</public.nexusUrl>
-    <public-release.serverId>${public.serverId}</public-release.serverId>
-    <public-release.url>
-      https://repository.sonatype.org/service/local/staging/deploy/maven2
-    </public-release.url>
-    <public-snapshot.serverId>${public.serverId}</public-snapshot.serverId>
-    <public-snapshot.url>
-      https://repository.sonatype.org/content/repositories/snapshots
-    </public-snapshot.url>
-
-    <staging.serverId>${public.serverId}</staging.serverId>
-    <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
-    <staging.progressTimeout>15</staging.progressTimeout>
 
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.effort>Max</findbugs.effort>
@@ -458,59 +446,6 @@
       <id>license-format</id>
       <build>
         <defaultGoal>com.mycila:license-maven-plugin:format</defaultGoal>
-      </build>
-    </profile>
-
-    <profile>
-      <id>sonatype</id>
-      <distributionManagement>
-        <repository>
-          <id>${public-release.serverId}</id>
-          <url>${public-release.url}</url>
-        </repository>
-        <snapshotRepository>
-          <id>${public-snapshot.serverId}</id>
-          <url>${public-snapshot.url}</url>
-        </snapshotRepository>
-      </distributionManagement>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.6</version>
-            <extensions>true</extensions>
-            <configuration>
-              <nexusUrl>${staging.nexusUrl}</nexusUrl>
-              <serverId>${staging.serverId}</serverId>
-              <altStagingDirectory>${staging.directory}</altStagingDirectory>
-              <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-              <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
-              <tags>
-                <localUsername>${user.name}</localUsername>
-                <javaVersion>${java.version}</javaVersion>
-              </tags>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <configuration>
-              <!--suppress MavenModelInspection -->
-              <passphrase>${gpg.passphrase}</passphrase>
-              <useAgent>true</useAgent>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
       </build>
     </profile>
   </profiles>

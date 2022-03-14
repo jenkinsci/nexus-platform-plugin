@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+import com.sonatype.jenkins.pipeline.GitHub
+
+String apiToken = null
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+  apiToken = env.GITHUB_API_PASSWORD
+}
+
+GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
+
+def jira = [
+    versionPrefix: 'jenkins', project: 'INT', projectId: '12410',
+    credentialId : 'jenkins-jira', autoRelease: true, failOnError: true
+]
+
+node('ubuntu-zion') {
+  String version, releaseNotes, branch
+  boolean addIQReleaseNotesLink
+
+  try {
+    stage('Preparation') {
+      deleteDir()
+
+      // Checkout and config
+      checkout scm
+      runSafely 'git config user.email sonatype-ci@sonatype.com'
+      runSafely 'git config user.name Sonatype CI'
+
+      // Setup common variables
+      version = params.pluginVersion
+      releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
+      branch = 'main'
+
+      // Check mandatory parameters
+      if (!version) {
+        error 'The Plugin Version is a mandatory parameter!'
+      }
+
+      // Update display name
+      currentBuild.displayName = "#${currentBuild.number} - ${version}"
+    }
+    stage('Check plugin deployment') {
+      verifyDownloadLinks(
+          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
+                     version, '/nexus-jenkins-plugin-', version],
+          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+      )
+    }
+    stage('Update and push code') {
+      // Check if want to update the change log
+      if(!releaseNotes && !addIQReleaseNotesLink) {
+        echo 'Skipping change log update'
+        return
+      }
+
+      // Update change logs
+      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
+
+      // Add and commit changes
+      runSafely 'git add README.md'
+      runSafely "git commit -m 'Updating change logs for release ${version}'"
+
+      // Push changes
+      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+        // Setup remote url with credentials
+        runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+            '.com/jenkinsci/nexus-platform-plugin.git'
+
+        // Get latest commits to not have issues on push
+        runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+        // Push code changes
+        runSafely "git push origin HEAD:${branch}"
+      }
+    }
+    stage('Release Jira fix version') {
+      jiraSetFixVersion(jira, version)
+    }
+  }
+  finally {
+    postHandler(gitHub, currentBuild, env)
+  }
+}
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
+void postHandler(gitHub, currentBuild, env) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'Post Release Tasks Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
+  }
+}
+
+void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
+  def newDate = new Date().format( 'MMMM dd, yyyy' )
+  updateReleaseNotesMarkdown(
+      header: 'Changelog\n=========',
+      versionHeader: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      filePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
+  )
+}
