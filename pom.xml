@@ -60,7 +60,7 @@
   </developers>
 
   <properties>
-    <revision>3.13</revision>
+    <revision>3.14</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
     <!-- This is the minimum advertised compatible version -->
