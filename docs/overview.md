@@ -35,7 +35,7 @@ TBD
 
 To build the project run:
 ```bash
-mvn clean build
+mvn clean install
 ```
 
 ### Run and Debug
@@ -73,11 +73,34 @@ Bundled with nexus-java-api v3.38:
 Both jars contain similar classes with the same qualified names. The provided jar (which contains older classes) has 
 priority in the class loader, but the bundled one (with newer classes) is needed by the plugin.
 
-**Solution**:
+**Solution (old)**:
 
 The conflicting classes and their dependencies are relocated in nexus-java-api, creating an isolated space for the 
 plugin to execute all Stax2 operations. For details see: https://github.com/sonatype/nexus-java-api/pull/163/files
 
+**Note**: This solution is no longer working as of Mar 22. 2022. We should still keep it here for reference.
+
+**Solution (new)**:
+
+By using the `<maskClasses>` feature of the `maven-hpi-plugin` we can mask certain packages from Jenkins-core. 
+That makes them unavailable to the plugin, forcing the plugin to use its own bundled packages.
+
+E.g.
+```xml
+<plugin>
+    <groupId>org.jenkins-ci.tools</groupId>
+    <artifactId>maven-hpi-plugin</artifactId>
+    <extensions>true</extensions>
+    <configuration>
+        <maskClasses>
+            com.fasterxml.jackson.
+            org.cyclonedx.
+            org.codehaus.stax2.
+            com.ctc.wstx.
+        </maskClasses>
+    </configuration>
+</plugin>
+```
 
 ### Stax's implementation provided by Jenkins does not work with multiple service implementations
 
