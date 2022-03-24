@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.14.403.v07c2f1f96d60 (March 24, 2022)
+------------------------------------------------
+- Fix a `NoSuchMethodError` exception that prevents the plugin to run in certain cases.
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release135(March2022)) for Nexus Lifecycle 1.135.0-01.
+
 3.14.401.v1311ea_023ce5 (March 15, 2022)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release134(March2022)) for Nexus Lifecycle 1.134.0-02.
