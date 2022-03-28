@@ -353,6 +353,7 @@
               org.cyclonedx.
               org.codehaus.stax2.
               com.ctc.wstx.
+              org.objectweb.asm.
             </maskClasses>
           </configuration>
         </plugin>
