@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.14.405.v74e19a_0b_1a_1a_ (March 28, 2022)
+------------------------------------------------
+- Fix a `IllegalAccessError` that prevents the plugin to run properly in certain cases.
+
 3.14.403.v07c2f1f96d60 (March 24, 2022)
 ------------------------------------------------
 - Fix a `NoSuchMethodError` exception that prevents the plugin to run in certain cases.
