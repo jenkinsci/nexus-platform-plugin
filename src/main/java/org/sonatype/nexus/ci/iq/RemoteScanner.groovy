@@ -12,9 +12,9 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import javax.xml.parsers.DocumentBuilderFactory
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
-
 import hudson.FilePath
 import jenkins.security.MasterToSlaveCallable
 import org.codehaus.plexus.util.DirectoryScanner
@@ -84,6 +84,7 @@ class RemoteScanner
   @Override
   RemoteScanResult call() throws RuntimeException {
     setClassLoaderForCurrentThread()
+    logSelectClassLoadingInfo()
 
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
@@ -146,5 +147,25 @@ class RemoteScanner
     ClassLoader classLoader = this.class.classLoader
     // set context ClassLoader for current thread
     Thread.currentThread().setContextClassLoader(classLoader)
+  }
+
+  private void logSelectClassLoadingInfo() {
+    // get plugin's ClassLoader
+    ClassLoader classLoader = this.class.classLoader
+    log.info('plugin\'s ClassLoader: {}', classLoader)
+
+    log.info('javax.xml.parsers.DocumentBuilderFactory system property: {}',
+        System.getProperty("javax.xml.parsers.DocumentBuilderFactory"))
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+    log.info('DocumentBuilderFactory instance: {}', factory.class.canonicalName)
+
+    log.info(findLocationForClass(factory.class, classLoader))
+  }
+
+  private static String findLocationForClass(Class<?> c, ClassLoader loader) {
+    String name = c.getCanonicalName()
+    URL resource = loader.getResource(name.replace(".", "/") + ".class")
+    return resource!= null ? resource.toString() : 'Unknown'
   }
 }

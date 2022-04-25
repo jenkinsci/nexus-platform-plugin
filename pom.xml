@@ -171,15 +171,10 @@
     <!-- End Jenkins plugins we depend on -->
 
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>3.1.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>2.4.21</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
