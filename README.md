@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.14.407.v9d113b_445204 (April 29, 2022)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release136(April2022)) for Nexus Lifecycle 1.136.0-01.
+
 3.14.405.v74e19a_0b_1a_1a_ (March 28, 2022)
 ------------------------------------------------
 - Fix a `IllegalAccessError` that prevents the plugin to run properly in certain cases.
