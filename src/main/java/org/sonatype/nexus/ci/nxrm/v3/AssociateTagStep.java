@@ -24,6 +24,7 @@ import com.sonatype.nexus.api.repository.v3.SearchBuilder;
 
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -86,16 +87,23 @@ public class AssociateTagStep
   }
 
   @Override
-  public void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
-                      @Nonnull final TaskListener listener) throws InterruptedException, IOException
+  public void perform(
+      @NonNull final Run<?, ?> run,
+      @NonNull final FilePath workspace,
+      @NonNull final EnvVars env,
+      @NonNull final Launcher launcher,
+      @NonNull final TaskListener listener) throws InterruptedException, IOException
   {
     try {
-      EnvVars env = run.getEnvironment(listener);
       String resolvedTagName = env.expand(tagName);
 
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
       SearchBuilder searchBuilder = SearchBuilder.create();
-      search.forEach(s -> searchBuilder.withParameter(s.getKey(), s.getValue()));
+      search.forEach(s -> {
+        String resolvedKey = env.expand(s.getKey());
+        String resolvedValue = env.expand(s.getValue());
+        searchBuilder.withParameter(resolvedKey, resolvedValue);
+      });
       List<ComponentInfo> components = client.associate(resolvedTagName, searchBuilder.build());
       listener.getLogger().println("Associate to tag '" + resolvedTagName + "' successful. Components associated:\n" +
           components.stream().map(ComponentInfo::toString).collect(joining("\n")));
@@ -118,6 +126,7 @@ public class AssociateTagStep
     }
 
     @Override
+    @NonNull
     public String getDisplayName() {
       return AssociateTag_DisplayName();
     }

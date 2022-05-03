@@ -76,19 +76,20 @@ class AssociateTagStepTest
 
   def 'build success when associate succeeds in freestyle'() {
     setup:
-      def project = getProject(DEFAULT_INSTANCE, tag)
+      def project = getProject(DEFAULT_INSTANCE, tag, search)
 
     when:
       def build = project.scheduleBuild2(0).get()
 
     then:
-      1 * nxrm3Client.associate(expectedTag, DEFAULT_SEARCH) >> TEST_COMPONENT_LIST_RETURN
+      1 * nxrm3Client.associate(expectedTag, expectedSearch) >> TEST_COMPONENT_LIST_RETURN
       jenkinsRule.assertBuildStatus(SUCCESS, build)
 
     where:
-      tag               | expectedTag
-      DEFAULT_TAG       | DEFAULT_TAG
-      'foo-${BUILD_ID}' | 'foo-1'
+      tag               | search                                                    | expectedTag | expectedSearch
+      DEFAULT_TAG       | DEFAULT_SEARCH_PARAMS                                     | DEFAULT_TAG | DEFAULT_SEARCH
+      'foo-${BUILD_ID}' | DEFAULT_SEARCH_PARAMS                                     | 'foo-1'     | DEFAULT_SEARCH
+      DEFAULT_TAG       | [new SearchParameter('q-${BUILD_ID}', 'foo-${BUILD_ID}')] | DEFAULT_TAG | ['q-1': 'foo-1']
   }
 
   def 'build success when associate succeeds in workflow'() {
@@ -170,7 +171,7 @@ class AssociateTagStepTest
               "associateTag nexusInstanceId: '${DEFAULT_INSTANCE}', tagName: '${DEFAULT_TAG}', " +
               "search: [[key: 'q', value: 'bar']]\n" +
               "deleteComponents nexusInstanceId: '${DEFAULT_INSTANCE}', tagName: '${DEFAULT_TAG}'" +
-              "}"))
+              "}", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -206,7 +207,7 @@ class AssociateTagStepTest
       def config = saveNxrm3Config('instance')
 
       def project = jenkinsRule.createProject(WorkflowJob.class, 'nexus-associate-tag-job')
-      project.setDefinition(new CpsFlowDefinition("node { associateTag ${stepArgs} }"))
+      project.setDefinition(new CpsFlowDefinition("node { associateTag ${stepArgs} }", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -277,7 +278,7 @@ class AssociateTagStepTest
     searchString = searchString[0..-2] + ']'
     project.setDefinition(
         new CpsFlowDefinition(
-            "node { associateTag nexusInstanceId: '${instance}', tagName: '${tag}', search: ${searchString} }"))
+            "node { associateTag nexusInstanceId: '${instance}', tagName: '${tag}', search: ${searchString} }", false))
 
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
     RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> { clientReturn.call() }

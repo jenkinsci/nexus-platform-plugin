@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException;
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client;
@@ -29,6 +28,7 @@ import org.sonatype.nexus.ci.util.NxrmUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -115,13 +115,16 @@ public class CreateTagStep
   }
 
   @Override
-  public void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
-                      @Nonnull final TaskListener listener) throws InterruptedException, IOException
+  public void perform(
+      @NonNull final Run<?, ?> run,
+      @NonNull final FilePath workspace,
+      @NonNull final EnvVars env,
+      @NonNull final Launcher launcher,
+      @NonNull final TaskListener listener) throws InterruptedException, IOException
   {
     RepositoryManagerV3Client client = null;
     Map<String, Object> tagAttributes = (isNotBlank(tagAttributesPath) ||
         isNotBlank(tagAttributesJson)) ? new HashMap<>() : null;
-    EnvVars env = run.getEnvironment(listener);
 
     try {
       client = nexus3Client(nexusInstanceId);
@@ -191,6 +194,7 @@ public class CreateTagStep
     }
 
     @Override
+    @NonNull
     public String getDisplayName() {
       return CreateTag_DisplayName();
     }
