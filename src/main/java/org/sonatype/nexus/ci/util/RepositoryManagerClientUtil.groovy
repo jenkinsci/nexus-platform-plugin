@@ -90,7 +90,7 @@ class RepositoryManagerClientUtil
         withServerConfig(getServerConfig(uri, credentialsId))
     def jenkinsProxy = Jenkins.instance.proxy
 
-    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, uri)) {
+    if (jenkinsProxy) {
       clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
     }
 

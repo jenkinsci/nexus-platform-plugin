@@ -26,11 +26,23 @@ class ProxyUtil
   }
 
   static ProxyConfig newProxyConfig(ProxyConfiguration proxy) {
-    if (proxy.userName) {
-      def authentication = new Authentication(proxy.userName, proxy.password)
-      return new ProxyConfig(proxy.name, proxy.port, authentication)
-    } else {
-      return new ProxyConfig(proxy.name, proxy.port)
+    def noProxyHostsList = getNoProxyHostsList(proxy.noProxyHost)
+    def authentication = getProxyAuthentication(proxy)
+    return new ProxyConfig(proxy.name, proxy.port, authentication, noProxyHostsList)
+  }
+
+  static Authentication getProxyAuthentication(ProxyConfiguration proxy) {
+    if (!proxy.userName) {
+      return null
     }
+    return new Authentication(proxy.userName, proxy.password)
+  }
+
+  static List<String> getNoProxyHostsList(String noProxyHost) {
+    if (!noProxyHost) {
+      return Collections.emptyList()
+    }
+    String[] excludedHosts = noProxyHost.split('[ \t\n,|]+')
+    return Arrays.asList(excludedHosts)
   }
 }
