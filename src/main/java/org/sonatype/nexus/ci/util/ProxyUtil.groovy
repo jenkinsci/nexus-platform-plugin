@@ -32,17 +32,10 @@ class ProxyUtil
   }
 
   static Authentication getProxyAuthentication(ProxyConfiguration proxy) {
-    if (!proxy.userName) {
-      return null
-    }
-    return new Authentication(proxy.userName, proxy.password)
+    return proxy.userName ? new Authentication(proxy.userName, proxy.password) : null
   }
 
   static List<String> getNoProxyHostsList(String noProxyHost) {
-    if (!noProxyHost) {
-      return Collections.emptyList()
-    }
-    String[] excludedHosts = noProxyHost.split('[ \t\n,|]+')
-    return Arrays.asList(excludedHosts)
+    return noProxyHost ? Arrays.asList(noProxyHost.split('[ \t\n,|]+')) :Collections.emptyList()
   }
 }
