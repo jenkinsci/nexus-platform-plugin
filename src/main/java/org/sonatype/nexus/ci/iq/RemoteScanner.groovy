@@ -84,6 +84,10 @@ class RemoteScanner
   @Override
   RemoteScanResult call() throws RuntimeException {
     setClassLoaderForCurrentThread()
+
+    // Force using the default implementation of the DocumentBuilderFactory
+    System.setProperty('javax.xml.parsers.DocumentBuilderFactory',
+        'com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl')
     logSelectClassLoadingInfo()
 
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
@@ -106,6 +110,10 @@ class RemoteScanner
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
+
+    System.clearProperty('javax.xml.parsers.DocumentBuilderFactory')
+    logSelectClassLoadingInfo()
+
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 
@@ -160,7 +168,7 @@ class RemoteScanner
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
     log.info('DocumentBuilderFactory instance: {}', factory.class.canonicalName)
 
-    log.info(findLocationForClass(factory.class, classLoader))
+    log.info('DocumentBuilderFactory instance location: {}', findLocationForClass(factory.class, classLoader))
   }
 
   private static String findLocationForClass(Class<?> c, ClassLoader loader) {
