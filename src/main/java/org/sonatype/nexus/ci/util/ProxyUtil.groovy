@@ -36,6 +36,6 @@ class ProxyUtil
   }
 
   static List<String> getNoProxyHostsList(String noProxyHost) {
-    return noProxyHost ? Arrays.asList(noProxyHost.split('[ \t\n,|]+')) :Collections.emptyList()
+    return noProxyHost ? Arrays.asList(noProxyHost.split('[ \t\n,|]+')) : Collections.emptyList()
   }
 }
