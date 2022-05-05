@@ -96,7 +96,7 @@ class RemoteScanner
       }
       else if (pattern.startsWith(IAC)) {
         def iacTarget = IAC + workDirectory + File.separatorChar + pattern.substring(4, pattern.length())
-        log.debug("Adding iac scan target:" + iacTarget)
+        log.debug("Adding iac scan target: ${iacTarget}")
         targets = targets.toList()
         targets.add(new File(iacTarget))
         targets = Collections.unmodifiableList(targets)

@@ -68,6 +68,25 @@ class ProxyUtilTest
       proxyConfig.host == 'localhost'
       proxyConfig.port == 9080
       proxyConfig.authentication == null
+      proxyConfig.noProxyHosts == []
+  }
+
+  def 'builds proxy config with no proxy hosts'() {
+    setup:
+      def jenkinsProxy = GroovyMock(ProxyConfiguration)
+      jenkinsProxy.userName >> null
+      jenkinsProxy.name >> 'localhost'
+      jenkinsProxy.port >> 9080
+      jenkinsProxy.noProxyHost >> '*.demo'
+
+    when:
+      def proxyConfig = ProxyUtil.newProxyConfig(jenkinsProxy)
+
+    then:
+      proxyConfig.host == 'localhost'
+      proxyConfig.port == 9080
+      proxyConfig.authentication == null
+      proxyConfig.noProxyHosts == ['*.demo']
   }
 
   def 'builds proxy config with authentication'() {
@@ -86,5 +105,6 @@ class ProxyUtilTest
       proxyConfig.port == 9080
       proxyConfig.authentication.username == 'proxy-user'
       proxyConfig.authentication.password as String == 'proxy-pass'
+      proxyConfig.noProxyHosts == []
   }
 }

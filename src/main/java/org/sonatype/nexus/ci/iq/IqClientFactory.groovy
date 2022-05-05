@@ -49,7 +49,7 @@ class IqClientFactory
     def credentialsId = conf.credentialsId ?: firstIqConfig?.credentialsId
     def credentials = findCredentials(serverUrl, credentialsId, context)
     def serverConfig = getServerConfig(serverUrl, credentials)
-    def proxyConfig = getProxyConfig(serverUrl)
+    def proxyConfig = getProxyConfig()
     return (InternalIqClient) InternalIqClientBuilder.create()
         .withServerConfig(serverConfig)
         .withProxyConfig(proxyConfig)
@@ -66,10 +66,10 @@ class IqClientFactory
         .build()
   }
 
-  static ProxyConfig getProxyConfig(URI url) {
+  static ProxyConfig getProxyConfig() {
     def jenkinsProxy = Jenkins.instance.proxy
 
-    if (jenkinsProxy && ProxyUtil.shouldProxyForUri(jenkinsProxy, url)) {
+    if (jenkinsProxy) {
       return ProxyUtil.newProxyConfig(jenkinsProxy)
     } else {
       return null
