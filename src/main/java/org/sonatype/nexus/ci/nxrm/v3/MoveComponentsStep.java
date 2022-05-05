@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import com.sonatype.nexus.api.exception.RepositoryManagerException;
 import com.sonatype.nexus.api.repository.v3.ComponentInfo;
@@ -29,6 +28,7 @@ import org.sonatype.nexus.ci.util.FormUtil;
 import org.sonatype.nexus.ci.util.Nxrm3Util;
 import org.sonatype.nexus.ci.util.NxrmUtil;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -110,11 +110,14 @@ public class MoveComponentsStep
   }
 
   @Override
-  public void perform(@Nonnull final Run run, @Nonnull final FilePath workspace, @Nonnull final Launcher launcher,
-                      @Nonnull final TaskListener listener) throws InterruptedException, IOException
+  public void perform(
+      @NonNull final Run<?, ?> run,
+      @NonNull final FilePath workspace,
+      @NonNull final EnvVars env,
+      @NonNull final Launcher launcher,
+      @NonNull final TaskListener listener) throws InterruptedException, IOException
   {
     try {
-      EnvVars env = run.getEnvironment(listener);
       String resolvedTagName = env.expand(tagName);
 
       RepositoryManagerV3Client client = nexus3Client(nexusInstanceId);
@@ -140,6 +143,7 @@ public class MoveComponentsStep
       extends BuildStepDescriptor<Builder>
   {
     @Override
+    @NonNull
     public String getDisplayName() {
       return MoveComponents_DisplayName();
     }
