@@ -225,7 +225,6 @@ ruleset {
   GrailsMassAssignment
   GrailsPublicControllerMethod
   GrailsServletContextReference
-  GrailsSessionReference   // DEPRECATED
   GrailsStatelessService
 
   // rulesets/groovyism.xml
