@@ -55,17 +55,6 @@ pipeline {
             }
           }
         }
-        stage('Unit and Integration Tests - Java14') {
-          agent { label agentLabel }
-          steps {
-            runTests('OpenJDK 14')
-          }
-          post {
-            always {
-              captureResultsAndCleanup()
-            }
-          }
-        }
       }
     }
   }
