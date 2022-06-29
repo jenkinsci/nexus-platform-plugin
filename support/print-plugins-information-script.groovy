@@ -80,7 +80,8 @@ def printClassLoaderInformationForPlugins() {
     println "Found ${plugin}"
     println '-------------------------------------------------------------'
     println "Packages: ${plugin.classLoader.getPackages()}"
-    println "Parent: ${plugin.classLoader.getParent()}"
+    println "Classloader: ${plugin.classLoader}"
+    println "Parent Classloader: ${plugin.classLoader.getParent()}"    
     println ''
   }
 }
