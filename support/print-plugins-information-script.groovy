@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ *
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+ */
+
 /**
  * This script is intended for support purposes only. The script do not get any sensitive information, it only gets
  * information about the installed plugins on the Jenkins server, the packages loaded by each plugin, and information
@@ -22,11 +35,11 @@ printClassLoaderInformationForPlugins()
  */
 def printPluginsLoadingClasses() {
   println 'Looking for Plugins Loading Classes'
-  println '############################################################'
+  println('#' * 80)
   println ''
   def classesToFind = [
-      "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
-      "org.cyclonedx.generators.xml.AbstractBomXmlGenerator",
+      'com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl',
+      'org.cyclonedx.generators.xml.AbstractBomXmlGenerator',
   ]
   for (className in classesToFind) {
     printPluginsLoadingClass(className)
@@ -36,7 +49,7 @@ def printPluginsLoadingClasses() {
 def printPluginsLoadingClass(className) {
   def clazzResource = className.replaceAll("\\.", "/") + ".class"
   println "Looking for: ${clazzResource}"
-  println '-------------------------------------------------------------'
+  println('-' * 80)
   def list = []
   Jenkins.instance.pluginManager.activePlugins.forEach { PluginWrapper plugin ->
     def c = plugin.classLoader.getResources(clazzResource)
@@ -53,19 +66,20 @@ def printPluginsLoadingClass(className) {
  */
 def printPluginsInformation() {
   println 'Looking for Plugins Information'
-  println '############################################################'
+  println('#' * 80)
   println ''
   Jenkins.instance.pluginManager.activePlugins.forEach { PluginWrapper plugin ->
     println "Found: ${plugin}"
-    println '-------------------------------------------------------------'
-    println "BackupVersion: ${plugin.getBackupVersion()}"
-    println "Dependents: ${plugin.getDependents()}"
-    println "Dependencies: ${plugin.getDependencies()}"
-    println "RequiredCoreVersion: ${plugin.getRequiredCoreVersion()}"
-    println "Version: ${plugin.getVersion()}"
-    println "VersionNumber: ${plugin.getVersionNumber()}"
-    println "DerivedDependencyErrors: ${plugin.getDerivedDependencyErrors()}"
-    println ''
+    println('-' * 80)
+    println """
+        BackupVersion: ${plugin.getBackupVersion()}
+        Dependents: ${plugin.getDependents()}
+        Dependencies: ${plugin.getDependencies()}
+        RequiredCoreVersion: ${plugin.getRequiredCoreVersion()}
+        Version: ${plugin.getVersion()}
+        VersionNumber: ${plugin.getVersionNumber()}
+        DerivedDependencyErrors: ${plugin.getDerivedDependencyErrors()}\n
+    """.stripIndent()
   }
 }
 
@@ -74,15 +88,16 @@ def printPluginsInformation() {
  */
 def printClassLoaderInformationForPlugins() {
   println 'Looking for Plugins Class Loader Information'
-  println '############################################################'
+  println('#' * 80)
   println ''
   Jenkins.instance.pluginManager.activePlugins.forEach { PluginWrapper plugin ->
     println "Found ${plugin}"
-    println '-------------------------------------------------------------'
-    println "Packages: ${plugin.classLoader.getPackages()}"
-    println "Classloader: ${plugin.classLoader}"
-    println "Parent Classloader: ${plugin.classLoader.getParent()}"    
-    println ''
+    println('-' * 80)
+    println """
+        Packages: ${plugin.classLoader.getPackages()}
+        Classloader: ${plugin.classLoader}
+        Parent Classloader: ${plugin.classLoader.getParent()}\n
+    """.stripIndent()
   }
 }
 
