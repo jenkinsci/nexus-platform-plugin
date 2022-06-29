@@ -1,10 +1,10 @@
 /**
- * This script is intend for support purposes only. The script do not get any sensitive information, it only gets
- * information about the installed plugins on the Jenkins server, the packages loaded by each
- * plugin and information about how some classes are loaded by Jenkins.
+ * This script is intended for support purposes only. The script do not get any sensitive information, it only gets
+ * information about the installed plugins on the Jenkins server, the packages loaded by each plugin, and information
+ * about how some classes are loaded by Jenkins.
  *
- * To run the script, you will need to go to the Script Console on Jenkins server, paste the script and hit
- * the "Run" button. Here you have more information:
+ * To run the script, you will need to go to the Script Console on the Jenkins server, paste the script, and hit the
+ * "Run" button. Here you have more information:
  * ---> https://www.jenkins.io/doc/book/managing/script-console/
  */
 
