@@ -63,8 +63,14 @@
     <revision>3.14</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
+
     <!-- This is the minimum advertised compatible version -->
     <jenkins.version>2.249.1</jenkins.version>
+
+    <!-- See: https://github.com/jenkinsci/bom -->
+    <jenkins.tools.bom.artifactId>bom-2.249.x</jenkins.tools.bom.artifactId>
+    <jenkins.tools.bom.version>984.vb5eaac999a7e</jenkins.tools.bom.version>
+
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
@@ -98,8 +104,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.249.x</artifactId>
-        <version>984.vb5eaac999a7e</version>
+        <artifactId>${jenkins.tools.bom.artifactId}</artifactId>
+        <version>${jenkins.tools.bom.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

@@ -7,13 +7,13 @@
 
 String agentLabel = 'ubuntu-zion'
 
-def runTests(String javaVersion = 'Java 8') {
+def runTests(String javaVersion = 'Java 8', String mavenExtra = '') {
   def config = mavenCommon(
       javaVersion: javaVersion,
       mavenVersion: 'Maven 3.6.x',
       useEventSpy: false
   )
-  mvn config, 'clean install'
+  mvn config, "clean install ${mavenExtra}"
 }
 
 def captureResultsAndCleanup() {
@@ -33,7 +33,7 @@ pipeline {
   stages {
     stage('Parallel Test Groups') {
       parallel {
-        stage('Unit and Integration Tests - Java8') {
+        stage('Tests - Java 8 - Jenkins 2.249.1') {
           agent { label agentLabel }
           steps {
             runTests('Java 8')
@@ -44,10 +44,11 @@ pipeline {
             }
           }
         }
-        stage('Unit and Integration Tests - Java11') {
+        stage('Tests - Java 11 - Jenkins 2.346.1') {
           agent { label agentLabel }
           steps {
-            runTests('OpenJDK 11')
+            runTests('OpenJDK 11',
+                '-Djenkins.version=2.346.1 -Djenkins.tools.bom.artifactId=bom-2.346.x -Djenkins.tools.bom.version=1461.vb_3c6de28f2b_a_')
           }
           post {
             always {

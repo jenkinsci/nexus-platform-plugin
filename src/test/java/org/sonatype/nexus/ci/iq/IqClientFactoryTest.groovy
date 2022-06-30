@@ -338,6 +338,8 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
 
+      def jenkinsVersion = System.getProperty('jenkins.version')?:'2.249.1'
+
     when:
       IqClientFactory.getIqClient(
           new IqClientFactoryConfiguration(credentialsId: credentialsId, serverUrl: URI.create(url)))
@@ -346,7 +348,7 @@ class IqClientFactoryTest
       1 * iqClientBuilder.withServerConfig(_) >> iqClientBuilder
       1 * iqClientBuilder.withProxyConfig(_) >> iqClientBuilder
       1 * iqClientBuilder.withUserAgent(
-          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith('Jenkins 2.249.1)'))) >> iqClientBuilder
+          allOf(startsWith('Sonatype_CLM_CI_Jenkins/'), endsWith("Jenkins ${jenkinsVersion})"))) >> iqClientBuilder
       1 * iqClientBuilder.withLogger(_) >> iqClientBuilder
   }
 }
