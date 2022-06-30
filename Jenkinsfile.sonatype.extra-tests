@@ -33,7 +33,7 @@ pipeline {
   stages {
     stage('Parallel Test Groups') {
       parallel {
-        stage('Tests - Java 8 - Jenkins 2.249.1') {
+        stage('Jenkins 2.249.1 - Java 8') {
           agent { label agentLabel }
           steps {
             runTests('Java 8')
@@ -44,7 +44,7 @@ pipeline {
             }
           }
         }
-        stage('Tests - Java 11 - Jenkins 2.346.1') {
+        stage('Jenkins 2.346.1 - Java 11') {
           agent { label agentLabel }
           steps {
             runTests('OpenJDK 11',
