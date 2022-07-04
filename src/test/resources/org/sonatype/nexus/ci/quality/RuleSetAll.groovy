@@ -12,8 +12,6 @@
  */
 package org.sonatype.nexus.ci.quality
 
-import jnr.posix.util.MethodName
-import org.gmetrics.metric.abc.AbcMetric
 import org.gmetrics.metric.crap.CrapMetric
 
 ruleset {
