@@ -27,6 +27,7 @@ Closure postHandler = {
     else {
       gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
     }
+    buildNotifications(currentBuild, env, 'main')
 }
 
 Closure iqPolicyEvaluation = {
