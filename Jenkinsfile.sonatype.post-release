@@ -19,6 +19,25 @@ def jira = [
     credentialId : 'jenkins-jira', autoRelease: true, failOnError: true
 ]
 
+Closure iqPolicyEvaluation = {
+  stage ->
+    def commitId = getCommitId()
+    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
+
+    try {
+      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+          "${evaluation.applicationCompositionReportUrl}"
+    }
+    catch (error) {
+      def evaluation = error.policyEvaluation
+      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+          "${evaluation.applicationCompositionReportUrl}"
+      throw error
+    }
+}
+
 node('ubuntu-zion') {
   String version, releaseNotes, branch
   boolean addIQReleaseNotesLink
@@ -52,6 +71,11 @@ node('ubuntu-zion') {
                      version, '/nexus-jenkins-plugin-', version],
           urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
       )
+    }
+    stage('Evaluate policies') {
+      steps {
+        runEvaluation(iqPolicyEvaluation, 'release')
+      }
     }
     stage('Update and push code') {
       // Check if want to update the change log
@@ -102,6 +126,7 @@ void postHandler(gitHub, currentBuild, env) {
   else {
     gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
   }
+  buildNotifications(currentBuild, env, 'main')
 }
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
