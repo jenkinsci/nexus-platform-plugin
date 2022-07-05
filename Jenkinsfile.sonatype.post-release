@@ -126,7 +126,11 @@ void postHandler(gitHub, currentBuild, env) {
   else {
     gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
   }
-  buildNotifications(currentBuild, env, 'main')
+
+  // only notify to #int-builds on the deploy branch
+  if(isDeployBranch(env, 'main')) {
+    notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
+  }
 }
 
 void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
