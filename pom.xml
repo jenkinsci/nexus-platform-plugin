@@ -70,6 +70,9 @@
     <!-- See: https://github.com/jenkinsci/bom -->
     <jenkins.tools.bom.artifactId>bom-2.249.x</jenkins.tools.bom.artifactId>
     <jenkins.tools.bom.version>984.vb5eaac999a7e</jenkins.tools.bom.version>
+    <!-- The next two properties are needed to be able to run the unit tests in IDEA -->
+    <jenkins.addOpens/>
+    <jenkins.insaneHook/>
 
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
