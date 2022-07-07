@@ -73,9 +73,7 @@ node('ubuntu-zion') {
       )
     }
     stage('Evaluate policies') {
-      steps {
-        runEvaluation(iqPolicyEvaluation, 'release')
-      }
+      runEvaluation(iqPolicyEvaluation, 'release')
     }
     stage('Update and push code') {
       // Check if want to update the change log
