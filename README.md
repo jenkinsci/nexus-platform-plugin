@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.14.424.v8290b_b_ec62cb_ (July 07, 2022)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release141(June2022)) for Nexus Lifecycle 1.141.0-01.
+
 3.14.418.v7a_687b_6a_4c1d (June 16, 2022)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release139(June2022)) for Nexus Lifecycle 1.139.0-01.
