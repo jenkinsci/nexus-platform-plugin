@@ -108,7 +108,7 @@ node('ubuntu-zion') {
     }
   }
   finally {
-    postHandler(gitHub, currentBuild, env)
+    postHandler(gitHub, currentBuild, env, branch)
   }
 }
 
@@ -116,7 +116,7 @@ String getCommitId() {
   return runSafely ('git rev-parse HEAD', true)
 }
 
-void postHandler(gitHub, currentBuild, env) {
+void postHandler(gitHub, currentBuild, env, branch) {
   def commitId = getCommitId()
   if (currentBuild.currentResult == 'SUCCESS') {
     gitHub.statusUpdate commitId, 'success', 'CI', 'Post Release Tasks Passed'
@@ -126,7 +126,7 @@ void postHandler(gitHub, currentBuild, env) {
   }
 
   // only notify to #int-builds on the deploy branch
-  if(isDeployBranch(env, 'main')) {
+  if(branch == 'main') {
     notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
   }
 }
