@@ -128,7 +128,8 @@ def policyUI = {
       div(class: 'p-iq-chiclet') {
         span(class: 'iq-label', Messages.IqPolicyEvaluation_TotalViolations(action.totalPolicyViolationCount))
         span(class: 'iq-chiclet-message',
-            Messages.IqPolicyEvaluation_AffectedComponents(action.affectedComponentCount))
+            Messages.IqPolicyEvaluation_AffectedComponents(action.affectedComponentCount,
+                action.totalComponentCount ? action.totalComponentCount : 0))
       }
       div(class: 'p-iq-chiclet') {
         span(class: 'iq-chiclet critical',

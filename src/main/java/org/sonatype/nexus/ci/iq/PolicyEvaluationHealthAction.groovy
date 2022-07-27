@@ -44,8 +44,10 @@ class PolicyEvaluationHealthAction
   private final int severePolicyViolationCount
 
   private final int moderatePolicyViolationCount
-  
+
   private final int grandfatheredPolicyViolationCount
+
+  private final int totalComponentCount
 
   private final iqDisplayName 
 
@@ -77,6 +79,7 @@ class PolicyEvaluationHealthAction
     this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
     this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
     this.grandfatheredPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
+    this.totalComponentCount = policyEvaluationResult.totalComponentCount
   }
 
   int getBuildNumber() {
@@ -117,6 +120,10 @@ class PolicyEvaluationHealthAction
 
   int getGrandfatheredPolicyViolationCount() {
     return grandfatheredPolicyViolationCount
+  }
+
+  int getTotalComponentCount() {
+    return totalComponentCount
   }
 
   String getIqDisplayName() {
