@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.14.431.v37ca_dc788b_b_1 (July 28, 2022)
+------------------------------------------------
+* Improving summary message for policy evaluations
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release142(July2022)) for Nexus Lifecycle 1.142.0-02.
+
 3.14.424.v8290b_b_ec62cb_ (July 07, 2022)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release141(June2022)) for Nexus Lifecycle 1.141.0-01.
