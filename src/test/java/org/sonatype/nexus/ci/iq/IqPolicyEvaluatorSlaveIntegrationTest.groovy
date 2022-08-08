@@ -124,7 +124,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
           writeFile file: 'dummy.txt', text: 'dummy'
           nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'
-          }\n""")
+          }\n""", false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the return code is successful'
@@ -144,7 +144,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
           writeFile file: 'dummy.txt', text: 'dummy'
           nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'
-          }\n""")
+          }\n""", false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the return code is successful'
@@ -164,7 +164,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.definition = new CpsFlowDefinition("""node ('${slave.getNodeName()}') {
           writeFile file: 'dummy.txt', text: 'dummy'
           nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'app', iqStage: 'stage'
-          }\n""")
+          }\n""", false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the return code is failure'
@@ -239,7 +239,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
           "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           '}\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the source control onboarding is called with the repo url'
@@ -265,7 +265,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
           "unzip zipFile: '" + path.replace('\\', '/') + "', glob: '**/*'\n" +
           "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the source control onboarding is called with the repo url'

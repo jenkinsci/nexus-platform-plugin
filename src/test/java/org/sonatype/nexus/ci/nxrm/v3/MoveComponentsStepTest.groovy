@@ -187,7 +187,7 @@ class MoveComponentsStepTest
               tagName + "'" +
           "\nmoveComponents destination: '" + destination + "', nexusInstanceId: '" + instance +"', tagName: '" +
               tagName + "'" +
-          "}"))
+          "}", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -246,7 +246,7 @@ class MoveComponentsStepTest
       def config = createNxrm3Config('someInstance')
 
       def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
-      project.setDefinition(new CpsFlowDefinition("node {moveComponents ${stepArgs} }"))
+      project.setDefinition(new CpsFlowDefinition("node {moveComponents ${stepArgs} }", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -270,7 +270,7 @@ class MoveComponentsStepTest
       def config = createNxrm3Config('someInstance')
 
       def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
-      project.setDefinition(new CpsFlowDefinition("node {moveComponents ${stepArgs} }"))
+      project.setDefinition(new CpsFlowDefinition("node {moveComponents ${stepArgs} }", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -295,7 +295,7 @@ class MoveComponentsStepTest
 
       def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
       project.setDefinition(new CpsFlowDefinition("node {moveComponents destination: \"maven-releases\", tagName: " +
-          "\"foo\", nexusInstanceId: \"someInstance\", search: [\"tag\": \"bar\"] }"))
+          "\"foo\", nexusInstanceId: \"someInstance\", search: [\"tag\": \"bar\"] }", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -348,7 +348,7 @@ class MoveComponentsStepTest
     def config = createNxrm3Config(instance)
     def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingMove")
     project.setDefinition(new CpsFlowDefinition("node {moveComponents destination: '" + destination +
-        "', nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'}"))
+        "', nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'}", false))
 
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
     RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> { clientReturn.call() }

@@ -34,7 +34,7 @@ import static com.google.common.base.Preconditions.checkArgument
 
 class IqPolicyEvaluatorUtil
 {
-  private static final String MINIMAL_SERVER_VERSION_REQUIRED = '1.69.0'
+  static final String MINIMAL_SERVER_VERSION_REQUIRED = '1.69.0'
 
   @SuppressWarnings(['AbcMetric', 'ParameterCount', 'CyclomaticComplexity'])
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,

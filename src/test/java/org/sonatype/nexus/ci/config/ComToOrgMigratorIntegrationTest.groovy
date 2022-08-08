@@ -12,7 +12,7 @@
  */
 package org.sonatype.nexus.ci.config
 
-import hidden.com.sonatype.insight.scan.model.Scan
+import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
