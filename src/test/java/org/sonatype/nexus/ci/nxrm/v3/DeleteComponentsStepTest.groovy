@@ -23,9 +23,7 @@ import org.sonatype.nexus.ci.nxrm.v3.DeleteComponentsStep.DescriptorImpl
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.RepositoryManagerClientUtil
 
-import hudson.EnvVars
 import hudson.model.Result
-import hudson.slaves.EnvironmentVariablesNodeProperty
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
 import org.jenkinsci.plugins.workflow.job.WorkflowJob
 import org.junit.Rule
@@ -131,7 +129,7 @@ class DeleteComponentsStepTest
           "node { " +
               "\ndeleteComponents nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'" +
               "\ndeleteComponents nexusInstanceId: '" + instance + "', tagName: '" + tagName + "'" +
-              "}"))
+              "}", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -190,7 +188,7 @@ class DeleteComponentsStepTest
       def config = createNxrm3Config('someInstance')
 
       def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingDelete")
-      project.setDefinition(new CpsFlowDefinition("node {deleteComponents ${stepArgs} }"))
+      project.setDefinition(new CpsFlowDefinition("node {deleteComponents ${stepArgs} }", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
@@ -243,7 +241,7 @@ class DeleteComponentsStepTest
     def config = createNxrm3Config(instance)
     def project = jenkinsRule.createProject(WorkflowJob.class, "nexusStagingDelete")
     project.setDefinition(new CpsFlowDefinition("node {deleteComponents nexusInstanceId: '" + instance +
-        "', tagName: '" + tagName + "'}"))
+        "', tagName: '" + tagName + "'}", false))
 
     GroovyMock(RepositoryManagerClientUtil.class, global: true)
     RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> { clientReturn.call() }

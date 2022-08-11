@@ -12,8 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
-
-import hidden.com.sonatype.insight.scan.model.Scan
+import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
@@ -24,7 +23,6 @@ import com.sonatype.nexus.git.utils.repository.RepositoryUrlFinderBuilder
 
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
-import org.sonatype.nexus.ci.config.NxrmConfiguration
 
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import com.cloudbees.plugins.credentials.CredentialsScope
@@ -91,7 +89,7 @@ class IqPolicyEvaluatorIntegrationTest
                 '} \n' +
               '} \n' +
             '} \n' +
-          '} \n')
+          '} \n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -127,7 +125,7 @@ class IqPolicyEvaluatorIntegrationTest
               '} \n' +
               '} \n' +
               '} \n' +
-              '} \n')
+              '} \n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -160,7 +158,7 @@ class IqPolicyEvaluatorIntegrationTest
                   }
                 }
               }
-          }''')
+          }''', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -197,7 +195,7 @@ class IqPolicyEvaluatorIntegrationTest
                   }
                 }
               }
-          }''')
+          }''', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
@@ -227,7 +225,7 @@ class IqPolicyEvaluatorIntegrationTest
           'echo "moderate:" + result.moderatePolicyViolationCount\n' +
           'echo "url:" + result.applicationCompositionReportUrl\n' +
           'echo "alerts:" + result.policyAlerts' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -306,7 +304,7 @@ class IqPolicyEvaluatorIntegrationTest
           "def result = nexusPolicyEvaluation ${failBuildOnNetworkErrorScript} iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           'echo \'result-after-failure:\' + result' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
@@ -334,7 +332,7 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition('node {\n' +
           'nexusPolicyEvaluation failBuildOnNetworkError: true, iqApplication: \'app\', iqStage: \'stage\'\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
@@ -403,7 +401,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
@@ -454,7 +452,7 @@ class IqPolicyEvaluatorIntegrationTest
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'\n' +
           'echo "next" \n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -492,7 +490,7 @@ class IqPolicyEvaluatorIntegrationTest
               'echo "url:" + result.applicationCompositionReportUrl\n' +
               'echo "alerts:" + result.policyAlerts' +
             '} \n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -544,7 +542,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\'\n' +
           'echo \'result-after-failure:\' + result' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the build status is unstable and the result is null'
@@ -556,7 +554,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqStage: \'build\'\n' +
           'echo \'result-after-failure:\' + result' +
-          '}\n')
+          '}\n', false)
       build = project.scheduleBuild2(0).get()
 
     then: 'the build status is unstable and the result is null'
@@ -612,7 +610,7 @@ class IqPolicyEvaluatorIntegrationTest
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'\n' +
           'echo "next" \n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -636,7 +634,7 @@ class IqPolicyEvaluatorIntegrationTest
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'\n' +
           'echo "next" \n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is evaluated and server version is checked'
@@ -792,7 +790,7 @@ class IqPolicyEvaluatorIntegrationTest
           "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
           '}\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
@@ -820,7 +818,7 @@ class IqPolicyEvaluatorIntegrationTest
           "unzip zipFile: '" + path + "', glob: '**/*'\n" +
           "nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', " +
           'iqStage: \'stage\'\n' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
@@ -852,7 +850,7 @@ class IqPolicyEvaluatorIntegrationTest
                   }
                 }
               }
-          }''')
+          }''', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
@@ -885,7 +883,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\', enableDebugLogging: true' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
@@ -909,7 +907,7 @@ class IqPolicyEvaluatorIntegrationTest
           'writeFile file: \'dummy.txt\', text: \'dummy\'\n' +
           'def result = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: \'app\', ' +
           'iqStage: \'stage\'' +
-          '}\n')
+          '}\n', false)
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'

@@ -89,7 +89,7 @@ class CreateTagStepTest
             file << '{"foo": "bar"}'
             createTag nexusInstanceId: '${instance}', tagName: '${tagName}', tagAttributesPath: '${attrFileName}'
           }
-          """))
+          """, false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(instance) >> nxrm3Client
@@ -298,7 +298,7 @@ class CreateTagStepTest
     setup:
       def config = saveNxrmConfig('pipeline-fails')
       def project = jenkins.createProject(WorkflowJob, 'pipeline-fails')
-      project.setDefinition(new CpsFlowDefinition("node { createTag ${stepArgs} } "))
+      project.setDefinition(new CpsFlowDefinition("node { createTag ${stepArgs} } ", false))
 
       GroovyMock(RepositoryManagerClientUtil.class, global: true)
       RepositoryManagerClientUtil.nexus3Client(config.serverUrl, config.credentialsId) >> nxrm3Client
