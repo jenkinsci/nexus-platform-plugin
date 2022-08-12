@@ -118,6 +118,11 @@
         <artifactId>servlet-api</artifactId>
         <version>2.4</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <scope>provided</scope>
+      </dependency>
 
       <dependency>
         <groupId>org.junit</groupId>
