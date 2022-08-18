@@ -44,11 +44,11 @@ pipeline {
             }
           }
         }
-        stage('Jenkins 2.346.2 - Java 11') {
+        stage('Jenkins 2.346.3 - Java 11') {
           agent { label agentLabel }
           steps {
             runTests('OpenJDK 11',
-                '-Djenkins.version=2.346.2 -Djenkins.tools.bom.artifactId=bom-2.346.x -Djenkins.tools.bom.version=1508.v4b_d09ff0e893')
+                '-Djenkins.version=2.346.3 -Djenkins.tools.bom.artifactId=bom-2.346.x -Djenkins.tools.bom.version=1595.v8c71c13cc3a_9')
           }
           post {
             always {
