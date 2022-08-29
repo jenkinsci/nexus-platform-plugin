@@ -48,6 +48,7 @@ Changelog
 3.14.407.v9d113b_445204 (April 29, 2022)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release136(April2022)) for Nexus Lifecycle 1.136.0-01.
+- Add support for scanning Java class binaries produced by Java 18.
 
 3.14.405.v74e19a_0b_1a_1a_ (March 28, 2022)
 ------------------------------------------------
