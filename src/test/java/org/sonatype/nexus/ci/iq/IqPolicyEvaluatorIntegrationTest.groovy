@@ -93,7 +93,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [createAlert(Action.ID_NOTIFY)],
@@ -129,7 +129,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
               new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [createAlert(Action.ID_NOTIFY)],
@@ -162,7 +162,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(_, _,
           {
             it.size() == 1 && it.containsKey('excludedFiles') && it.get('excludedFiles') == 'target/my-project.jar'
@@ -199,7 +199,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -229,7 +229,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -250,7 +250,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -258,7 +258,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -271,7 +271,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
                       null, null))
       List<NxiqConfiguration> nxiqConfiguration = [
               new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
@@ -283,7 +283,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
               'http://server/link/to/report')
@@ -308,7 +308,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
         throw new IqClientException("ERROR", new IOException("BANG!"))
       }
@@ -336,7 +336,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
         throw new IqClientException("ERROR", new IOException("BANG!"))
       }
@@ -350,7 +350,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [],
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
           failBuildOnNetworkError, 'cred-id', null, null))
       configureJenkins()
 
@@ -358,7 +358,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
         throw new IqClientException("ERROR", new IOException("BANG!"))
       }
@@ -372,7 +372,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], true, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], true, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -380,7 +380,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> {
         throw new IqClientException("ERROR", new IOException("BANG!"))
       }
@@ -405,7 +405,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the build fails'
@@ -421,7 +421,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [],
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
           failBuildOnNetworkError, 'cred-id', null, null))
       configureJenkins()
 
@@ -429,7 +429,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'an exception is thrown when getting proprietary config from IQ server'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.getProprietaryConfigForApplicationEvaluation('app') >> { throw exception }
 
     then: 'the return code is successful'
@@ -456,7 +456,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -494,7 +494,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -515,7 +515,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [],
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
           failBuildOnNetworkError, 'cred-id', null, null))
       configureJenkins()
 
@@ -523,7 +523,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1,
           [createAlert(Action.ID_FAIL)], 'http://server/link/to/report')
@@ -566,7 +566,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [],
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
           failBuildOnNetworkError, 'cred-id', null, null))
       configureJenkins()
 
@@ -574,7 +574,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> false
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> false
 
     then: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -584,7 +584,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
-      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [],
+      project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
           failBuildOnNetworkError, 'cred-id', null, null))
       configureJenkins()
 
@@ -614,7 +614,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> false
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> false
 
     and: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -638,7 +638,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is evaluated and server version is checked'
-      1 * iqClient.validateServerVersion(*_) >> { throw new Exception("server version check failed") }
+      1 * iqClient.validateServerVersion(*_, null) >> { throw new Exception("server version check failed") }
 
     and: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
@@ -651,7 +651,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new ManualApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -659,7 +659,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(
           0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -677,7 +677,7 @@ class IqPolicyEvaluatorIntegrationTest
 
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new ManualApplication('$APP'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('$APP'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -685,7 +685,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(
           0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -698,7 +698,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
       def url = 'http://a.com/b/c'
@@ -711,7 +711,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -727,7 +727,7 @@ class IqPolicyEvaluatorIntegrationTest
       def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
       project.setScm(new ExtractResourceSCM(path))
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -735,7 +735,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, [],
           'http://server/link/to/report')
@@ -749,7 +749,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -757,7 +757,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -794,7 +794,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -822,7 +822,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -854,7 +854,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application with application id "app" is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication('app') >> true
+      1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -887,7 +887,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -911,7 +911,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -926,7 +926,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       Boolean enableDebugLogging = true
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               enableDebugLogging, null))
       configureJenkins()
 
@@ -934,7 +934,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')
@@ -949,7 +949,7 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       Boolean enableDebugLogging = false
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               enableDebugLogging, null))
       configureJenkins()
 
@@ -957,7 +957,7 @@ class IqPolicyEvaluatorIntegrationTest
       def build = project.scheduleBuild2(0).get()
 
     then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.verifyOrCreateApplication(*_, null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
           'http://server/link/to/report')

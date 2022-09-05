@@ -55,7 +55,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
@@ -78,7 +78,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
@@ -97,7 +97,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
@@ -181,7 +181,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
@@ -205,7 +205,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
       project.setScm(new ExtractResourceSCM(path))
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
@@ -280,7 +280,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep('id', 'stage', new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
               null, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port(), true)
 

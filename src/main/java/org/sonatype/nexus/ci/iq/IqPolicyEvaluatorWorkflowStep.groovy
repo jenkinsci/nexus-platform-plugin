@@ -36,6 +36,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   String iqStage
 
+  String iqOrganization
+
   IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns

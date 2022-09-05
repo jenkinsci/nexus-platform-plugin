@@ -20,6 +20,8 @@ interface IqPolicyEvaluator
 
   String getIqStage()
 
+  String getIqOrganization()
+
   IqApplication getIqApplication()
 
   List<ScanPattern> getIqScanPatterns()
