@@ -53,6 +53,11 @@ class IqPolicyEvaluatorWorkflowStep
   String advancedProperties
 
   @DataBoundSetter
+  void setIqOrganization(final String iqOrganization) {
+    this.iqOrganization = iqOrganization
+  }
+
+  @DataBoundSetter
   void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
     this.iqScanPatterns = iqScanPatterns
   }
