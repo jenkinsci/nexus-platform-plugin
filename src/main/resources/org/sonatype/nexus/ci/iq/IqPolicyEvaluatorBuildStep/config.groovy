@@ -55,8 +55,8 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  f.entry(title: _(Messages.IqPolicyEvaluation_Stage()), field: 'iqOrganization') {
-    f.select()
+  f.entry(title: _(Messages.IqPolicyEvaluation_Organization()), field: 'iqOrganization') {
+    f.textbox()
   }
 
   f.entry(title: 'Application') {

@@ -60,7 +60,7 @@
   </developers>
 
   <properties>
-    <revision>3.15</revision>
+    <revision>3.16</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
 
