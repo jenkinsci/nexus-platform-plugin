@@ -139,6 +139,26 @@ abstract class IqPolicyEvaluatorDescriptorTest
       'applicationId' | Kind.OK    | '<div/>'
   }
 
+  def 'it validates that organization id is not required'() {
+    setup:
+      def descriptor = getDescriptor()
+
+    when:
+      "validating organization Id $organization"
+      def validation = descriptor.doCheckIqOrganization(organization)
+
+    then:
+      "it returns $kind with message $message"
+      validation.kind == kind
+      validation.renderHtml() == message
+
+    where:
+      organization | kind    | message
+      ''           | Kind.OK | '<div/>'
+      null         | Kind.OK | '<div/>'
+      'org-id'     | Kind.OK | '<div/>'
+  }
+
   def 'it validates that scan pattern is not required'() {
     setup:
       def descriptor = getDescriptor()
@@ -197,8 +217,6 @@ abstract class IqPolicyEvaluatorDescriptorTest
       null    | Kind.OK | '<div/>'
       'file'  | Kind.OK | '<div/>'
   }
-
-
 
   def 'it validates that application items are filled'() {
     setup:

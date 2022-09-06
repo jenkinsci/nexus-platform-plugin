@@ -177,5 +177,10 @@ class IqPolicyEvaluatorBuildStep
       IqUtil.
           verifyJobCredentials(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
     }
+
+    @Override
+    FormValidation doCheckIqOrganization(@QueryParameter String value) {
+      FormValidation.ok()
+    }
   }
 }

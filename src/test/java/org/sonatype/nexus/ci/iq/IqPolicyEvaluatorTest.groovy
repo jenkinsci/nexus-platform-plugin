@@ -535,28 +535,35 @@ class IqPolicyEvaluatorTest
       hideReports << [true, false]
   }
 
-  def 'prints a summary on success'() {
-    setup:
-      def buildStep = new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+  @Unroll
+  def 'prints a summary on success [App Id: #appId, Org Id: #orgId]'() {
+    given: 'a configured build step'
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, 'stage', orgId, new SelectedApplication(appId), [new ScanPattern('*.jar')], [],
           false, '131-cred', null, null)
       BuildListener listener = Mock()
       PrintStream log = Mock()
       listener.getLogger() >> log
 
-    when:
+    when: 'the build step is executed'
       buildStep.perform(run, launcher, listener)
 
-    then:
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+    then: 'the summary is printed'
+      1 * iqClient.verifyOrCreateApplication(appId, orgId) >> true
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >>
           new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 0, [],
               reportUrl)
       0 * log.println('WARNING: IQ Server evaluation of application appId detected warnings.')
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
           'Summary of policy violations: 0 critical, 0 severe, 0 moderate')
+
     and: 'delete the temp scan file'
       1 * localScanFile.delete() >> true
       1 * remoteScanResult.delete() >> true
+
+    where: 'the app id is #appId, and the org id is #orgId'
+      appId   | orgId
+      'appId' | null
+      'appId' | 'orgId'
   }
 
   def 'prints an error message if not in node context'() {

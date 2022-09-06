@@ -175,8 +175,6 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
-
-
   def 'Pipeline build successful with selectedApplication call'() {
     given: 'a jenkins project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
@@ -200,6 +198,38 @@ class IqPolicyEvaluatorIntegrationTest
 
     then: 'the application with application id "app" is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication('app', null) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >>
+          new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
+
+    and: 'the build is successful'
+      jenkins.assertBuildStatusSuccess(build)
+  }
+
+  def 'Pipeline build successful with organization id parameter'() {
+    given: 'a jenkins project'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    when: 'the nexus policy evaluator is executed'
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+              stages {
+                stage("Example") {
+                  steps { 
+                    writeFile file: 'dummy.txt', text: 'dummy'
+                    nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                      iqApplication: selectedApplication('app'), iqStage: 'stage',
+                      iqOrganization: 'org-id'
+                  }
+                }
+              }
+          }''', false)
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application with id "app", under the organization with id "org-id" is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication('app', 'org-id') >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >>
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
@@ -267,11 +297,12 @@ class IqPolicyEvaluatorIntegrationTest
       jenkins.assertBuildStatusSuccess(build)
   }
 
-  def 'Freestyle build successful with IQ instance specified'() {
+  @Unroll
+  def 'Freestyle build successful with IQ instance specified [App Id: #appId, Org Id: #orgId]'() {
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
+              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', orgId, new SelectedApplication(appId), [], [], false, 'cred-id',
                       null, null))
       List<NxiqConfiguration> nxiqConfiguration = [
               new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
@@ -282,14 +313,19 @@ class IqPolicyEvaluatorIntegrationTest
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
 
-    then: 'the application is scanned and evaluated'
-      1 * iqClient.verifyOrCreateApplication(*_) >> true
+    then: 'the application with id #appId, under the organization with id #orgId is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(appId, orgId) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
       1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [],
               'http://server/link/to/report')
 
     then: 'the return code is successful'
       jenkins.assertBuildStatusSuccess(build)
+
+    where: 'the app id is #appId, and the org id is #orgId'
+      appId   | orgId
+      'appId' | null
+      'appId' | 'orgId'
   }
 
   @Unroll
@@ -597,7 +633,6 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the build fails'
       jenkins.assertBuildStatus(Result.FAILURE, build)
   }
-
 
   def 'Pipeline build should fail and stop execution when verify is false'() {
     setup: 'global server URL and globally configured credentials'
