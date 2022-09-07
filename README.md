@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.15.438.vf87a_0dc45166 (September 07, 2022)
+------------------------------------------------
+* Using lightweight Nexus Java API to reduce complexity on class loading for the plugin
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release143(September2022)) for Nexus Lifecycle 1.143.0-01.
+
 3.14.431.v37ca_dc788b_b_1 (July 28, 2022)
 ------------------------------------------------
 * Improving summary message for policy evaluations
