@@ -39,4 +39,6 @@ interface IqPolicyEvaluatorDescriptor
   FormValidation doCheckEnableDebugLogging(String value)
 
   FormValidation doVerifyCredentials(String iqInstanceId, String jobCredentialsId, Job job)
+
+  FormValidation doCheckIqOrganization(String iqOrganization)
 }

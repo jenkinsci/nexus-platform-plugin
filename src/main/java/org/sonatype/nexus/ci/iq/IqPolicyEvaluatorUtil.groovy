@@ -72,7 +72,7 @@ class IqPolicyEvaluatorUtil
           log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
-      def verified = iqClient.verifyOrCreateApplication(applicationId)
+      def verified = iqClient.verifyOrCreateApplication(applicationId, iqPolicyEvaluator.iqOrganization)
       checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
 
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)

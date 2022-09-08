@@ -36,6 +36,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   String iqStage
 
+  String iqOrganization
+
   IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns
@@ -49,6 +51,11 @@ class IqPolicyEvaluatorWorkflowStep
   Boolean enableDebugLogging
 
   String advancedProperties
+
+  @DataBoundSetter
+  void setIqOrganization(final String iqOrganization) {
+    this.iqOrganization = iqOrganization
+  }
 
   @DataBoundSetter
   void setIqScanPatterns(final List<ScanPattern> iqScanPatterns) {
@@ -191,6 +198,11 @@ class IqPolicyEvaluatorWorkflowStep
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       IqUtil.
           verifyJobCredentials(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
+    }
+
+    @Override
+    FormValidation doCheckIqOrganization(@QueryParameter String value) {
+      FormValidation.ok()
     }
   }
 }

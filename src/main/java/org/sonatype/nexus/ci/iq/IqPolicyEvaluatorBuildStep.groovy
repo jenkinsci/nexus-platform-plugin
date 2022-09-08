@@ -40,6 +40,8 @@ class IqPolicyEvaluatorBuildStep
 
   String iqStage
 
+  String iqOrganization
+
   IqApplication iqApplication
 
   List<ScanPattern> iqScanPatterns
@@ -58,6 +60,7 @@ class IqPolicyEvaluatorBuildStep
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqInstanceId,
                              final String iqStage,
+                             final String iqOrganization,
                              final IqApplication iqApplication,
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> iqModuleExcludes,
@@ -72,6 +75,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqScanPatterns = iqScanPatterns
     this.iqModuleExcludes = iqModuleExcludes
     this.iqStage = iqStage
+    this.iqOrganization = iqOrganization
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
@@ -172,6 +176,11 @@ class IqPolicyEvaluatorBuildStep
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       IqUtil.
           verifyJobCredentials(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
+    }
+
+    @Override
+    FormValidation doCheckIqOrganization(@QueryParameter String value) {
+      FormValidation.ok()
     }
   }
 }
