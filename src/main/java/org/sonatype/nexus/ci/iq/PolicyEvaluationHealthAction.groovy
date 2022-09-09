@@ -49,7 +49,7 @@ class PolicyEvaluationHealthAction
 
   private final int totalComponentCount
 
-  private final iqDisplayName 
+  private final iqDisplayName
 
   private final String iqServerUrl
 

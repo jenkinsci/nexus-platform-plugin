@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.util
 
 import com.sonatype.nexus.api.iq.ApplicationSummary
+import com.sonatype.nexus.api.iq.OrganizationSummary
 import com.sonatype.nexus.api.iq.Stage
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 
@@ -47,7 +48,7 @@ class IqUtilTest
           'credentialsId2', false))
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'getIqConfigurations is called'
       def iqConfigurations = IqUtil.getIqConfigurations()
 
     then:
@@ -64,7 +65,7 @@ class IqUtilTest
           'credentialsId', false))
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'hasIqConfiguration is called'
       def result = IqUtil.hasIqConfiguration()
 
     then:
@@ -77,7 +78,7 @@ class IqUtilTest
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'hasIqConfiguration is called'
       def result = IqUtil.hasIqConfiguration()
 
     then:
@@ -94,7 +95,7 @@ class IqUtilTest
           'credentialsId2', false))
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'getIqConfiguration is called'
       def iqConfiguration = IqUtil.getIqConfiguration('id2')
 
     then:
@@ -113,7 +114,7 @@ class IqUtilTest
           'credentialsId2', false))
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'getIqConfiguration is called'
       def iqConfiguration = IqUtil.getIqConfiguration('id3')
 
     then:
@@ -130,7 +131,7 @@ class IqUtilTest
           'credentialsId2', false))
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'getFirstIqConfiguration is called'
       def iqConfiguration = IqUtil.getFirstIqConfiguration()
 
     then:
@@ -144,7 +145,7 @@ class IqUtilTest
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'getFirstIqConfiguration is called'
       def iqConfiguration = IqUtil.getFirstIqConfiguration()
 
     then:
@@ -166,13 +167,47 @@ class IqUtilTest
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
-      iqClient.applicationsForApplicationEvaluation >> [
+      1 * iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
           new ApplicationSummary('id2', 'publicId2', 'name2')
       ]
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, null)
+
+    then:
+      applicationItems.size() == 3
+      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      applicationItems.get(1).name == 'name1'
+      applicationItems.get(1).value == 'publicId1'
+      applicationItems.get(2).name == 'name2'
+      applicationItems.get(2).value == 'publicId2'
+  }
+
+  def 'doFillIqApplicationItems populates Iq Application items for an organization'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+      final String organizationId = 'organizationId'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
+
+      1 * iqClient.getApplicationsForApplicationEvaluation(organizationId) >> [
+          new ApplicationSummary('id1', 'publicId1', 'name1'),
+          new ApplicationSummary('id2', 'publicId2', 'name2')
+      ]
+
+    when: 'doFillIqApplicationItems is called'
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, organizationId)
 
     then:
       applicationItems.size() == 3
@@ -191,7 +226,7 @@ class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems(null, 'credentialsId', job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(null, 'credentialsId', job, null)
 
     then:
       applicationItems.size() == 1
@@ -206,7 +241,7 @@ class IqUtilTest
       globalConfiguration.save()
 
     when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems('serverUrl', null, job)
+      def applicationItems = IqUtil.doFillIqApplicationItems('serverUrl', null, job, null)
 
     then:
       applicationItems.size() == 1
@@ -233,7 +268,7 @@ class IqUtilTest
       iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
-      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, 'jobCredentialsId', job)
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, 'jobCredentialsId', job, null)
 
     then:
       applicationItems.size() == 2
@@ -392,5 +427,103 @@ class IqUtilTest
     where:
       creds       | credentialsId
       'creds-123' | 'creds-123'
+  }
+
+  def 'doFillIqOrganizationItems populates organization items'() {
+    setup:
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
+
+      iqClient.getOrganizationsForApplicationEvaluation() >> [
+          new OrganizationSummary('id1', 'test-org'),
+          new OrganizationSummary('id2', 'test-org-1')
+      ]
+
+    when: 'doFillIqOrganizationItems is called'
+      def organizationItems = IqUtil.doFillIqOrganizationItems(serverUrl, credentialsId, job)
+
+    then:
+      organizationItems.size() == 3
+      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+      organizationItems.get(1).name == 'test-org'
+      organizationItems.get(1).value == 'id1'
+      organizationItems.get(2).name == 'test-org-1'
+      organizationItems.get(2).value == 'id2'
+  }
+
+  def 'doFillIqOrganizationItems uses jobSpecificCredentialsId'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+    when: 'doFillIqStageItems is called'
+      def organizationItems = IqUtil.doFillIqOrganizationItems(null, '', job)
+
+    then:
+      organizationItems.size() == 1
+      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'doFillIqOrganizationItems returns list with empty options when no server is configured'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
+
+      iqClient.getOrganizationsForApplicationEvaluation() >> [
+          new OrganizationSummary('id1', 'test-org'),
+          new OrganizationSummary('id2', 'test-org-1')
+      ]
+
+    when: 'doFillIqStageItems is called'
+      def organizationItems = IqUtil.doFillIqOrganizationItems(null, 'jobCredentialsId', job)
+
+    then:
+      organizationItems.size() == 1
+      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
+  }
+
+  def 'doFillIqOrganizationItems returns list with empty options when no credentials is configured'() {
+    setup:
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.save()
+
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient(
+          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
+
+      iqClient.getOrganizationsForApplicationEvaluation() >> [
+          new OrganizationSummary('id1', 'test-org'),
+          new OrganizationSummary('id2', 'test-org-1')
+      ]
+
+    when: 'doFillIqStageItems is called'
+      def organizationItems = IqUtil.doFillIqOrganizationItems('serverUrl', null, job)
+
+    then:
+      organizationItems.size() == 1
+      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
+      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 }

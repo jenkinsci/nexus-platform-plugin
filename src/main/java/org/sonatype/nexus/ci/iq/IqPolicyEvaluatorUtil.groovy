@@ -49,9 +49,8 @@ class IqPolicyEvaluatorUtil
     if (iqPolicyEvaluator.iqInstanceId) {
       iqConfig = IqUtil.getIqConfiguration(iqPolicyEvaluator.iqInstanceId)
     }
-    if (!iqConfig) {
-      iqConfig = IqUtil.getFirstIqConfiguration()
-    }
+
+    iqConfig = iqConfig ?: IqUtil.getFirstIqConfiguration()
 
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
@@ -59,6 +58,7 @@ class IqPolicyEvaluatorUtil
         loggerBridge.setDebugEnabled(true)
       }
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
+      String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
 
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
@@ -72,8 +72,11 @@ class IqPolicyEvaluatorUtil
           log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
-      def verified = iqClient.verifyOrCreateApplication(applicationId, iqPolicyEvaluator.iqOrganization)
-      checkArgument(verified, 'The application ID ' + applicationId + ' is invalid.')
+      def verified = iqClient.verifyOrCreateApplication(applicationId, organizationId)
+      String message =
+          StringUtils.isBlank(iqPolicyEvaluator.iqOrganization) ? "The application ID ${applicationId} is invalid." :
+              "The application ID ${applicationId} is invalid for organization ID ${organizationId}."
+      checkArgument(verified, message)
 
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)

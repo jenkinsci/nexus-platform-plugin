@@ -49,6 +49,7 @@ public class SelectedApplication
 
     public ListBoxModel doFillApplicationIdItems(@RelativePath("..") @QueryParameter String iqInstanceId,
                                                  @RelativePath("..") @QueryParameter String jobCredentialsId,
+                                                 @RelativePath("..") @QueryParameter String iqOrganization,
                                                  @AncestorInPath Job job)
     {
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId);
@@ -56,7 +57,7 @@ public class SelectedApplication
       String serverUrl = nxiqConfiguration == null ? null : nxiqConfiguration.getServerUrl();
       String credentialsId = StringUtils.isNotBlank(jobCredentialsId) ? jobCredentialsId :
           (nxiqConfiguration == null ? null : nxiqConfiguration.getCredentialsId());
-      return IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job);
+      return IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, iqOrganization);
     }
   }
 }
