@@ -581,8 +581,9 @@ class IqPolicyEvaluatorTest
     when: 'the build step is executed'
       buildStep.perform(run, launcher, listener)
 
-    then: 'the proper errors are printed'
-      1 * log.println(expectedMessage)
+    then: 'the proper error is thrown'
+      def e = thrown IllegalArgumentException
+      e.message == expectedMessage
 
     where: 'the app id is #orgId and the expected message #expectedMessage'
       orgId   | expectedMessage
