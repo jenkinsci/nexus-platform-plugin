@@ -430,7 +430,7 @@ class IqUtilTest
   }
 
   def 'doFillIqOrganizationItems populates organization items'() {
-    setup:
+    given: 'an IQ server configured with a couple of organizations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
 
@@ -452,7 +452,7 @@ class IqUtilTest
     when: 'doFillIqOrganizationItems is called'
       def organizationItems = IqUtil.doFillIqOrganizationItems(serverUrl, credentialsId, job)
 
-    then:
+    then: 'all the configured organizations are returned'
       organizationItems.size() == 3
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
@@ -462,23 +462,8 @@ class IqUtilTest
       organizationItems.get(2).value == 'id2'
   }
 
-  def 'doFillIqOrganizationItems uses jobSpecificCredentialsId'() {
-    setup:
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.iqConfigs = []
-      globalConfiguration.save()
-
-    when: 'doFillIqOrganizationItems is called'
-      def organizationItems = IqUtil.doFillIqOrganizationItems(null, '', job)
-
-    then:
-      organizationItems.size() == 1
-      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-  }
-
   def 'doFillIqOrganizationItems returns list with empty options when no server is configured'() {
-    setup:
+    given: 'an IQ server configured with a couple of organizations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
@@ -493,17 +478,17 @@ class IqUtilTest
           new OrganizationSummary('id2', 'test-org-1')
       ]
 
-    when: 'doFillIqOrganizationItems is called'
+    when: 'doFillIqOrganizationItems is called without a server configuration'
       def organizationItems = IqUtil.doFillIqOrganizationItems(null, 'jobCredentialsId', job)
 
-    then:
+    then: 'a list with only the empty option is returned'
       organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqOrganizationItems returns list with empty options when no credentials is configured'() {
-    setup:
+    given: 'an IQ server configured with a couple of organizations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
@@ -518,10 +503,10 @@ class IqUtilTest
           new OrganizationSummary('id2', 'test-org-1')
       ]
 
-    when: 'doFillIqOrganizationItems is called'
+    when: 'doFillIqOrganizationItems is called without credentials'
       def organizationItems = IqUtil.doFillIqOrganizationItems('serverUrl', null, job)
 
-    then:
+    then: 'a list with only the empty option is returned'
       organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
