@@ -468,7 +468,7 @@ class IqUtilTest
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'doFillIqStageItems is called'
+    when: 'doFillIqOrganizationItems is called'
       def organizationItems = IqUtil.doFillIqOrganizationItems(null, '', job)
 
     then:
@@ -493,7 +493,7 @@ class IqUtilTest
           new OrganizationSummary('id2', 'test-org-1')
       ]
 
-    when: 'doFillIqStageItems is called'
+    when: 'doFillIqOrganizationItems is called'
       def organizationItems = IqUtil.doFillIqOrganizationItems(null, 'jobCredentialsId', job)
 
     then:
@@ -518,7 +518,7 @@ class IqUtilTest
           new OrganizationSummary('id2', 'test-org-1')
       ]
 
-    when: 'doFillIqStageItems is called'
+    when: 'doFillIqOrganizationItems is called'
       def organizationItems = IqUtil.doFillIqOrganizationItems('serverUrl', null, job)
 
     then:
