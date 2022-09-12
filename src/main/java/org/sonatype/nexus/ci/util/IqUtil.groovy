@@ -91,14 +91,9 @@ class IqUtil
           getIqClient(new IqClientFactoryConfiguration(serverUrl: new URI(serverUrl), credentialsId: credentialsId,
               context: job))
 
-      def applications
-
-      if (organizationId) {
-        applications = client.getApplicationsForApplicationEvaluation(organizationId)
-      }
-      else {
-        applications = client.getApplicationsForApplicationEvaluation()
-      }
+      final applications = organizationId
+          ? client.getApplicationsForApplicationEvaluation(organizationId)
+          : client.getApplicationsForApplicationEvaluation()
 
       FormUtil.newListBoxModel({ it.name }, { it.publicId }, applications)
     }

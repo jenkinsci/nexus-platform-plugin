@@ -39,7 +39,7 @@ class IqUtilTest
   Job job = Mock(Job)
 
   def 'getIqConfigurations returns a list of IQ configurations'() {
-    setup:
+    given: 'a set of global IQ configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -51,14 +51,13 @@ class IqUtilTest
     when: 'getIqConfigurations is called'
       def iqConfigurations = IqUtil.getIqConfigurations()
 
-    then:
+    then: 'the list of configurations is returned'
       iqConfigurations.size() == 2
-      iqConfigurations.get(0).id == 'id1'
-      iqConfigurations.get(1).id == 'id2'
+      iqConfigurations*.id == ['id1', 'id2']
   }
 
   def 'hasIqConfiguration returns true if there is an IQ configuration'() {
-    setup:
+    given: 'a set of global IQ configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id', 'internalId', 'displayName', 'serverUrl',
@@ -68,12 +67,12 @@ class IqUtilTest
     when: 'hasIqConfiguration is called'
       def result = IqUtil.hasIqConfiguration()
 
-    then:
+    then: 'the result is true'
       result
   }
 
   def 'hasIqConfiguration returns false if there is no IQ configuration'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
@@ -81,12 +80,12 @@ class IqUtilTest
     when: 'hasIqConfiguration is called'
       def result = IqUtil.hasIqConfiguration()
 
-    then:
+    then: 'the result is false'
       !result
   }
 
   def 'getIqConfiguration returns the IQ configuration matching the given IQ Instance id'() {
-    setup:
+    given: 'a set of global IQ configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -98,14 +97,14 @@ class IqUtilTest
     when: 'getIqConfiguration is called'
       def iqConfiguration = IqUtil.getIqConfiguration('id2')
 
-    then:
+    then: 'the proper configuration is returned'
       assert iqConfiguration
     iqConfiguration.id == 'id2'
     iqConfiguration.internalId == 'internalId2'
   }
   
   def 'getIqConfiguration returns null if no IQ configuration matches the given IQ Instance id'() {
-    setup:
+    given: 'a set of global IQ configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -114,15 +113,15 @@ class IqUtilTest
           'credentialsId2', false))
       globalConfiguration.save()
 
-    when: 'getIqConfiguration is called'
+    when: 'getIqConfiguration is called with an id that do not exists'
       def iqConfiguration = IqUtil.getIqConfiguration('id3')
 
-    then:
+    then: 'no configuration is returned'
       !iqConfiguration
   }
   
   def 'getFirstIqConfiguration returns the first IQ configuration'() {
-    setup:
+    given: 'a set of global IQ configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -134,13 +133,13 @@ class IqUtilTest
     when: 'getFirstIqConfiguration is called'
       def iqConfiguration = IqUtil.getFirstIqConfiguration()
 
-    then:
+    then: 'the proper configuration is returned'
       assert iqConfiguration
       iqConfiguration.id == 'id1'
   }
   
   def 'getFirstIqConfiguration returns null if there are no IQ configurations'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
@@ -148,138 +147,132 @@ class IqUtilTest
     when: 'getFirstIqConfiguration is called'
       def iqConfiguration = IqUtil.getFirstIqConfiguration()
 
-    then:
+    then: 'no configuration is returned'
       !iqConfiguration
   }
 
   def 'doFillIqApplicationItems populates Iq Application items'() {
-    setup:
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
+    when: 'doFillIqApplicationItems is called'
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, null)
+
+    then: 'it asks iqClient for the list of applications'
       1 * iqClient.applicationsForApplicationEvaluation >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
           new ApplicationSummary('id2', 'publicId2', 'name2')
       ]
 
-    when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, null)
-
-    then:
+    then: 'we got back the list of applications along with an empty option'
       applicationItems.size() == 3
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      applicationItems.get(1).name == 'name1'
-      applicationItems.get(1).value == 'publicId1'
-      applicationItems.get(2).name == 'name2'
-      applicationItems.get(2).value == 'publicId2'
+      applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name1', 'name2']
+      applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId1', 'publicId2']
   }
 
   def 'doFillIqApplicationItems populates Iq Application items for an organization'() {
-    setup:
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
       final String organizationId = 'organizationId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
+    when: 'doFillIqApplicationItems is called'
+      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, organizationId)
+
+    then: 'it asks iqClient for applications to eval by the organization id'
       1 * iqClient.getApplicationsForApplicationEvaluation(organizationId) >> [
           new ApplicationSummary('id1', 'publicId1', 'name1'),
           new ApplicationSummary('id2', 'publicId2', 'name2')
       ]
 
-    when: 'doFillIqApplicationItems is called'
-      def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, credentialsId, job, organizationId)
-
-    then:
+    and: 'we got back the list of applications along with an empty option'
       applicationItems.size() == 3
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      applicationItems.get(1).name == 'name1'
-      applicationItems.get(1).value == 'publicId1'
-      applicationItems.get(2).name == 'name2'
-      applicationItems.get(2).value == 'publicId2'
+      applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name1', 'name2']
+      applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId1', 'publicId2']
   }
 
   def 'doFillIqApplicationItems returns list with empty options when no server is configured'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'doFillIqApplicationItems is called with an invalid server'
       def applicationItems = IqUtil.doFillIqApplicationItems(null, 'credentialsId', job, null)
 
-    then:
+    then: 'a list with only the empty option is returned'
       applicationItems.size() == 1
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqApplicationItems returns list with empty options when no credentials is configured'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'doFillIqApplicationItems is called'
+    when: 'doFillIqApplicationItems is called with invalid credentials'
       def applicationItems = IqUtil.doFillIqApplicationItems('serverUrl', null, job, null)
 
-    then:
+    then: 'a list with only the empty option is returned'
       applicationItems.size() == 1
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqApplicationItems uses jobSpecificCredentialsId'() {
-    setup:
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-
       IqClientFactory.getIqClient { it.credentialsId == 'jobCredentialsId' && it.context == job } >> iqClient
-
-      iqClient.applicationsForApplicationEvaluation >> [new ApplicationSummary('id', 'publicId', 'name')]
 
     when: 'doFillIqApplicationItems is called with specific credentialsId'
       def applicationItems = IqUtil.doFillIqApplicationItems(serverUrl, 'jobCredentialsId', job, null)
 
-    then:
+    then: 'it asks iqClient for the list of applications'
+      1 * iqClient.applicationsForApplicationEvaluation >> [
+          new ApplicationSummary('id', 'publicId', 'name')
+      ]
+
+    and: 'we got back the list of applications along with an empty option'
       applicationItems.size() == 2
-      applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      applicationItems.get(1).name == 'name'
-      applicationItems.get(1).value == 'publicId'
+      applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name']
+      applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId']
   }
 
   def 'doFillIqInstanceIdItems populates IQ Instance id items'() {
-    setup:
+    given: 'a set og global configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -291,51 +284,44 @@ class IqUtilTest
     when: 'doFillIqInstanceIdItems is called'
       def iqInstanceIdItems = IqUtil.doFillIqInstanceIdItems()
 
-    then:
+    then: 'we got back the list of instance ids along with an empty option'
       iqInstanceIdItems.size() == 3
-      iqInstanceIdItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      iqInstanceIdItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      iqInstanceIdItems.get(1).name == 'displayName1'
-      iqInstanceIdItems.get(1).value == 'id1'
-      iqInstanceIdItems.get(2).name == 'displayName2'
-      iqInstanceIdItems.get(2).value == 'id2'
+      iqInstanceIdItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'displayName1', 'displayName2']
+      iqInstanceIdItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
   }
 
   def 'doFillIqStageItems populates stage items'() {
-    setup:
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
-      iqClient.getLicensedStages(_) >> [
+    when: 'doFillIqStageItems is called'
+      def stageItems = IqUtil.doFillIqStageItems(serverUrl, credentialsId, job)
+
+    then: 'it asks iqClient for the list of licensed stages'
+      1 * iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
           new Stage('id2', 'operate')
       ]
 
-    when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems(serverUrl, credentialsId, job)
-
-    then:
+    and: 'we got back the list of licensed stages along with the an empty option'
       stageItems.size() == 3
-      stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      stageItems.get(1).name == 'build'
-      stageItems.get(1).value == 'id1'
-      stageItems.get(2).name == 'operate'
-      stageItems.get(2).value == 'id2'
+      stageItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'build', 'operate']
+      stageItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
   }
 
   def 'doFillIqStageItems uses jobSpecificCredentialsId'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
@@ -343,69 +329,70 @@ class IqUtilTest
     when: 'doFillIqStageItems is called'
       def stageItems = IqUtil.doFillIqStageItems(null, '', job)
 
-    then:
+    then: 'we got back the list of with only an empty option'
       stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqStageItems returns list with empty options when no server is configured'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
+    and: 'and an IQ client'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient(
           new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
 
-      iqClient.getLicensedStages(_) >> [
+    when: 'doFillIqStageItems is called with an invalid server'
+      def stageItems = IqUtil.doFillIqStageItems(null, 'jobCredentialsId', job)
+
+    then: 'it asks iqClient for the list of licensed stages'
+      0 * iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
           new Stage('id2', 'operate')
       ]
 
-    when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems(null, 'jobCredentialsId', job)
-
-    then:
+    and: 'we got back the list with only an empty option'
       stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqStageItems returns list with empty options when no credentials is configured'() {
-    setup:
+    given: 'we do not have any global configuration'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
+    and: 'and an IQ client'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient(
           new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
 
-      iqClient.getLicensedStages(_) >> [
+    when: 'doFillIqStageItems is called with invalid credentials'
+      def stageItems = IqUtil.doFillIqStageItems('serverUrl', null, job)
+
+    then: 'it asks iqClient for the list of licensed stages'
+      0 * iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
           new Stage('id2', 'operate')
       ]
 
-    when: 'doFillIqStageItems is called'
-      def stageItems = IqUtil.doFillIqStageItems('serverUrl', null, job)
-
-    then:
+    and: 'we got back the list with only an empty option'
       stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'calls IqUtil with the correct arguments'() {
-    setup:
-      GroovyMock(IqClientFactory, global: true)
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String globalCredentialsId = 'globalCredentialsId'
-
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, globalCredentialsId,
           false)
@@ -413,100 +400,104 @@ class IqUtilTest
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       iqClient.getApplicationsForApplicationEvaluation() >> []
-      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
+      IqClientFactory.getIqClient { it.credentialsId == 'creds-123' && it.context == job } >> iqClient
 
-    when:
-      def validation = IqUtil.verifyJobCredentials(serverUrl, creds, job)
+    when: 'verifyJobCredentials is called'
+      def validation = IqUtil.verifyJobCredentials(serverUrl, 'creds-123', job)
 
-    then:
+    then: 'verification is OK'
       validation.kind == Kind.OK
-
-    where:
-      creds       | credentialsId
-      'creds-123' | 'creds-123'
   }
 
   def 'doFillIqOrganizationItems populates organization items'() {
-    given: 'an IQ server configured with a couple of organizations'
+    given: 'a set of global IQ configurations'
       final String serverUrl = 'http://localhost/'
       final String credentialsId = 'credentialsId'
-
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
       IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
-      iqClient.getOrganizationsForApplicationEvaluation() >> [
-          new OrganizationSummary('id1', 'test-org'),
-          new OrganizationSummary('id2', 'test-org-1')
-      ]
-
     when: 'doFillIqOrganizationItems is called'
       def organizationItems = IqUtil.doFillIqOrganizationItems(serverUrl, credentialsId, job)
 
-    then: 'all the configured organizations are returned'
-      organizationItems.size() == 3
-      organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
-      organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
-      organizationItems.get(1).name == 'test-org'
-      organizationItems.get(1).value == 'id1'
-      organizationItems.get(2).name == 'test-org-1'
-      organizationItems.get(2).value == 'id2'
-  }
-
-  def 'doFillIqOrganizationItems returns list with empty options when no server is configured'() {
-    given: 'an IQ server configured with a couple of organizations'
-      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
-      globalConfiguration.iqConfigs = []
-      globalConfiguration.save()
-
-      GroovyMock(IqClientFactory, global: true)
-      def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient(
-          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
-
-      iqClient.getOrganizationsForApplicationEvaluation() >> [
+    then: 'it asks iqClient for the configured organizations'
+      1 * iqClient.getOrganizationsForApplicationEvaluation() >> [
           new OrganizationSummary('id1', 'test-org'),
           new OrganizationSummary('id2', 'test-org-1')
       ]
+
+    and: 'all the configured organizations are returned along with an empty option'
+      organizationItems.size() == 3
+      organizationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'test-org', 'test-org-1']
+      organizationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
+  }
+
+  def 'doFillIqOrganizationItems returns list with empty options when no server is configured'() {
+    given: 'a set of global IQ configurations'
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
+      def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
+      globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
+      globalConfiguration.save()
+
+    and: 'an IQ client tied to the global configuration'
+      GroovyMock(IqClientFactory, global: true)
+      def iqClient = Mock(InternalIqClient)
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
     when: 'doFillIqOrganizationItems is called without a server configuration'
       def organizationItems = IqUtil.doFillIqOrganizationItems(null, 'jobCredentialsId', job)
 
-    then: 'a list with only the empty option is returned'
+    then: 'it asks iqClient for the configured organizations'
+      0 * iqClient.getOrganizationsForApplicationEvaluation() >> [
+          new OrganizationSummary('id1', 'test-org'),
+          new OrganizationSummary('id2', 'test-org-1')
+      ]
+
+    and: 'a list with only the empty option is returned'
       organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
 
   def 'doFillIqOrganizationItems returns list with empty options when no credentials is configured'() {
-    given: 'an IQ server configured with a couple of organizations'
+    given: 'a set of global IQ configurations'
+      final String serverUrl = 'http://localhost/'
+      final String credentialsId = 'credentialsId'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+      def nxiqConfiguration = new NxiqConfiguration('id', 'internalId', 'displayName', serverUrl, credentialsId, false)
       globalConfiguration.iqConfigs = []
+      globalConfiguration.iqConfigs.add(nxiqConfiguration)
       globalConfiguration.save()
 
+    and: 'an IQ client tied to the global configuration'
       GroovyMock(IqClientFactory, global: true)
       def iqClient = Mock(InternalIqClient)
-      IqClientFactory.getIqClient(
-          new IqClientFactoryConfiguration(credentialsId: 'jobCredentialsId', context: job)) >> iqClient
-
-      iqClient.getOrganizationsForApplicationEvaluation() >> [
-          new OrganizationSummary('id1', 'test-org'),
-          new OrganizationSummary('id2', 'test-org-1')
-      ]
+      IqClientFactory.getIqClient { it.credentialsId == credentialsId && it.context == job } >> iqClient
 
     when: 'doFillIqOrganizationItems is called without credentials'
       def organizationItems = IqUtil.doFillIqOrganizationItems('serverUrl', null, job)
 
-    then: 'a list with only the empty option is returned'
+    then: 'it asks iqClient for the configured organizations'
+      0 * iqClient.getOrganizationsForApplicationEvaluation() >> [
+          new OrganizationSummary('id1', 'test-org'),
+          new OrganizationSummary('id2', 'test-org-1')
+      ]
+
+    and: 'a list with only the empty option is returned'
       organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
