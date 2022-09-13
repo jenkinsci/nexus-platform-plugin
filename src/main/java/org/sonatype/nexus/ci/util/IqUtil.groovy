@@ -81,12 +81,21 @@ class IqUtil
     }
   }
 
-  static ListBoxModel doFillIqApplicationItems(final String serverUrl, final String credentialsId, final Job job) {
+  static ListBoxModel doFillIqApplicationItems(final String serverUrl,
+                                               final String credentialsId,
+                                               final Job job,
+                                               final String organizationId)
+  {
     if (serverUrl && credentialsId) {
       def client = IqClientFactory.
           getIqClient(new IqClientFactoryConfiguration(serverUrl: new URI(serverUrl), credentialsId: credentialsId,
               context: job))
-      FormUtil.newListBoxModel({ it.name }, { it.publicId }, client.getApplicationsForApplicationEvaluation())
+
+      final applications = organizationId
+          ? client.getApplicationsForApplicationEvaluation(organizationId)
+          : client.getApplicationsForApplicationEvaluation()
+
+      FormUtil.newListBoxModel({ it.name }, { it.publicId }, applications)
     }
     else {
       FormUtil.newListBoxModelWithEmptyOption()
@@ -103,6 +112,18 @@ class IqUtil
     }
     catch (IqClientException e) {
       return FormValidation.error(e, Messages.NxiqConfiguration_ConnectionFailed())
+    }
+  }
+
+  static ListBoxModel doFillIqOrganizationItems(final String serverUrl, final String credentialsId, final Job job) {
+    if (serverUrl && credentialsId) {
+      def client = IqClientFactory.
+          getIqClient(new IqClientFactoryConfiguration(serverUrl: new URI(serverUrl), credentialsId: credentialsId,
+              context: job))
+      FormUtil.newListBoxModel({ it.name }, { it.id }, client.getOrganizationsForApplicationEvaluation())
+    }
+    else {
+      FormUtil.newListBoxModelWithEmptyOption()
     }
   }
 }

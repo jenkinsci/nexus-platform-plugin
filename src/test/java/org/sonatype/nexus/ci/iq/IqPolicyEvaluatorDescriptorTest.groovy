@@ -225,7 +225,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       ListBoxModel appList
 
     when:
-      appList = descriptor.doFillApplicationIdItems('', '', job)
+      appList = descriptor.doFillApplicationIdItems('', '', null, job)
 
     then:
       appList.size() == 1
@@ -243,7 +243,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillApplicationIdItems('id',null, job)
+      descriptor.doFillApplicationIdItems('id',null, null, job)
 
     then:
       // this is a bit odd, but because we're mixing Groovy and Java classes SelectedApplication, we can't
@@ -265,7 +265,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
       def job = Mock(Job)
 
     when:
-      descriptor.doFillApplicationIdItems('id','credentialsId', job)
+      descriptor.doFillApplicationIdItems('id','credentialsId', null, job)
 
     then:
       // this is a bit odd, but because we're mixing Groovy and Java classes SelectedApplication, we can't
@@ -288,6 +288,19 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
     then:
       1 * IqUtil.doFillIqStageItems(null, null, job)
+  }
+
+  def 'it validates that organization items are filled'() {
+    setup:
+      def descriptor = getDescriptor()
+      GroovyMock(IqUtil, global: true)
+      def job = Mock(Job)
+
+    when:
+      descriptor.doFillIqOrganizationItems('', '', job)
+
+    then:
+      1 * IqUtil.doFillIqOrganizationItems(null, null, job)
   }
 
   def 'it uses custom credentials for stage items'() {

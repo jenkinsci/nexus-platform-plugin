@@ -566,6 +566,31 @@ class IqPolicyEvaluatorTest
       'appId' | 'orgId'
   }
 
+  @Unroll
+  def 'prints proper error message when app verification fails [Org Id: #orgId]'() {
+    given: 'a configured build step'
+      def buildStep = new IqPolicyEvaluatorBuildStep(null, 'stage', orgId, new SelectedApplication('appId'), [new ScanPattern('*.jar')], [],
+          false, '131-cred', null, null)
+      BuildListener listener = Mock()
+      PrintStream log = Mock()
+      listener.getLogger() >> log
+
+    when: 'the build step is executed'
+      buildStep.perform(run, launcher, listener)
+
+    then: 'the app verification fails'
+      1 * iqClient.verifyOrCreateApplication('appId', orgId) >> false
+
+    and: 'the proper error is thrown'
+      def e = thrown IllegalArgumentException
+      e.message == expectedMessage
+
+    where: 'the app id is #orgId and the expected message #expectedMessage'
+      orgId   | expectedMessage
+      null    | 'The application ID appId is invalid.'
+      'orgId' | 'The application ID appId is invalid for organization ID orgId.'
+  }
+
   def 'prints an error message if not in node context'() {
     setup:
       def buildStep = new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('appId'),

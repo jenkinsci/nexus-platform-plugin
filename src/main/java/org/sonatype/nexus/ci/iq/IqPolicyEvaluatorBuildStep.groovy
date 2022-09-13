@@ -182,5 +182,15 @@ class IqPolicyEvaluatorBuildStep
     FormValidation doCheckIqOrganization(@QueryParameter String value) {
       FormValidation.ok()
     }
+
+    @Override
+    ListBoxModel doFillIqOrganizationItems(@QueryParameter String iqInstanceId,
+                                           @QueryParameter String jobCredentialsId,
+                                           @AncestorInPath Job job) {
+      NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
+      def serverUrl = nxiqConfiguration?.serverUrl
+      def jobCredentials = jobCredentialsId ?: nxiqConfiguration?.credentialsId
+      IqUtil.doFillIqOrganizationItems(serverUrl, jobCredentials, job)
+    }
   }
 }

@@ -41,4 +41,6 @@ interface IqPolicyEvaluatorDescriptor
   FormValidation doVerifyCredentials(String iqInstanceId, String jobCredentialsId, Job job)
 
   FormValidation doCheckIqOrganization(String iqOrganization)
+
+  ListBoxModel doFillIqOrganizationItems(String iqInstanceId, String jobCredentialsId, Job job)
 }
