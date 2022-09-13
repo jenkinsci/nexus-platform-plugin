@@ -52,7 +52,6 @@ class IqUtilTest
       def iqConfigurations = IqUtil.getIqConfigurations()
 
     then: 'the list of configurations is returned'
-      iqConfigurations.size() == 2
       iqConfigurations*.id == ['id1', 'id2']
   }
 
@@ -64,11 +63,8 @@ class IqUtilTest
           'credentialsId', false))
       globalConfiguration.save()
 
-    when: 'hasIqConfiguration is called'
-      def result = IqUtil.hasIqConfiguration()
-
-    then: 'the result is true'
-      result
+    expect: 'hasIqConfiguration is called and returns true'
+      IqUtil.hasIqConfiguration()
   }
 
   def 'hasIqConfiguration returns false if there is no IQ configuration'() {
@@ -77,11 +73,8 @@ class IqUtilTest
       globalConfiguration.iqConfigs = []
       globalConfiguration.save()
 
-    when: 'hasIqConfiguration is called'
-      def result = IqUtil.hasIqConfiguration()
-
-    then: 'the result is false'
-      !result
+    expect: 'hasIqConfiguration is called and returns false'
+      !IqUtil.hasIqConfiguration()
   }
 
   def 'getIqConfiguration returns the IQ configuration matching the given IQ Instance id'() {
@@ -176,7 +169,6 @@ class IqUtilTest
       ]
 
     then: 'we got back the list of applications along with an empty option'
-      applicationItems.size() == 3
       applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name1', 'name2']
       applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId1', 'publicId2']
   }
@@ -207,7 +199,6 @@ class IqUtilTest
       ]
 
     and: 'we got back the list of applications along with an empty option'
-      applicationItems.size() == 3
       applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name1', 'name2']
       applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId1', 'publicId2']
   }
@@ -237,7 +228,6 @@ class IqUtilTest
       def applicationItems = IqUtil.doFillIqApplicationItems('serverUrl', null, job, null)
 
     then: 'a list with only the empty option is returned'
-      applicationItems.size() == 1
       applicationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       applicationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
@@ -266,13 +256,12 @@ class IqUtilTest
       ]
 
     and: 'we got back the list of applications along with an empty option'
-      applicationItems.size() == 2
       applicationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'name']
       applicationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'publicId']
   }
 
   def 'doFillIqInstanceIdItems populates IQ Instance id items'() {
-    given: 'a set og global configurations'
+    given: 'a set of global configurations'
       def globalConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
       globalConfiguration.iqConfigs = []
       globalConfiguration.iqConfigs.add(new NxiqConfiguration('id1', 'internalId1', 'displayName1', 'serverUrl1',
@@ -285,7 +274,6 @@ class IqUtilTest
       def iqInstanceIdItems = IqUtil.doFillIqInstanceIdItems()
 
     then: 'we got back the list of instance ids along with an empty option'
-      iqInstanceIdItems.size() == 3
       iqInstanceIdItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'displayName1', 'displayName2']
       iqInstanceIdItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
   }
@@ -315,7 +303,6 @@ class IqUtilTest
       ]
 
     and: 'we got back the list of licensed stages along with the an empty option'
-      stageItems.size() == 3
       stageItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'build', 'operate']
       stageItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
   }
@@ -330,7 +317,6 @@ class IqUtilTest
       def stageItems = IqUtil.doFillIqStageItems(null, '', job)
 
     then: 'we got back the list of with only an empty option'
-      stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
@@ -357,7 +343,6 @@ class IqUtilTest
       ]
 
     and: 'we got back the list with only an empty option'
-      stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
@@ -384,7 +369,6 @@ class IqUtilTest
       ]
 
     and: 'we got back the list with only an empty option'
-      stageItems.size() == 1
       stageItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       stageItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
@@ -438,7 +422,6 @@ class IqUtilTest
       ]
 
     and: 'all the configured organizations are returned along with an empty option'
-      organizationItems.size() == 3
       organizationItems*.name == [FormUtil.EMPTY_LIST_BOX_NAME, 'test-org', 'test-org-1']
       organizationItems*.value == [FormUtil.EMPTY_LIST_BOX_VALUE, 'id1', 'id2']
   }
@@ -468,7 +451,6 @@ class IqUtilTest
       ]
 
     and: 'a list with only the empty option is returned'
-      organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }
@@ -498,7 +480,6 @@ class IqUtilTest
       ]
 
     and: 'a list with only the empty option is returned'
-      organizationItems.size() == 1
       organizationItems.get(0).name == FormUtil.EMPTY_LIST_BOX_NAME
       organizationItems.get(0).value == FormUtil.EMPTY_LIST_BOX_VALUE
   }

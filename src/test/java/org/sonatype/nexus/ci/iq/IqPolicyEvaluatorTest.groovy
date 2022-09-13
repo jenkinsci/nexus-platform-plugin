@@ -575,13 +575,13 @@ class IqPolicyEvaluatorTest
       PrintStream log = Mock()
       listener.getLogger() >> log
 
-    and: 'the app verification fails'
-      1 * iqClient.verifyOrCreateApplication('appId', orgId) >> false
-
     when: 'the build step is executed'
       buildStep.perform(run, launcher, listener)
 
-    then: 'the proper error is thrown'
+    then: 'the app verification fails'
+      1 * iqClient.verifyOrCreateApplication('appId', orgId) >> false
+
+    and: 'the proper error is thrown'
       def e = thrown IllegalArgumentException
       e.message == expectedMessage
 
