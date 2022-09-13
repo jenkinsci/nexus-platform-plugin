@@ -336,7 +336,7 @@ class IqUtilTest
     when: 'doFillIqStageItems is called with an invalid server'
       def stageItems = IqUtil.doFillIqStageItems(null, 'jobCredentialsId', job)
 
-    then: 'it asks iqClient for the list of licensed stages'
+    then: 'it does not ask iqClient for the list of licensed stages'
       0 * iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
           new Stage('id2', 'operate')
@@ -362,7 +362,7 @@ class IqUtilTest
     when: 'doFillIqStageItems is called with invalid credentials'
       def stageItems = IqUtil.doFillIqStageItems('serverUrl', null, job)
 
-    then: 'it asks iqClient for the list of licensed stages'
+    then: 'it does not ask iqClient for the list of licensed stages'
       0 * iqClient.getLicensedStages(_) >> [
           new Stage('id1', 'build'),
           new Stage('id2', 'operate')
@@ -444,7 +444,7 @@ class IqUtilTest
     when: 'doFillIqOrganizationItems is called without a server configuration'
       def organizationItems = IqUtil.doFillIqOrganizationItems(null, 'jobCredentialsId', job)
 
-    then: 'it asks iqClient for the configured organizations'
+    then: 'it does not ask iqClient for the configured organizations'
       0 * iqClient.getOrganizationsForApplicationEvaluation() >> [
           new OrganizationSummary('id1', 'test-org'),
           new OrganizationSummary('id2', 'test-org-1')
@@ -473,7 +473,7 @@ class IqUtilTest
     when: 'doFillIqOrganizationItems is called without credentials'
       def organizationItems = IqUtil.doFillIqOrganizationItems('serverUrl', null, job)
 
-    then: 'it asks iqClient for the configured organizations'
+    then: 'it does not ask iqClient for the configured organizations'
       0 * iqClient.getOrganizationsForApplicationEvaluation() >> [
           new OrganizationSummary('id1', 'test-org'),
           new OrganizationSummary('id2', 'test-org-1')
