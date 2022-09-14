@@ -43,6 +43,8 @@ class IqServerMockUtility
     WireMock.configureFor("localhost", port)
     givenThat(get(urlMatching('/rest/config/proprietary\\?.*'))
         .willReturn(okJson('{}')))
+    givenThat(get(urlMatching('/rest/integration/organizations?goal=EVALUATE_APPLICATION'))
+        .willReturn(okJson('{}')))
     givenThat(post(urlMatching('/rest/integration/applications/verifyOrCreate/.*'))
         .willReturn(okJson('true')))
     givenThat(post(urlMatching('/rest/integration/applications/app/evaluations/ci/stages/.*'))
