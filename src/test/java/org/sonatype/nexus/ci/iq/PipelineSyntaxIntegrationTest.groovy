@@ -111,7 +111,7 @@ class PipelineSyntaxIntegrationTest
       xml.contains(Messages.IqPolicyEvaluation_ModuleExcludes())    
       xml.contains(Messages.IqPolicyEvaluation_FailOnNetwork())    
       xml.contains(Messages.IqPolicyEvaluation_JobSpecificCredentials())    
-      xml.contains(Messages.IqPolicyEvaluation_EnableDebugLogging())    
+      xml.contains('name="_.enableDebugLogging" type="checkbox"')
       xml.contains(Messages.IqPolicyEvaluation_AdvancedProperties())    
   }
 

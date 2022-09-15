@@ -284,7 +284,7 @@
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>1.7</version>
+          <version>1.27</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
