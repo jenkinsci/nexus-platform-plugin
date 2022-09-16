@@ -33,7 +33,7 @@ pipeline {
   stages {
     stage('Parallel Test Groups') {
       parallel {
-        stage('Jenkins 2.249.1 - Java 8') {
+        stage('Jenkins 2.303.3 - Java 8') {
           agent { label agentLabel }
           steps {
             runTests('Java 8')
@@ -44,11 +44,11 @@ pipeline {
             }
           }
         }
-        stage('Jenkins 2.346.3 - Java 11') {
+        stage('Jenkins 2.361.1 - Java 11') {
           agent { label agentLabel }
           steps {
             runTests('OpenJDK 11',
-                '-Djenkins.version=2.346.3 -Djenkins.tools.bom.artifactId=bom-2.346.x -Djenkins.tools.bom.version=1595.v8c71c13cc3a_9')
+                '-Djenkins.version=2.361.1 -Djenkins.tools.bom.artifactId=bom-2.361.x -Djenkins.tools.bom.version=1607.va_c1576527071')
           }
           post {
             always {

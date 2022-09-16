@@ -65,11 +65,11 @@
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
 
     <!-- This is the minimum advertised compatible version -->
-    <jenkins.version>2.249.1</jenkins.version>
+    <jenkins.version>2.303.3</jenkins.version>
 
     <!-- See: https://github.com/jenkinsci/bom -->
-    <jenkins.tools.bom.artifactId>bom-2.249.x</jenkins.tools.bom.artifactId>
-    <jenkins.tools.bom.version>984.vb5eaac999a7e</jenkins.tools.bom.version>
+    <jenkins.tools.bom.artifactId>bom-2.303.x</jenkins.tools.bom.artifactId>
+    <jenkins.tools.bom.version>1370.vfa_e23fe119c3</jenkins.tools.bom.version>
     <!-- The next two properties are needed to be able to run the unit tests in IDEA -->
     <jenkins.addOpens/>
     <jenkins.insaneHook/>
@@ -115,7 +115,7 @@
 
       <!--
           Make sure it's in sync with the version from the Nexus Java API.
-          This can be removed when the minimum supported version of Jenkins > 2.249
+          This can be removed when the minimum supported version of Jenkins > 2.303
         -->
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -284,7 +284,7 @@
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>1.7</version>
+          <version>1.27</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
