@@ -89,28 +89,29 @@ class PolicyEvaluationReportActionTest
   }
 
   def "GetReport should return report results"() {
-    setup:
+    given: 'some policy alerts'
+      def alertFail = TestDataGenerators.createAlert(Action.ID_FAIL)
+      def alertWarn = TestDataGenerators.createAlert(Action.ID_WARN)
+      def alertWarn2 = TestDataGenerators.createAlert(Action.ID_WARN)
+      def alertNotify = TestDataGenerators.createAlert(Action.ID_NOTIFY)
+      def alertNoAction = new PolicyAlert(alertFail.trigger, [])
 
-      def constraintFact = new ConstraintFact('', '', '', [])
-      def compFact = new ComponentFact(null, 'hash', [constraintFact], [''], null)
-      def fact = new PolicyFact('testId', 'testName', 10, [compFact])
-      def alertFail = new PolicyAlert(fact, [new Action('fail', '', '')])
-      def alertWarn = new PolicyAlert(fact, [new Action('warn', '', '')])
-      def alertWarn2 = new PolicyAlert(fact, [new Action('warn', '', '')])
-      def alertNoAction = new PolicyAlert(fact, [])
-
+    and: 'a report action with a policy evaluation result'
       def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1,
-          [alertFail, alertWarn, alertWarn2, alertNoAction], 'link')
+          [alertFail, alertWarn, alertWarn2, alertNotify, alertNoAction], 'link')
       def reportAction = new PolicyEvaluationReportAction('my-iq-app', 'build', null, policyEvaluation)
 
     when: 'getting report result'
       def report = reportAction.getReport()
 
-    then:
+    then: 'the report has the expected actions summaries'
       report.failedActionViolations == 1
       report.failedActionComponents == 1
       report.warnActionViolations == 2
       report.warnActionComponents == 1
       report.components.size() == 1
+
+    and: 'the actions are the expected'
+      report.components[0].constraints*.action == [Action.ID_FAIL, Action.ID_WARN, Action.ID_WARN, Action.ID_NOTIFY]
   }
 }
