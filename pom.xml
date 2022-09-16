@@ -115,7 +115,7 @@
 
       <!--
           Make sure it's in sync with the version from the Nexus Java API.
-          This can be removed when the minimum supported version of Jenkins > 2.289
+          This can be removed when the minimum supported version of Jenkins > 2.303
         -->
       <dependency>
         <groupId>org.apache.commons</groupId>
