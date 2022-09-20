@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import com.sonatype.nexus.api.iq.ComponentFact
 import com.sonatype.nexus.api.iq.ConditionFact
@@ -47,9 +48,11 @@ class PolicyEvaluationReportUtil
       int warnCurrent = 0
 
       for (Constraint constraint: comp.constraints) {
-        if (constraint.action == 'warn') {
+        if (constraint.action == Action.ID_WARN) {
           warnCurrent++
-        } else {
+        }
+
+        if (constraint.action == Action.ID_FAIL) {
           failedCurrent++
         }
       }
