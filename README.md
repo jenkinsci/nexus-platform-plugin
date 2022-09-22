@@ -24,6 +24,12 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.444.v52b_e5e2db_503 (September 22, 2022)
+------------------------------------------------
+- Add the organization ID parameter, used for automatic IQ apps
+- Fixing Nexus IQ Build Report to properly show the icon for "notify" actions
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release144(September2022)) for Nexus Lifecycle 1.144.0-05.
+
 3.15.438.vf87a_0dc45166 (September 07, 2022)
 ------------------------------------------------
 * Using lightweight Nexus Java API to reduce complexity on class loading for the plugin
