@@ -165,5 +165,5 @@ E.g. in a class where you experience unexpected `ClassNotFoundExceptions` add:
 - [Dependencies and class loading][2]
 
 
-[1]: https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins
+[1]: https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins
 [2]: https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/
