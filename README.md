@@ -14,13 +14,13 @@
 -->
 # Nexus Platform Plugin
 
-A plugin for integrating Nexus Repository Manager and Nexus Lifecycle into a Jenkins job. Information about using the plugin can be found in [Nexus Platform Plugin for Jenkins](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins).
+A plugin for integrating Nexus Repository Manager and Nexus Lifecycle into a Jenkins job. Information about using the plugin can be found in [Nexus Platform Plugin for Jenkins](https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins).
 
 Please use the links below to find information about using the plugin with your desired software
 
  * [Nexus Repository Manager 2](https://help.sonatype.com/display/NXRM2/Jenkins)
- * [Nexus Repository Manager 3](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-RepositoryManager3Integration)
- * [Nexus Lifecycle/IQ](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-NexusIQServerIntegration)
+ * [Nexus Repository Manager 3](https://help.sonatype.com/repomanager3/integrations/nexus-platform-plugin-for-jenkins)
+ * [Nexus Lifecycle/IQ](https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-NexusIQServerIntegration)
 
 Changelog
 =========
@@ -336,7 +336,7 @@ Changelog
 -------------------------------------------
 
 -   Added support of Nexus Repository Manager 3.13.0-01 servers for Maven component uploads, and new staging features (for Pro versions): tags, move, and delete.\
-    Please see [Nexus Platform Plugin for Jenkins](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins) for more details.
+    Please see [Nexus Platform Plugin for Jenkins](https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins) for more details.
 
 3.1.20180702-132131.f6b4592 (July 2, 2018)
 ------------------------------------------
@@ -368,7 +368,7 @@ Changelog
 
 -   Pipeline jobs using the plugin will now fail during execution if a policy action is set to fail the build. This is different from previous behavior which would set the build result to failure but allow the build to continue. This is adopting standard practice for Jenkins pipeline plugins and allows more visibility into what has failed and why. Pipelines that require continuation of the build will have to surround the plugin step with try catch, where the evaluation information is now wrapped in the exception argument.
 
--   The pipeline step has always returned a model for the evaluation containing information about the [results](https://help.sonatype.com/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-ReturnValuefromPipelineBuild). The ApplicationPolicyEvaluation will no longer include a boolean for reevaluation therefore calls to get or set this will fail. The Jenkins pipeline has never supported reevaluation and this boolean has always returned false. For simplification, it has been removed.
+-   The pipeline step has always returned a model for the evaluation containing information about the [results](https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins#NexusPlatformPluginforJenkins-ReturnValue). The ApplicationPolicyEvaluation will no longer include a boolean for reevaluation therefore calls to get or set this will fail. The Jenkins pipeline has never supported reevaluation and this boolean has always returned false. For simplification, it has been removed.
 
 ### CHANGES
 
