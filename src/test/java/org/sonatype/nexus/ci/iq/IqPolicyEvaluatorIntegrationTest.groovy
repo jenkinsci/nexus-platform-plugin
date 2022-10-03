@@ -504,6 +504,49 @@ class IqPolicyEvaluatorIntegrationTest
       }
   }
 
+  def 'Pipeline build should be unstable and continue workflow execution when warning policy violations are present'() {
+    given: 'a global server URL and globally configured credentials'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    and: 'a project defined with a pipeline '
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+            stages {
+              stage("Example") {
+                steps { 
+                  writeFile file: 'dummy.txt', text: 'dummy'
+                  nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                    iqApplication: selectedApplication('app'), iqStage: 'stage'
+                }
+              }
+              stage("Next") {
+                steps {
+                  echo "next"
+                }
+              }                
+            }
+          }''', false)
+
+    when: 'the nexus policy evaluator is executed'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1,
+          [createAlert(Action.ID_WARN)], 'http://server/link/to/report')
+
+    and: 'the build is marked as unstable'
+      jenkins.assertBuildStatus(Result.UNSTABLE, build)
+
+    and: 'the execution flow continues'
+      with(build.getLog(100)) {
+        it.contains('next') && it.contains('IQ Server evaluation of application app detected warnings')
+      }
+  }
+
   def 'Pipeline build should failure should container policy evaluation results'() {
     setup: 'global server URL and globally configured credentials'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
