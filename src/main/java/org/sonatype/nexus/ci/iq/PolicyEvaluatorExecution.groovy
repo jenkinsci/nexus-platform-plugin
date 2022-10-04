@@ -20,8 +20,11 @@ import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 import hudson.EnvVars
 import hudson.FilePath
 import hudson.Launcher
+import hudson.model.Result
 import hudson.model.Run
 import hudson.model.TaskListener
+import org.jenkinsci.plugins.workflow.actions.WarningAction
+import org.jenkinsci.plugins.workflow.graph.FlowNode
 import org.jenkinsci.plugins.workflow.steps.StepContext
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution
 
@@ -40,13 +43,27 @@ class PolicyEvaluatorExecution
 
   @Override
   @SuppressWarnings('ConfusingMethodName')
-  protected ApplicationPolicyEvaluation run() throws Exception {
+  protected ApplicationPolicyEvaluation run() {
     Run run = context.get(Run)
     TaskListener taskListener = context.get(TaskListener)
     FilePath workspace = context.get(FilePath)
     Launcher launcher = context.get(Launcher)
     EnvVars envVars = context.get(EnvVars)
+    FlowNode node = context.get(FlowNode)
 
-    IqPolicyEvaluatorUtil.evaluatePolicy(iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars)
+    ApplicationPolicyEvaluation evaluationResult = IqPolicyEvaluatorUtil.evaluatePolicy(
+        iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars
+    )
+
+    Result result = run.getResult()
+    String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
+
+    if (result == Result.UNSTABLE) {
+      node.addOrReplaceAction(new WarningAction(result)
+          .withMessage(Messages.IqPolicyEvaluation_EvaluationWarning(applicationId))
+      )
+    }
+
+    return evaluationResult
   }
 }
