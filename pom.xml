@@ -332,6 +332,7 @@
               org.codehaus.stax2.
               com.ctc.wstx.
               org.objectweb.asm.
+              org.antlr.v4.
             </maskClasses>
           </configuration>
         </plugin>
