@@ -24,6 +24,12 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.449.v50228c7ca_222 (October 06, 2022)
+------------------------------------------------
+-Policy evaluation stage is marked according to policy actions.
+-Fix dependency conflict with certain versions of the credentials plugin.
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release145(October2022)) for Nexus Lifecycle 1.145.0-01.
+
 3.16.444.v52b_e5e2db_503 (September 22, 2022)
 ------------------------------------------------
 - Add the organization ID parameter, used for automatic IQ apps
