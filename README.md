@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.453.v39a_b_a_0401562 (October 20, 2022)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release146(October2022)) for Nexus Lifecycle 1.146.0-01.
+
 3.16.449.v50228c7ca_222 (October 06, 2022)
 ------------------------------------------------
 - Policy evaluation stage is marked according to policy actions.
