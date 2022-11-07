@@ -55,10 +55,9 @@ class PolicyEvaluatorExecution
         iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars
     )
 
-    Result result = run.getResult()
     String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
 
-    if (evaluationResult != null && evaluationResult.hasWarnings()) {
+    if (evaluationResult?.hasWarnings()) {
       node.addOrReplaceAction(new WarningAction(Result.UNSTABLE)
           .withMessage(Messages.IqPolicyEvaluation_EvaluationWarning(applicationId))
       )

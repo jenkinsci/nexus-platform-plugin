@@ -553,7 +553,7 @@ class IqPolicyEvaluatorIntegrationTest
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
 
-    and: 'a project defined with a pipeline '
+    and: 'a pipeline project that runs an evaluation after a previous stage makes the build unstable'
       project.definition = new CpsFlowDefinition('''
           pipeline {  
             agent any
@@ -586,6 +586,7 @@ class IqPolicyEvaluatorIntegrationTest
 
     and: 'the build is marked as unstable'
       jenkins.assertBuildStatus(Result.UNSTABLE, build)
+      assert build.flowGraphDataAsHtml
 
     and: 'but not because of the evaluation'
       build.getLog(100).stream().anyMatch(
