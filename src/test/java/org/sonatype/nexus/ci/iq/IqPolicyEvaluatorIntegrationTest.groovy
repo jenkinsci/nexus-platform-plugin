@@ -16,6 +16,7 @@ import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+import com.sonatype.nexus.api.iq.PolicyAlert
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
@@ -545,6 +546,50 @@ class IqPolicyEvaluatorIntegrationTest
       with(build.getLog(100)) {
         it.contains('next') && it.contains('IQ Server evaluation of application app detected warnings')
       }
+  }
+
+  def 'Eval stage should be green when no policy violations even though the build is previously marked unstable'() {
+    given: 'a global server URL and globally configured credentials'
+      WorkflowJob project = jenkins.createProject(WorkflowJob)
+      configureJenkins()
+
+    and: 'a project defined with a pipeline '
+      project.definition = new CpsFlowDefinition('''
+          pipeline {  
+            agent any
+            stages {
+              stage("Make unstable") {
+                steps { 
+                  script {
+                    currentBuild.result = 'UNSTABLE'
+                  }
+                }
+              }
+              stage("Evaluation") {
+                steps { 
+                  writeFile file: 'dummy.txt', text: 'dummy'
+                  nexusPolicyEvaluation failBuildOnNetworkError: false, 
+                    iqApplication: selectedApplication('app'), iqStage: 'stage'
+                }
+              }
+            }
+          }''', false)
+
+    when: 'the nexus policy evaluator is executed'
+      def build = project.scheduleBuild2(0).get()
+
+    then: 'the application is scanned and evaluated'
+      1 * iqClient.verifyOrCreateApplication(*_) >> true
+      1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
+      1 * iqClient.evaluateApplication(*_) >> new ApplicationPolicyEvaluation(0, 0, 0, 0, 0, 0, 0, 0, 1,
+          [], 'http://server/link/to/report')
+
+    and: 'the build is marked as unstable'
+      jenkins.assertBuildStatus(Result.UNSTABLE, build)
+
+    and: 'but not because of the evaluation'
+      build.getLog(100).stream().anyMatch(
+          { logLine -> logLine.contains('Summary of policy violations: 0 critical, 0 severe, 0 moderate') })
   }
 
   def 'Pipeline build should failure should container policy evaluation results'() {
