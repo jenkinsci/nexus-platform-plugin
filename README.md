@@ -26,7 +26,7 @@ Changelog
 =========
 3.16.459.vcdf273b_29f8c (November 17, 2022)
 ------------------------------------------------
-- Fix for an edge case when the policy evaluation stage is marked UNSTABLE even though no policy violations are present
+- Fix for an edge case where the policy evaluation pipeline stage is marked UNSTABLE even though no policy violations are present.
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release149(November2022)) for Nexus Lifecycle 1.149.0-01.
 
 3.16.455.vd5654e1c14b_a_ (October 26, 2022)
