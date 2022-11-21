@@ -79,7 +79,7 @@
     <forkCount>1</forkCount>
     <nexus-platform-api.version>4.0.5-01</nexus-platform-api.version>
 
-    <buildsupport.version>33</buildsupport.version>
+    <buildsupport.version>36</buildsupport.version>
     <buildsupport.license-maven-plugin.version>4.1</buildsupport.license-maven-plugin.version>
 
     <public.serverId>sonatype-public</public.serverId>
@@ -414,7 +414,7 @@
       <plugin>
         <groupId>com.sonatype.clm</groupId>
         <artifactId>clm-maven-plugin</artifactId>
-        <version>2.31.1-01</version>
+        <version>2.37.0-01</version>
         <configuration>
           <skip>false</skip>
         </configuration>
