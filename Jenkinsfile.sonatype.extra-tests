@@ -56,6 +56,18 @@ pipeline {
             }
           }
         }
+        stage('Jenkins 2.375.1 - Java 17') {
+          agent { label agentLabel }
+          steps {
+            runTests('OpenJDK 17',
+                '-Djenkins.version=2.375.1 -Djenkins.tools.bom.artifactId=bom-2.375.x -Djenkins.tools.bom.version=1723.vcb_9fee52c9fc')
+          }
+          post {
+            always {
+              captureResultsAndCleanup()
+            }
+          }
+        }
       }
     }
   }
