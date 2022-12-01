@@ -44,22 +44,10 @@ pipeline {
             }
           }
         }
-        stage('Jenkins 2.361.4 - Java 11') {
+        stage('Jenkins 2.375.1 - Java 11') {
           agent { label agentLabel }
           steps {
             runTests('OpenJDK 11',
-                '-Djenkins.version=2.361.4 -Djenkins.tools.bom.artifactId=bom-2.361.x -Djenkins.tools.bom.version=1706.vc166d5f429f8')
-          }
-          post {
-            always {
-              captureResultsAndCleanup()
-            }
-          }
-        }
-        stage('Jenkins 2.375.1 - Java 17') {
-          agent { label agentLabel }
-          steps {
-            runTests('OpenJDK 17',
                 '-Djenkins.version=2.375.1 -Djenkins.tools.bom.artifactId=bom-2.375.x -Djenkins.tools.bom.version=1723.vcb_9fee52c9fc')
           }
           post {
