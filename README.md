@@ -24,6 +24,14 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.465.ve8709b_fa_df42 (December 01, 2022)
+------------------------------------------------
+- Scanning local images does not require providing environmental variables.
+- To scan remote images, the user will now have to provide only these variables:
+  - NEXUS_CONTAINER_IMAGE_REGISTRY_USER
+  - NEXUS_CONTAINER_IMAGE_REGISTRY_PASSWORD
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release150(November2022)) for Nexus Lifecycle 1.150.0-01.
+
 3.16.459.vcdf273b_29f8c (November 17, 2022)
 ------------------------------------------------
 - Fix for an edge case where the policy evaluation pipeline stage is marked UNSTABLE even though no policy violations are present.
