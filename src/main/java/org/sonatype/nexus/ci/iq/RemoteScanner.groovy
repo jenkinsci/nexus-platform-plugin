@@ -31,8 +31,6 @@ class RemoteScanner
 
   public static final String CONTAINER = 'container:'
 
-  public static final String IAC = 'iac:'
-
   private final String appId
 
   private final String stageId
