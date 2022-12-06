@@ -94,13 +94,6 @@ class RemoteScanner
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
       }
-      else if (pattern.startsWith(IAC)) {
-        def iacTarget = IAC + workDirectory + File.separatorChar + pattern.substring(4, pattern.length())
-        log.debug("Adding iac scan target: ${iacTarget}")
-        targets = targets.toList()
-        targets.add(new File(iacTarget))
-        targets = Collections.unmodifiableList(targets)
-      }
     }
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,

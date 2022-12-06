@@ -101,27 +101,6 @@ class RemoteScannerTest
       workspace = new FilePath(new File('/file/path'))
   }
 
-  def "creates a list of iac targets from the result of a directory scan"() {
-    setup:
-      def remoteScanner = new RemoteScanner('appId', 'stageId', ['iac:iac.tf'], [], workspace, proprietaryConfig, log,
-          "instance-id", null, null)
-      directoryScanner.getIncludedDirectories() >> []
-      directoryScanner.getIncludedFiles() >> []
-
-    when:
-      remoteScanner.call()
-
-    then:
-      iqClient.scan(*_) >> { arguments ->
-        assert arguments[3][0] == new File('iac:/file/path/iac.tf')
-
-        new ScanResult(null, new File('iac:/file/path/iac.tf'))
-      }
-
-    where:
-      workspace = new FilePath(new File('/file/path'))
-  }
-
   def 'creates a list of module indices from the results of a directory scan'() {
     setup:
       def remoteScanner = new RemoteScanner('appId', 'stageId', ['*jar'], [], workspace, proprietaryConfig, log,
