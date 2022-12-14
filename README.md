@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.471.v2dcf088efb_7f (December 14, 2022)
+------------------------------------------------
+- Removing support for scanning IaC targets
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release151(December2022)) for Nexus Lifecycle 1.151.0-01.
+
 3.16.465.ve8709b_fa_df42 (December 01, 2022)
 ------------------------------------------------
 - Scanning local images does not require providing environmental variables.
