@@ -15,7 +15,7 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 def jira = [
-    versionPrefix: 'jenkins', project: 'INT', projectId: '12410',
+    versionPrefix: 'jenkins', project: 'CLM', projectId: '11011',
     credentialId : 'jenkins-jira', autoRelease: true, failOnError: true
 ]
 
