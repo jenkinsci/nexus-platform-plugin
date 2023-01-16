@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.474.vb_0cdf4908780 (January 16, 2023)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release152(January2023)) for Nexus Lifecycle 1.152.0-01.
+
 3.16.471.v2dcf088efb_7f (December 14, 2022)
 ------------------------------------------------
 - Removing support for scanning IaC targets
