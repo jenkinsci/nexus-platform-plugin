@@ -17,17 +17,43 @@
 
 This page provides high-level technical information regarding the **Nexus Platform Plugin for Jenkins**.
 
-
 ## Product Overview
 
 For an overview of the product and its features see the plugin's public [help page][1]. 
-Also, you can check out the [README.md](../README.md).
-
+The [README.md](../README.md) acts as a change log, so please refrain from making any manual changes there.
 
 ## High-Level Technical Description
 
-TBD
+For more details about Jenkins plugin architecture go to [Jenkins Developer Documentation][3].
 
+The plugin consists of a series of custom Jenkins job steps that can be used in both declarative and freestyle jobs and 
+a set of UI fragment used either for configuration purposed, or for displaying the custom steps results.
+
+There are some global configuration classes, under [org/sonatype/nexus/ci/config](../src/main/java/org/sonatype/nexus/ci/config), 
+which allow user to configure Nexus IQ Server or NXRM connection details at job level.
+
+The code that deals with scanning and policy evaluations lives under [org/sonatype/nexus/ci/iq](../src/main/java/org/sonatype/nexus/ci/iq).
+The code entry point for this feature is: [org.sonatype.nexus.ci.iq.IqPolicyEvaluatorBuildStep](../src/main/java/org/sonatype/nexus/ci/iq/IqPolicyEvaluatorBuildStep.groovy).
+
+There are also three action classes that generate UI fragments:
+- [PolicyEvaluationHealthAction](../src/main/java/org/sonatype/nexus/ci/iq/PolicyEvaluationHealthAction.groovy) - The latest policy evaluation report summary and trend for a given job
+
+![](images/latest-pol-eval.png)
+
+- [PolicyEvaluationProjectAction](../src/main/java/org/sonatype/nexus/ci/iq/PolicyEvaluationProjectAction.groovy) - Policy evaluation report summary and trend for a particular run
+
+![](images/pol-eval.png)
+
+- [PolicyEvaluationReportAction](../src/main/java/org/sonatype/nexus/ci/iq/PolicyEvaluationReportAction.groovy) - Build report for a particular run
+
+![](images/pol-eval.png)
+
+The code that handles the interaction with NXRM (v2 and v3) lives under [org/sonatype/nexus/ci/nxrm](../src/main/java/org/sonatype/nexus/ci/nxrm).
+
+Both the production and test code are written in Groovy. The UI views are written in [Jelly][4] or Groovy and can be 
+composed of a number of different partial views (or view fragments).
+
+The plugin is build using the [maven-hpi-plugin][5].
 
 ## Local Development
 
@@ -36,6 +62,9 @@ TBD
 To build the project run:
 ```bash
 mvn clean install
+
+# or build without running the tests
+mvn clean install -DskipTests
 ```
 
 ### Run and Debug
@@ -45,9 +74,40 @@ To start the plugin in Jenkins run:
 mvn hpi:run
 ```
 
+In IDEA, you can add remote debug params to the line that executes java to use remote debugging: 
+`-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000`
+
 You can also create a Maven-based run configuration in IDEA and execute it in run or debug mode.
 
-## Development Notes
+### Testing
+
+The project's test folder contains unit tests, integration tests and test related utility classes.
+
+All tests can be run in the IDE as regular unit tests (right-click on a test class and choose 'Run' or 'Debug').
+
+It uses Wiremock to simulate a working IQ Server - see: [IqServerMockUtility](../src/test/java/org/sonatype/nexus/ci/iq/IqServerMockUtility.groovy).
+
+All tests rely on `org.jvnet.hudson.test.JenkinsRule`, provided by the `jenkins-test-harness`
+dependency, which is a stripped down version of Jenkins runtime created for testing purposes.
+ 
+> **Important Note**: A very important difference between the `JenkinsRule` and the real Jenkins runtime is the class 
+> loader hierarchy: the production runtime uses a class loader tree (for more details go to: [Class loading in Jenkins][2]), 
+> while the test rule uses a single classloader for everything.
+> This makes impossible to detect via testing if the plugin conflicts with other Jenkins dependencies/plugins in a 
+> production environment, so before releases a quick manual sanity check is required (more details in the release instructions).
+
+## CI/CD Notes
+
+The plugin resides GitHub in a different organization i.e. **jenkinsci**: https://github.com/jenkinsci/nexus-platform-plugin
+
+For that reason the CI build process is a bit different from other Sonatype projects.
+
+The main Jenkins job - [Jenkinsfile](../Jenkinsfile) - runs in the Jenkins CI infrastructure (outside Sonatype).
+[Jenkinsfile.sonatype](../Jenkinsfile.sonatype) - is the file behind our snapshot builds (inside Sonatype).
+
+On release the final artifact is pushed to [Jenkins CI artifact repository][6] and Sonatype's https://repo.sonatype.com/. 
+
+## Troubleshooting
 
 ### Stax2 implementation conflict
 
@@ -82,7 +142,7 @@ plugin to execute all Stax2 operations. For details see: https://github.com/sona
 
 **Solution (new)**:
 
-By using the `<maskClasses>` feature of the `maven-hpi-plugin` we can mask certain packages from Jenkins-core. 
+By using the `<maskClasses>` feature of the [maven-hpi-plugin][5] we can mask certain packages from Jenkins-core. 
 That makes them unavailable to the plugin, forcing the plugin to use its own bundled packages.
 
 E.g.
@@ -142,7 +202,7 @@ Jenkins uses a hierarchy of class loaders as shown below (for more details go to
 Some old java libraries (e.g. stax-api) assume the only one class loader exists, retrieve it using 
 `Thread.currentThread().getContextClassLoader()` and use it exclusively. 
 
-That class loader corresponds to the second entry in the above hierarchy, and it has access only to the 
+That class loader corresponds to the Jenkins core entry in the above hierarchy, and it has access only to the 
 jenkins-core packages (bundled in _jenkins.war_), but it cannot access any of the plugins provided classes.  
 
 **Solution**:
@@ -150,20 +210,28 @@ jenkins-core packages (bundled in _jenkins.war_), but it cannot access any of th
 Make sure the plugin class loader is used as a context class loader by the current thread.
 
 E.g. in a class where you experience unexpected `ClassNotFoundExceptions` add:
-```java  
+```groovy  
   // get plugin's ClassLoader
   ClassLoader classLoader = this.class.classLoader
   // set context ClassLoader for current thread
   Thread.currentThread().setContextClassLoader(classLoader)
 ```
 
-
 ## References
 
-### Jenkins Plugin Development
+### Jenkins
 
+- [Plugin's help page][1]
+- [Guide to Developing Jenkins Plugins][3]
 - [Dependencies and class loading][2]
+- [Apache Jelly][4]
+- [maven-hpi-plugin][5]
+- [Jenkins CI artifact repository][6]
 
 
 [1]: https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins
 [2]: https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/
+[3]: https://www.jenkins.io/doc/developer
+[4]: https://commons.apache.org/proper/commons-jelly
+[5]: https://jenkinsci.github.io/maven-hpi-plugin
+[6]: https://repo.jenkins-ci.org/
