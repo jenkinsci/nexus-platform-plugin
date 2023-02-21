@@ -46,7 +46,7 @@ There are also three action classes that generate UI fragments:
 
 - [PolicyEvaluationReportAction](../src/main/java/org/sonatype/nexus/ci/iq/PolicyEvaluationReportAction.groovy) - Build report for a particular run
 
-![](images/pol-eval.png)
+![](images/build-report.png)
 
 The code that handles the interaction with NXRM (v2 and v3) lives under [org/sonatype/nexus/ci/nxrm](../src/main/java/org/sonatype/nexus/ci/nxrm).
 
