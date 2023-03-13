@@ -36,6 +36,8 @@ import static org.sonatype.nexus.ci.util.FormUtil.validateUrl
 @SuppressWarnings(value = ['AbcMetric'])
 class RepositoryManagerClientUtil
 {
+  private static String userAgent
+
   static RepositoryManagerV2Client nexus2Client(String url, String credentialsId)
       throws URISyntaxException
   {
@@ -94,6 +96,8 @@ class RepositoryManagerClientUtil
       clientBuilder.withProxyConfig(ProxyUtil.newProxyConfig(jenkinsProxy))
     }
 
+    clientBuilder.withUserAgent(getUserAgent())
+
     return clientBuilder.build()
   }
 
@@ -112,5 +116,30 @@ class RepositoryManagerClientUtil
     }
 
     return authentication ? new ServerConfig(uri, authentication) : new ServerConfig(uri)
+  }
+
+  private static String getUserAgent() {
+    userAgent = userAgent ?: String.format('%s/%s (Java %s; %s %s; Jenkins %s)',
+        'Sonatype_CLM_CI_Jenkins',
+        getPluginVersion(),
+        System.getProperty('java.version'),
+        System.getProperty('os.name'),
+        System.getProperty('os.version'),
+        Jenkins.VERSION
+    )
+    return userAgent
+  }
+
+  private static String getPluginVersion() {
+    def pluginWrapper = Jenkins.getInstanceOrNull()?.pluginManager?.getPlugin('nexus-jenkins-plugin')
+    if (pluginWrapper) {
+      def  version = pluginWrapper.version
+      int index = version.indexOf(' ')
+      if (index > -1) {
+        return version[0..index]
+      }
+      return version
+    }
+    return 'unknown'
   }
 }
