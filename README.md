@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.487.v5d4d3b_6942ee (April 06, 2023)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release159(April2023)) for Nexus Lifecycle 1.159.0-01.
+
 3.16.485.ve2c3a_17ec407 (March 22, 2023)
 ------------------------------------------------
 - For remote image scanning, environmental variables NEXUS_CONTAINER_IMAGE_REGISTRY_USER and NEXUS_CONTAINER_IMAGE_REGISTRY_PASSWORD are not required and are now optional for public images. 
