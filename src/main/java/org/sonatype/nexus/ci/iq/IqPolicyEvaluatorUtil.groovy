@@ -131,6 +131,10 @@ class IqPolicyEvaluatorUtil
       }
 
       if (scanResult.scan?.summary?.errorCount > 0) {
+        if (iqPolicyEvaluator.failBuildOnScanningErrors) {
+          def msg = Messages.IqPolicyEvaluation_EvaluationFailed(applicationId)
+          throw new PolicyEvaluationException(msg, evaluationResult)
+        }
         run.setResult(Result.UNSTABLE)
       }
 

@@ -46,6 +46,8 @@ class IqPolicyEvaluatorWorkflowStep
 
   Boolean failBuildOnNetworkError
 
+  Boolean failBuildOnScanningErrors
+
   String jobCredentialsId
 
   Boolean enableDebugLogging
@@ -70,6 +72,11 @@ class IqPolicyEvaluatorWorkflowStep
   @DataBoundSetter
   void setFailBuildOnNetworkError(final boolean failBuildOnNetworkError) {
     this.failBuildOnNetworkError = failBuildOnNetworkError
+  }
+
+  @DataBoundSetter
+  void setFailBuildOnScanningErrors(final boolean failBuildOnScanningErrors) {
+    this.failBuildOnScanningErrors = failBuildOnScanningErrors
   }
 
   @DataBoundSetter
@@ -176,6 +183,11 @@ class IqPolicyEvaluatorWorkflowStep
 
     @Override
     FormValidation doCheckFailBuildOnNetworkError(@QueryParameter final String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    FormValidation doCheckFailBuildOnScanningErrors(@QueryParameter final String value) {
       FormValidation.validateRequired(value)
     }
 

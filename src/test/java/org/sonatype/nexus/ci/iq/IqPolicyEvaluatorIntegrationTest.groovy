@@ -281,7 +281,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, false, 'cred-id',
               null, null))
       configureJenkins()
 
@@ -303,7 +303,7 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', orgId, new SelectedApplication(appId), [], [], false, 'cred-id',
+              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', orgId, new SelectedApplication(appId), [], [], false, false, 'cred-id',
                       null, null))
       List<NxiqConfiguration> nxiqConfiguration = [
               new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
@@ -388,7 +388,7 @@ class IqPolicyEvaluatorIntegrationTest
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-          failBuildOnNetworkError, 'cred-id', null, null))
+          failBuildOnNetworkError, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -409,8 +409,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], true, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], true, false,
+              'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -459,7 +459,7 @@ class IqPolicyEvaluatorIntegrationTest
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-          failBuildOnNetworkError, 'cred-id', null, null))
+          failBuildOnNetworkError, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -641,7 +641,7 @@ class IqPolicyEvaluatorIntegrationTest
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-          failBuildOnNetworkError, 'cred-id', null, null))
+          failBuildOnNetworkError, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -692,7 +692,7 @@ class IqPolicyEvaluatorIntegrationTest
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-          failBuildOnNetworkError, 'cred-id', null, null))
+          failBuildOnNetworkError, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -710,7 +710,7 @@ class IqPolicyEvaluatorIntegrationTest
       def failBuildOnNetworkError = false
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-          failBuildOnNetworkError, 'cred-id', null, null))
+          failBuildOnNetworkError, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -775,8 +775,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('app'), [], [], false, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('app'), [], [], false,
+             false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -801,8 +801,8 @@ class IqPolicyEvaluatorIntegrationTest
 
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('$APP'), [], [], false, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new ManualApplication('$APP'), [], [], false,
+              false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -822,8 +822,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
+              false, false, 'cred-id', null, null))
       configureJenkins()
       def url = 'http://a.com/b/c'
       def prop = new EnvironmentVariablesNodeProperty()
@@ -851,8 +851,8 @@ class IqPolicyEvaluatorIntegrationTest
       def path = getClass().getResource('sampleRepoWithRemoteUrl.zip')
       project.setScm(new ExtractResourceSCM(path))
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false,
+              false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -873,8 +873,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
-              null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
+              false, false, 'cred-id', null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -1050,8 +1050,8 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       Boolean enableDebugLogging = true
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
-              enableDebugLogging, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
+              false, false, 'cred-id', enableDebugLogging, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -1073,8 +1073,8 @@ class IqPolicyEvaluatorIntegrationTest
       FreeStyleProject project = jenkins.createFreeStyleProject()
       Boolean enableDebugLogging = false
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, 'cred-id',
-              enableDebugLogging, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
+              false, false, 'cred-id', enableDebugLogging, null))
       configureJenkins()
 
     when: 'the build is scheduled'
