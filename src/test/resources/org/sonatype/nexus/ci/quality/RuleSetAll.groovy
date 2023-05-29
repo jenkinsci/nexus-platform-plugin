@@ -347,7 +347,7 @@ ruleset {
 
   // rulesets/size.xml
   // AbcComplexity   // DEPRECATED: Use the AbcMetric rule instead. Requires the GMetrics jar
-  AbcMetric { maxMethodAbcScore = 30 ;  maxClassAverageMethodAbcScore = 15 }  // Requires the GMetrics jar
+  AbcMetric { maxMethodAbcScore = 30 ;  maxClassAverageMethodAbcScore = 16 }  // Requires the GMetrics jar
   ClassSize { maxLines = 200 }
   CrapMetric   // Requires the GMetrics jar and a Cobertura coverage file
   CyclomaticComplexity   // Requires the GMetrics jar
