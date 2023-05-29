@@ -49,9 +49,7 @@ class IqPolicyEvaluatorUtil
     if (iqPolicyEvaluator.iqInstanceId) {
       iqConfig = IqUtil.getIqConfiguration(iqPolicyEvaluator.iqInstanceId)
     }
-
     iqConfig = iqConfig ?: IqUtil.getFirstIqConfiguration()
-
     try {
       LoggerBridge loggerBridge = new LoggerBridge(listener)
       if (iqPolicyEvaluator.getEnableDebugLogging()) {
@@ -60,9 +58,7 @@ class IqPolicyEvaluatorUtil
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
-
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
-
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
 
       def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
