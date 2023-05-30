@@ -68,7 +68,8 @@ class IqPolicyEvaluatorUtil
       def iqClient = IqClientFactory.getIqClient(new IqClientFactoryConfiguration(
           serverUrl: (iqConfig == null || iqConfig.serverUrl == null) ? null : new URI(iqConfig.serverUrl),
           credentialsId: iqPolicyEvaluator.jobCredentialsId ?: iqConfig?.credentialsId,
-          context: run.parent, log: loggerBridge))
+          context: run.parent,
+          log: loggerBridge))
 
       iqClient.validateServerVersion(MINIMAL_SERVER_VERSION_REQUIRED)
       def verified = iqClient.verifyOrCreateApplication(applicationId, organizationId)
@@ -79,8 +80,10 @@ class IqPolicyEvaluatorUtil
 
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
+
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
+
       def licensedFeatures = iqClient.getLicensedFeatures()
 
       def remoteScanner = RemoteScannerFactory.
@@ -88,7 +91,9 @@ class IqPolicyEvaluatorUtil
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
               advancedProperties, envVars, licensedFeatures)
 
-      def scanResult, evaluationResult, remoteScanResult
+      def scanResult
+      def evaluationResult
+      def remoteScanResult
       try {
         remoteScanResult = launcher.getChannel().call(remoteScanner)
         scanResult = remoteScanResult.copyToLocalScanResult()
@@ -117,7 +122,7 @@ class IqPolicyEvaluatorUtil
         def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
         run.addAction(reportAction)
       }
-
+      
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId, iqConfig?.hideReports)
       run.setResult(result)
       if (result == Result.FAILURE) {
