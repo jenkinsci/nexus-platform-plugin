@@ -281,8 +281,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+          add(new IqPolicyEvaluatorBuildStep(null, 'stage', null, new SelectedApplication('app'), [], [], false, false, 'cred-id',
+              null, null))
       configureJenkins()
 
     when: 'the build is scheduled'
@@ -303,8 +303,8 @@ class IqPolicyEvaluatorIntegrationTest
     given: 'a jenkins project'
       FreeStyleProject project = jenkins.createFreeStyleProject()
       project.buildersList.
-              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', orgId, new SelectedApplication(appId), [], [],
-                  false, false, 'cred-id', null, null))
+              add(new IqPolicyEvaluatorBuildStep('id2', 'stage', orgId, new SelectedApplication(appId), [], [], false, false, 'cred-id',
+                      null, null))
       List<NxiqConfiguration> nxiqConfiguration = [
               new NxiqConfiguration('id1', 'int-id1', 'display-name1', 'http://server/url1', 'no-cred', false),
               new NxiqConfiguration('id2', 'int-id2', 'display-name2', 'http://server/url1', 'cred-id', false)
