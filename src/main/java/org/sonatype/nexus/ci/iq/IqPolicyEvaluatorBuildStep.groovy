@@ -50,6 +50,8 @@ class IqPolicyEvaluatorBuildStep
 
   Boolean failBuildOnNetworkError
 
+  Boolean failBuildOnScanningErrors
+
   String jobCredentialsId
 
   Boolean enableDebugLogging
@@ -65,6 +67,7 @@ class IqPolicyEvaluatorBuildStep
                              final List<ScanPattern> iqScanPatterns,
                              final List<ModuleExclude> iqModuleExcludes,
                              final Boolean failBuildOnNetworkError,
+                             final Boolean failBuildOnScanningErrors,
                              final String jobCredentialsId,
                              final Boolean enableDebugLogging,
                              final String advancedProperties)
@@ -72,6 +75,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqInstanceId = iqInstanceId
     this.jobCredentialsId = jobCredentialsId
     this.failBuildOnNetworkError = failBuildOnNetworkError
+    this.failBuildOnScanningErrors = failBuildOnScanningErrors
     this.iqScanPatterns = iqScanPatterns
     this.iqModuleExcludes = iqModuleExcludes
     this.iqStage = iqStage
@@ -153,6 +157,11 @@ class IqPolicyEvaluatorBuildStep
 
     @Override
     FormValidation doCheckFailBuildOnNetworkError(@QueryParameter String value) {
+      FormValidation.validateRequired(value)
+    }
+
+    @Override
+    FormValidation doCheckFailBuildOnScanningErrors(@QueryParameter String value) {
       FormValidation.validateRequired(value)
     }
 

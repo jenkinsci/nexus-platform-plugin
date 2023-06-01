@@ -30,6 +30,8 @@ interface IqPolicyEvaluator
 
   Boolean getFailBuildOnNetworkError()
 
+  Boolean getFailBuildOnScanningErrors()
+
   String getJobCredentialsId()
 
   Boolean getEnableDebugLogging()
