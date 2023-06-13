@@ -60,7 +60,7 @@
   </developers>
 
   <properties>
-    <revision>3.17</revision>
+    <revision>3.16</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
 
@@ -166,8 +166,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>bouncycastle-api</artifactId>
-      <!-- Remove this when jenkins min. version > 2.375 -->
-      <version>2.28</version>
     </dependency>
     <!-- End Jenkins plugins we depend on -->
 
