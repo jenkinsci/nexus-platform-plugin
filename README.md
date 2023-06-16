@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.501.ve3d6b_58f1d37 (June 16, 2023)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release163(June2023)) for Nexus Lifecycle 1.163.0-01.
+
 3.16.497.vd8491dd15a_8d (June 13, 2023)
 ------------------------------------------------
 - Add full support for Java 17
