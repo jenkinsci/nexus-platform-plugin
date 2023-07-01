@@ -38,7 +38,7 @@ script() {
   ''')
 }
 
-l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
+link(rel: "stylesheet", href: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css", type: "text/css")
 
 f.section(title: descriptor.displayName) {
   if (!NxrmUtil.hasNexusRepositoryManagerConfiguration()) {
