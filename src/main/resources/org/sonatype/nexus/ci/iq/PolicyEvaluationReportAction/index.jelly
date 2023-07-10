@@ -374,9 +374,9 @@
           <div class="application">${it.getApplicationId()}</div>
           <div class="stage">${it.getIqStage()}</div>
           <div class="ide-support">
-            <a href="https://help.sonatype.com/iqserver/integrations/iq-server-and-ides/iq-for-idea">IDEA</a>
-            <a href="https://help.sonatype.com/iqserver/integrations/iq-server-and-ides/iq-for-visual-studio">Visual Studio</a>
-            <a href="https://help.sonatype.com/iqserver/integrations/iq-server-and-ides/iq-for-eclipse">Eclipse</a>
+            <a href="https://links.sonatype.com/products/nxiq/doc/integrations/scm/ides/idea">IDEA</a>
+            <a href="https://links.sonatype.com/products/nxiq/doc/integrations/scm/ides/visual-studio">Visual Studio</a>
+            <a href="https://links.sonatype.com/products/nxiq/doc/integrations/scm/ides/eclipse">Eclipse</a>
           </div>
         </div>
 
