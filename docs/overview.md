@@ -229,7 +229,7 @@ E.g. in a class where you experience unexpected `ClassNotFoundExceptions` add:
 - [Jenkins CI artifact repository][6]
 
 
-[1]: https://help.sonatype.com/iqserver/integrations/nexus-and-continuous-integration/nexus-platform-plugin-for-jenkins
+[1]: https://links.sonatype.com/products/nxiq/doc/nexus-platform-plugin-for-jenkins
 [2]: https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/
 [3]: https://www.jenkins.io/doc/developer
 [4]: https://commons.apache.org/proper/commons-jelly
