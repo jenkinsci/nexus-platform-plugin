@@ -22,7 +22,7 @@ def f = namespace(lib.FormTagLib)
 def c = namespace(lib.CredentialsTagLib)
 def l = namespace(lib.LayoutTagLib)
 
-l.css(src: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css")
+link(rel: "stylesheet", href: "${rootURL}/plugin/nexus-jenkins-plugin/css/nexus.css", type: "text/css")
 
 f.section(title: descriptor.displayName) {
   if (!IqUtil.hasIqConfiguration()) {
