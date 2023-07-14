@@ -338,7 +338,7 @@ class IqClientFactoryTest
       def iqClientBuilder = Mock(InternalIqClientBuilder)
       InternalIqClientBuilder.create() >> iqClientBuilder
 
-      def jenkinsVersion = System.getProperty('jenkins.version')?:'2.303.3'
+      def jenkinsVersion = System.getProperty('jenkins.version')?:'2.346.3'
 
     when:
       IqClientFactory.getIqClient(
