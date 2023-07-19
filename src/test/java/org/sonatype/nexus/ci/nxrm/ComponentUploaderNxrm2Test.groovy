@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v2.RepositoryManagerV2Client
 
 import org.sonatype.nexus.ci.config.Nxrm2Configuration
@@ -155,6 +156,39 @@ class ComponentUploaderNxrm2Test
            new MavenCoordinate('some-env-group', 'some-env-artifact', '1.0.0-01', 'jar')]
       expectedAsset <<
           [new MavenAsset(null, 'classifier', 'extension'), new MavenAsset(null, 'env-classifier', 'env-extension')]
+  }
+
+  @WithoutJenkins
+  def 'it logs upload failure message'() {
+    setup:
+      def client = Mock(RepositoryManagerV2Client)
+      client.uploadComponent(_, _, _) >>  {
+        throw new RepositoryManagerException("UPLOAD ERROR", new IOException("BANG!"))
+      }
+      def nxrmConfiguration = new Nxrm2Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
+      run.getEnvironment(_ as TaskListener) >> new EnvVars(['BUILD_ID': '1'])
+
+      def mockComponentUploader =
+          Spy(ComponentUploaderNxrm2, constructorArgs: [nxrmConfiguration, run, taskListener]) {
+            it.getRepositoryManagerClient(nxrmConfiguration) >> client
+          }
+      def publisher = Mock(NexusPublisher)
+      def tempFile = File.createTempFile("temp", ".tmp")
+
+      def filePath = new FilePath(tempFile.getParentFile())
+      publisher.packages >> [ new MavenPackage(
+          new MavenCoordinate('some-group', 'some-artifact', '1.0.0-SNAPSHOT', 'jar'),
+          [new MavenAsset(tempFile.name, 'classifier', 'extension')])
+      ]
+
+    when:
+      mockComponentUploader.uploadComponents(publisher, filePath)
+      tempFile.delete()
+
+    then:
+      def thrown = thrown(IOException)
+      thrown.message.endsWith('failed due to UPLOAD ERROR')
+      1 * run.setResult(Result.FAILURE)
   }
 
   @WithoutJenkins

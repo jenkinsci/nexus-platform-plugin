@@ -46,7 +46,7 @@ class ComponentUploaderNxrm3
   @Override
   void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
               final String nxrmRepositoryId,
-              final String tagName = null)
+              final String tagName = null) throws IOException
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 
@@ -76,22 +76,13 @@ class ComponentUploaderNxrm3
               envVars.expand(remoteMavenAsset.Asset.classifier))
         }
 
-        try {
-          nxrmClient.
-              upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
-        }
-        catch (RepositoryManagerException ex) {
-          throw new IOException(ex)
-        }
+        nxrmClient.
+            upload(nxrmRepositoryId, mavenComponentBuilder.build(), resolvedTagName?.trim() ? resolvedTagName : null)
       }
-      catch (IOException ex) {
-        final String uploadFailed = 'Upload of maven component with GAV ' +
-            "[${groupId}:${artifactId}:${version}] failed"
-
-        logger.println(uploadFailed)
-        logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
-        run.setResult(Result.FAILURE)
-        throw new IOException(uploadFailed, ex)
+      catch (RepositoryManagerException | IOException ex) {
+        throw new IOException(
+            "Upload of maven component with GAV [${groupId}:${artifactId}:${version}] failed due to ${ex.getMessage()}",
+            ex)
       }
     }
 

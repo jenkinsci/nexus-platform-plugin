@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.nxrm
 
+import com.sonatype.nexus.api.exception.IqClientException
+import com.sonatype.nexus.api.exception.RepositoryManagerException
 import com.sonatype.nexus.api.repository.v3.Component
 import com.sonatype.nexus.api.repository.v3.RepositoryManagerV3Client
 
@@ -238,6 +240,41 @@ class ComponentUploaderNxrm3Test
     then:
       1 * remotePath.getRemote() >> 'foo'
       1 * remotePath.read() >> payload
+  }
+
+  @WithoutJenkins
+  def 'it logs upload failure message'() {
+    setup:
+      def client = Mock(RepositoryManagerV3Client)
+      client.upload(_, _, _) >>  {
+        throw new RepositoryManagerException("UPLOAD ERROR", new IOException("BANG!"))
+      }
+      def nxrmConfiguration = new Nxrm3Configuration('id', 'internalId', 'displayName', 'foo', 'credId')
+      run.getEnvironment(_ as TaskListener) >> new EnvVars(['BUILD_ID': '1'])
+      client.getTag(_ as String) >> Optional.empty()
+
+      ComponentUploaderNxrm3 mockComponentUploader =
+          Spy([constructorArgs: [nxrmConfiguration, run, taskListener]] as Map<String, Object>,
+              ComponentUploaderNxrm3) {
+            it.getRepositoryManagerClient(nxrmConfiguration) >> client
+          }
+      def publisher = Mock(NexusPublisher)
+      def tempFile = File.createTempFile("temp", ".tmp")
+
+      def coordinate = new MavenCoordinate('some-group', 'some-artifact', '1.0', 'jar')
+      def filePath = new FilePath(tempFile.getParentFile())
+      publisher.packages >> [
+          new MavenPackage(coordinate, [new MavenAsset(tempFile.name, null, 'jar')])
+      ]
+
+    when:
+      mockComponentUploader.uploadComponents(publisher, filePath, 'foobar')
+      tempFile.delete()
+
+    then:
+      def thrown = thrown(IOException)
+      thrown.message == 'Upload of maven component with GAV [some-group:some-artifact:1.0] failed due to UPLOAD ERROR'
+      1 * run.setResult(Result.FAILURE)
   }
 
   @WithoutJenkins
