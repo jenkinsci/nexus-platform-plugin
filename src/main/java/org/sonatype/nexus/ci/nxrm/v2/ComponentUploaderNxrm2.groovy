@@ -38,7 +38,7 @@ class ComponentUploaderNxrm2
   @Override
   void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
               final String nxrmRepositoryId,
-              final String tag = null)
+              final String tag = null) throws IOException
   {
     def nxrmClient = getRepositoryManagerClient(nxrmConfiguration)
 
@@ -61,20 +61,14 @@ class ComponentUploaderNxrm2
           try {
             nxrmClient.uploadComponent(nxrmRepositoryId, gav, [mavenFile])
           }
-          catch (RepositoryManagerException ex) {
-            throw new IOException(ex)
-          }
           finally {
             localFile.delete()
           }
         }
-        catch (IOException ex) {
-          final String uploadFailed = "Upload of ${remoteMavenAsset.Asset.filePath} failed"
-
-          logger.println(uploadFailed)
-          logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
-          run.setResult(Result.FAILURE)
-          throw new IOException(uploadFailed, ex)
+        catch (RepositoryManagerException | IOException ex) {
+          throw new IOException(
+              "Upload of ${remoteMavenAsset.Asset.filePath} failed due to ${ex.getMessage()}",
+              ex)
         }
       }
 

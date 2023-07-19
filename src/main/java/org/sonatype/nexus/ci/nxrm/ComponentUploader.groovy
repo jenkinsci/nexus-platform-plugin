@@ -43,7 +43,7 @@ abstract class ComponentUploader
 
   protected abstract void upload(final Map<MavenCoordinate, List<RemoteMavenAsset>> remoteMavenComponents,
                                  final String nxrmRepositoryId,
-                                 final String tagName = null)
+                                 final String tagName = null) throws IOException
 
   @SuppressWarnings(['UnusedMethodParameter', 'EmptyMethodInAbstractClass'])
   void maybeCreateTag(final String tagName) {
@@ -79,7 +79,15 @@ abstract class ComponentUploader
       }
     }
 
-    upload(remoteMavenComponents, nexusPublisher.nexusRepositoryId, tagName)
+    try {
+      upload(remoteMavenComponents, nexusPublisher.nexusRepositoryId, tagName)
+    }
+    catch (IOException ex) {
+      logger.println("${ex.getMessage()} - cause: ${ex.getCause()}")
+      logger.println('Failing build due to failure to upload file to Nexus Repository Manager Publisher')
+      run.setResult(Result.FAILURE)
+      throw ex
+    }
   }
 
   @SuppressWarnings('Instanceof')
