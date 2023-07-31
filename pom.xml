@@ -145,6 +145,20 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!--
+    asm-tree and asm versions must match the one pulled indirectly by insight-scanner
+    This is needed to avoid classloader issues in Jenkins
+    -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-tree</artifactId>
+      <version>9.4</version>
+    </dependency>
 
     <!-- Begin Jenkins plugins we depend on -->
     <dependency>
