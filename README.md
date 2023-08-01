@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.16.510.v4d23e22cf563 (August 01, 2023)
+------------------------------------------------
+- Add support for scanning Java class binaries produced by Java 19 and 20.
+
 3.16.508.vfc408b_9601f0 (July 20, 2023)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release165(July2023)) for Nexus Lifecycle 1.165.0-01.
