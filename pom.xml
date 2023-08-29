@@ -338,6 +338,7 @@
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
+          <version>3.48</version>
           <extensions>true</extensions>
           <configuration>
             <maskClasses>
