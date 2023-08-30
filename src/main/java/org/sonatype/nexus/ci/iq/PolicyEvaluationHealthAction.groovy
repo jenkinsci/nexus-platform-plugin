@@ -45,7 +45,7 @@ class PolicyEvaluationHealthAction
 
   private final int moderatePolicyViolationCount
 
-  private final int grandfatheredPolicyViolationCount
+  private final int legacyPolicyViolationCount
 
   private final int totalComponentCount
 
@@ -78,7 +78,7 @@ class PolicyEvaluationHealthAction
     this.criticalPolicyViolationCount = policyEvaluationResult.criticalPolicyViolationCount
     this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
     this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
-    this.grandfatheredPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
+    this.legacyPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
     this.totalComponentCount = policyEvaluationResult.totalComponentCount
   }
 
@@ -118,8 +118,8 @@ class PolicyEvaluationHealthAction
     return affectedComponentCount
   }
 
-  int getGrandfatheredPolicyViolationCount() {
-    return grandfatheredPolicyViolationCount
+  int getLegacyPolicyViolationCount() {
+    return legacyPolicyViolationCount
   }
 
   int getTotalComponentCount() {

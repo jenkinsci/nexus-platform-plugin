@@ -14,7 +14,6 @@ package org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
 
 import org.sonatype.nexus.ci.iq.Messages
 import org.sonatype.nexus.ci.iq.PolicyEvaluationHealthAction
-import org.sonatype.nexus.ci.util.IqUtil
 
 def t = namespace(lib.JenkinsTagLib)
 
@@ -121,7 +120,7 @@ def policyUI = {
         span(class: 'iq-chiclet severe', action.severeComponentCount ? action.severeComponentCount : 0)
         span(class: 'iq-chiclet moderate', action.moderateComponentCount ? action.moderateComponentCount : 0)
         span(class: 'iq-chiclet-message',
-            Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+            Messages.IqPolicyEvaluation_LegacyViolations(action.legacyPolicyViolationCount))
       }
     }
     else {
@@ -139,7 +138,7 @@ def policyUI = {
             action.moderatePolicyViolationCount ? action.moderatePolicyViolationCount : 0)
       }
       div(class: 'p-iq-chiclet') {
-        span(Messages.IqPolicyEvaluation_NumberGrandfathered(action.grandfatheredPolicyViolationCount))
+        span(Messages.IqPolicyEvaluation_LegacyViolations(action.legacyPolicyViolationCount))
       }
     }
   }

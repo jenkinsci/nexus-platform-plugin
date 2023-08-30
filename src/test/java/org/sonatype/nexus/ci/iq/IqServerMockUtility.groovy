@@ -64,7 +64,7 @@ class IqServerMockUtility
         "criticalPolicyViolationCount": 46,
         "severePolicyViolationCount": 54,
         "moderatePolicyViolationCount": 3,
-        "grandfatheredPolicyViolationCount": 0
+        "legacyPolicyViolationCount": 0
         },
         "scanReceipt": {
         "scanId": "scanId",

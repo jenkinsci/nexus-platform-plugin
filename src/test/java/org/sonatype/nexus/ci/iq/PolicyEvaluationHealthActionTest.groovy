@@ -80,7 +80,7 @@ class PolicyEvaluationHealthActionTest
       buildNumber == 3
   }
   
-  def 'it returns the correct component and grandfathered policy violation counts'() {
+  def 'it returns the correct component and legacy policy violation counts'() {
     setup:
       def reportLink = 'http://localhost/reportLink'
       def policyEvaluation = new ApplicationPolicyEvaluation(1, 2, 3, 4, 11, 12, 13, 5, 1, [], reportLink)
@@ -88,7 +88,7 @@ class PolicyEvaluationHealthActionTest
           policyEvaluation)
       def response = Mock(StaplerResponse)
 
-    when: 'getting component and grandfathered policy violation counts'
+    when: 'getting component and legacy policy violation counts'
       def affectedComponentCount = healthAction.affectedComponentCount
       def criticalComponentCount = healthAction.criticalComponentCount
       def severeComponentCount = healthAction.severeComponentCount
@@ -96,7 +96,7 @@ class PolicyEvaluationHealthActionTest
       def criticalPolicyViolationCount = healthAction.criticalPolicyViolationCount
       def severePolicyViolationCount = healthAction.severePolicyViolationCount
       def moderatePolicyViolationCount = healthAction.moderatePolicyViolationCount
-      def grandfatheredPolicyViolationCount = healthAction.grandfatheredPolicyViolationCount
+      def legacyPolicyViolationCount = healthAction.legacyPolicyViolationCount
       def totalPolicyViolationCount = healthAction.totalPolicyViolationCount
       def urlName = healthAction.urlName
       def appId = healthAction.applicationId
@@ -111,7 +111,7 @@ class PolicyEvaluationHealthActionTest
       severePolicyViolationCount == 12
       moderatePolicyViolationCount == 13
       totalPolicyViolationCount == 36
-      grandfatheredPolicyViolationCount == 5
+      legacyPolicyViolationCount == 5
       urlName == reportLink
       appId == 'my-iq-app'
       iqStage == 'build'
