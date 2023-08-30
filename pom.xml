@@ -30,16 +30,10 @@
 
   <repositories>
     <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
+      <id>maven.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/releases/</url>
     </repository>
   </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <name>Nexus Platform Plugin</name>
   <url>https://github.com/jenkinsci/nexus-platform-plugin</url>
