@@ -423,7 +423,7 @@
       <plugin>
         <groupId>com.sonatype.clm</groupId>
         <artifactId>clm-maven-plugin</artifactId>
-        <version>2.47.4-01</version>
+        <version>2.47.3-01</version>
         <configuration>
           <skip>false</skip>
         </configuration>
