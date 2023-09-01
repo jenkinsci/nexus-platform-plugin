@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.17.514.va_6dfca_8a_f7a_c (September 01, 2023)
+------------------------------------------------
+- Add support for scanning SPDX version 2.3 files.
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release166(August2023)) for Nexus Lifecycle 1.166.0-01.
+
 3.16.510.v4d23e22cf563 (August 01, 2023)
 ------------------------------------------------
 - Add support for scanning Java class binaries produced by Java 19 and 20.
