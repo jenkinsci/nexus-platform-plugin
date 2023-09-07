@@ -53,6 +53,7 @@ class PipelineSyntaxIntegrationTest
     given: 'a pipleline project'
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       WebClient client = jenkins.createWebClient()
+      client.getOptions().setFetchPolyfillEnabled(true)
 
     when: 'the pipeline syntax page is loaded'
       HtmlOption policyEval = selectPolicyEvaluation(client, project)
@@ -80,6 +81,7 @@ class PipelineSyntaxIntegrationTest
       configureJenkins(jenkins.jenkins, wireMockRule.port())
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       WebClient client = jenkins.createWebClient()
+      client.getOptions().setFetchPolyfillEnabled(true)
 
     when: 'the pipeline syntax page is loaded'
       HtmlOption policyEval = selectPolicyEvaluation(client, project)
