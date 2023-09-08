@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+3.17.518.v9cb_3ff833922 (September 08, 2023)
+------------------------------------------------
+- Rename the feature previously known as Policy Violation Grandfathering to [Legacy Violations](https://help.sonatype.com/iqserver/managing/policy-management/managing-legacy-violations).
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release167(September2023)) for Nexus Lifecycle 1.167.0-01.
+
 3.17.514.va_6dfca_8a_f7a_c (September 01, 2023)
 ------------------------------------------------
 - Add support for scanning SPDX version 2.3 files.
