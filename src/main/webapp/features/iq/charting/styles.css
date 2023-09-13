@@ -21,3 +21,19 @@
   font-weight: bold;
   color: white;
 }
+
+[data-theme=dark] .apexcharts-title-text {
+  fill: white;
+}
+
+[data-theme=dark] .apexcharts-legend-text {
+  color: white !important;
+}
+
+[data-theme=dark] .apexcharts-xaxis-label {
+  fill: white;
+}
+
+[data-theme=dark] .apexcharts-yaxis-label {
+  fill: white;
+}
