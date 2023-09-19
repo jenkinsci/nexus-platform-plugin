@@ -12,8 +12,7 @@
     See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -25,7 +24,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>${revision}.${changelist}</version>
+  <version>3.17.600</version>
   <packaging>hpi</packaging>
 
   <repositories>
@@ -55,6 +54,7 @@
     <connection>scm:git:ssh://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/${gitHubRepo}.git</developerConnection>
     <url>https://github.com/${gitHubRepo}</url>
+    <tag>nexus-jenkins-plugin-3.17.600</tag>
   </scm>
   <distributionManagement>
     <repository>
@@ -89,8 +89,8 @@
     <jenkins.tools.bom.artifactId>bom-2.346.x</jenkins.tools.bom.artifactId>
     <jenkins.tools.bom.version>1580.v47b_429a_c853a</jenkins.tools.bom.version>
     <!-- The next two properties are needed to be able to run the unit tests in IDEA -->
-    <jenkins.addOpens/>
-    <jenkins.insaneHook/>
+    <jenkins.addOpens />
+    <jenkins.insaneHook />
 
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
@@ -528,8 +528,8 @@
         <plugins>
           <plugin>
             <artifactId>maven-release-plugin</artifactId>
-            <configuration>
-              <preparationGoals/>
+            <configuration combine.self="override">
+              <preparationGoals />
             </configuration>
           </plugin>
         </plugins>
