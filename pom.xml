@@ -56,6 +56,18 @@
     <developerConnection>scm:git:ssh://git@github.com/${gitHubRepo}.git</developerConnection>
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
+  <distributionManagement>
+    <repository>
+      <id>jenkins.repo.release</id>
+      <name>Repository for Releases</name>
+      <url>${jenkins.repo.path}/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>jenkins.repo.snapshot</id>
+      <name>Repository for Snapshots</name>
+      <url>${jenkins.repo.path}/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <developers>
     <developer>
@@ -504,6 +516,14 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>local</id>
+      <properties>
+        <!--maven variable which points to my Jenkins repository -->
+        <jenkins.repo.path>file:///C:/Users/etita/tmp/jenkins-plugin-repo</jenkins.repo.path>
+      </properties>
     </profile>
   </profiles>
 </project>
