@@ -524,6 +524,16 @@
         <!--maven variable which points to my Jenkins repository -->
         <jenkins.repo.path>file:///C:/Users/etita/tmp/jenkins-plugin-repo</jenkins.repo.path>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <preparationGoals/>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
