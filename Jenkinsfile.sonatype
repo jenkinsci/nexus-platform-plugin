@@ -61,5 +61,6 @@ mavenSnapshotPipeline(
   notificationSender: postHandler,
   deployBranch: 'main',
   iqPolicyEvaluation: iqPolicyEvaluation,
-  runFeatureBranchPolicyEvaluations: true
+  runFeatureBranchPolicyEvaluations: true,
+  skipSnapshotCheck: true
 )
