@@ -17,22 +17,16 @@ def makeArgs = [
     mavenProfiles                    : ['sonatype'],
     iqPolicyEvaluation               : { stage ->
       nexusPolicyEvaluation iqStage: stage, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']],
-          failBuildOnNetworkError: false
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], failBuildOnNetworkError: true
     },
     runFeatureBranchPolicyEvaluations: true,
     distFiles                        : [
         includes: [
-            'target/*.hpi',
-            'target/*.jar',
-            'target/*.pom'
-        ],
-        excludes: [
-            '**/*-sources.jar*',
-            '**/*-javadoc.jar*'
+            'target/nexus-jenkins-plugin.hpi',
+            'target/nexus-jenkins-plugin.jar',
+            'target/nexus-jenkins-plugin.pom'
         ]
     ],
-    additionalArtifacts              : '**/target/*-reports/**/*,**/target/site/**/*',
     performSonarAnalysis             : true,
     sonarAnalysisPullRequestsOnly    : false,
     testResults                      : ['**/target/*-reports/*.xml'],
