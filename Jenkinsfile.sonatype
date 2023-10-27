@@ -29,7 +29,6 @@ def makeArgs = [
     ],
     performSonarAnalysis             : true,
     sonarAnalysisPullRequestsOnly    : false,
-    testResults                      : ['**/target/*-reports/*.xml'],
     downstreamJobName                : 'extra-tests',
     prepare                          : { build, env ->
       githubStatusUpdate('pending')
