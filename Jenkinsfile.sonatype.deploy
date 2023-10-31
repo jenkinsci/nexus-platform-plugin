@@ -19,6 +19,9 @@ def jira = [
     credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
 ]
 
+def segments = parseVersionString(getVersionFromBuildName(env.releaseBuild_NAME))
+def confluenceVersion = segments.join('.')
+
 Closure iqPolicyEvaluation = {
   stage ->
     def commitId = getCommitId()
@@ -65,35 +68,6 @@ node('ubuntu-zion') {
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
     }
-    stage('Check plugin deployment') {
-      verifyDownloadLinks(
-          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
-                     version, '/nexus-jenkins-plugin-', version],
-          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
-      )
-    }
-    stage('Verify Staging Links') {
-      when {
-        expression { 'Staging' == params?.environment }
-      }
-      steps {
-        verifyDownloadLinks(
-            urlParts: ['https://download-staging.sonatype.com/repository/downloads-staging-group/ci/nexus-jenkins-plugin-', version],
-            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
-        )
-      }
-    }
-    stage('Verify Production Links') {
-      when {
-        expression { 'Production' == params?.environment }
-      }
-      steps {
-        verifyDownloadLinks(
-            urlParts: ['https://download.sonatype.com/clm/ci/nexus-jenkins-plugin-', version],
-            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
-        )
-      }
-    }
     stage('Evaluate policies') {
       runEvaluation(iqPolicyEvaluation, 'release')
     }
@@ -123,6 +97,71 @@ node('ubuntu-zion') {
 
         // Push code changes
         runSafely "git push origin HEAD:${branch}"
+      }
+    }
+    stage('Check plugin deployment') {
+      verifyDownloadLinks(
+          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
+                     version, '/nexus-jenkins-plugin-', version],
+          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+      )
+    }
+    stage('Export Variables') {
+      steps {
+        exportBuildVariables(params.environment, env.releaseBuild_NAME)
+      }
+    }
+    //Sonatype repo
+    stage('Checkout Publishing Scripts') {
+      steps {
+        checkoutPublishingScripts()
+      }
+    }
+    stage('Gather Build Artifacts') {
+      steps {
+        gatherBuildArtifacts('nexus-iq-jenkins-plugin/target/*.hpi*', env.releaseBuild_NUMBER)
+      }
+    }
+    stage('Publish') {
+      steps {
+        publishProduct('JenkinsPlugin')
+      }
+    }
+    stage('Update latest version table') {
+      steps {
+        updateLatestVersionTable(params.environment, 'IQ_JENKINS', getVersionFromBuildName(env.releaseBuild_NAME))
+      }
+    }
+    stage('Update nginx configuration') {
+      steps {
+        updateNginxConfig(params.environment)
+      }
+    }
+    stage('Purge Fastly Download Cache') {
+      steps {
+        build job: 'ops/fastly-purge-downloads', propagate: true, wait: true
+      }
+    }
+    stage('Verify Staging Links') {
+      when {
+        expression { 'Staging' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/repository/downloads-staging-group/ci/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+        )
+      }
+    }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/clm/ci/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+        )
       }
     }
     stage('Update Download and Compatibility Page') {
