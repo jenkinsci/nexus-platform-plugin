@@ -124,7 +124,7 @@ node('ubuntu-zion') {
     }
     stage('Publish') {
       steps {
-        publishProduct('JenkinsPlugin')
+        publishProduct('IQJenkinsPlugin')
       }
     }
     stage('Update latest version table') {
