@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
- * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * Copyright (c) 2011-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
@@ -11,7 +11,6 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
                   usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
   apiToken = env.GITHUB_API_PASSWORD
 }
-
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
 def jira = [
@@ -19,57 +18,56 @@ def jira = [
     credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
 ]
 
+// Get jenkins plugin version
+def version = getVersionFromBuildName(env.releaseBuild_NAME)
+
+def releaseNotes = params.releaseNotes
+def addIQReleaseNotesLink = params.addIQReleaseNotesLink
+def branch = 'main'
+
 def segments = parseVersionString(getVersionFromBuildName(env.releaseBuild_NAME))
 def confluenceVersion = segments.join('.')
 
-Closure iqPolicyEvaluation = {
-  stage ->
-    def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
-
-    try {
-      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-          "${evaluation.applicationCompositionReportUrl}"
-    }
-    catch (error) {
-      def evaluation = error.policyEvaluation
-      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-          "${evaluation.applicationCompositionReportUrl}"
-      throw error
-    }
-}
-
-node('ubuntu-zion') {
-  String version, releaseNotes, branch
-  boolean addIQReleaseNotesLink
-
-  try {
+pipeline {
+  agent { label 'ubuntu-zion' }
+  tools {
+    jdk 'Java 8'
+  }
+  options {
+    buildDiscarder(
+        logRotator(numToKeepStr: '100', artifactNumToKeepStr: '20')
+    )
+    timestamps()
+  }
+  stages {
     stage('Preparation') {
-      deleteDir()
+        deleteDir()
 
-      // Checkout and config
-      checkout scm
-      runSafely 'git config user.email sonatype-ci@sonatype.com'
-      runSafely 'git config user.name Sonatype CI'
+        // Checkout and config
+        checkout scm
+        runSafely 'git config user.email sonatype-ci@sonatype.com'
+        runSafely 'git config user.name Sonatype CI'
 
-      // Setup common variables
-      version = params.pluginVersion
-      releaseNotes = params.releaseNotes
-      addIQReleaseNotesLink = params.addIQReleaseNotesLink
-      branch = 'main'
-
-      // Check mandatory parameters
-      if (!version) {
-        error 'The Plugin Version is a mandatory parameter!'
-      }
-
-      // Update display name
-      currentBuild.displayName = "#${currentBuild.number} - ${version}"
+        // Check mandatory parameters
+        if (!version) {
+          error 'The Plugin Version is a mandatory parameter!'
+        }
     }
-    stage('Evaluate policies') {
-      runEvaluation(iqPolicyEvaluation, 'release')
+    stage('Export Variables') {
+      steps {
+        exportBuildVariables(params.environment, env.releaseBuild_NAME)
+      }
+    }
+    stage('Checkout Publishing Scripts') {
+      steps {
+        checkoutPublishingScripts()
+      }
+    }
+    stage('Gather Build Artifacts') {
+      steps {
+        //check this path for jenkins plugin
+        gatherBuildArtifacts('integrations/nexus-iq-jenkins-plugin/release', env.releaseBuild_NUMBER)
+      }
     }
     stage('Update and push code') {
       // Check if want to update the change log
@@ -99,44 +97,6 @@ node('ubuntu-zion') {
         runSafely "git push origin HEAD:${branch}"
       }
     }
-    stage('Check plugin deployment') {
-      verifyDownloadLinks(
-          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
-                     version, '/nexus-jenkins-plugin-', version],
-          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
-      )
-    }
-    stage('Export Variables') {
-      steps {
-        exportBuildVariables(params.environment, env.releaseBuild_NAME)
-      }
-    }
-    //Sonatype repo
-    stage('Checkout Publishing Scripts') {
-      steps {
-        checkoutPublishingScripts()
-      }
-    }
-    stage('Gather Build Artifacts') {
-      steps {
-        gatherBuildArtifacts('nexus-iq-jenkins-plugin/target/*.hpi*', env.releaseBuild_NUMBER)
-      }
-    }
-    stage('Publish') {
-      steps {
-        publishProduct('IQJenkinsPlugin')
-      }
-    }
-    stage('Update latest version table') {
-      steps {
-        updateLatestVersionTable(params.environment, 'IQ_JENKINS', getVersionFromBuildName(env.releaseBuild_NAME))
-      }
-    }
-    stage('Update nginx configuration') {
-      steps {
-        updateNginxConfig(params.environment)
-      }
-    }
     stage('Purge Fastly Download Cache') {
       steps {
         build job: 'ops/fastly-purge-downloads', propagate: true, wait: true
@@ -164,46 +124,22 @@ node('ubuntu-zion') {
         )
       }
     }
-    stage('Update Download and Compatibility Page') {
+    stage('Release JIRA Version') {
       when {
-        expression { 'Production' == params.environment }
+        expression { 'Production' == params?.environment }
       }
       steps {
-        updateDownloadPage([
-            [   pattern:     /<span class="jenkins-version">[^<]+<\/span>/,
-                replacement: /<span class="jenkins-version">${confluenceVersion}<\/span>/
-            ],
-            [   pattern:     /nexus-iq-bamboo-plugin-[-\d\.]+.obr/,
-                replacement: /nexus-iq-bamboo-plugin-${version}.obr/
-            ]
-        ])
+        // Release the Jira fix version for Integrations
+        jiraSetFixVersion(jira, version)
       }
     }
-    stage('Release Jira fix version') {
-      jiraSetFixVersion(jira, version)
+  }
+  post {
+    always {
+      notifyChat(currentBuild: currentBuild, env: env, room: 'ops-builds')
+      notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
+      deleteDir()
     }
-  }
-  finally {
-    postHandler(gitHub, currentBuild, env, branch)
-  }
-}
-
-String getCommitId() {
-  return runSafely ('git rev-parse HEAD', true)
-}
-
-void postHandler(gitHub, currentBuild, env, branch) {
-  def commitId = getCommitId()
-  if (currentBuild.currentResult == 'SUCCESS') {
-    gitHub.statusUpdate commitId, 'success', 'CI', 'Post Release Tasks Passed'
-  }
-  else {
-    gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
-  }
-
-  // only notify to #int-builds on the deploy branch
-  if(branch == 'main') {
-    notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
   }
 }
 
