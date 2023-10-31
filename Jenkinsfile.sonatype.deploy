@@ -1,0 +1,181 @@
+/*
+ * Copyright (c) 2016-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/nexus/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
+import com.sonatype.jenkins.pipeline.GitHub
+
+String apiToken = null
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+  apiToken = env.GITHUB_API_PASSWORD
+}
+
+GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
+
+def jira = [
+    versionPrefix: 'jenkins', project: 'CLM', projectId: '10002',
+    credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
+]
+
+Closure iqPolicyEvaluation = {
+  stage ->
+    def commitId = getCommitId()
+    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
+
+    try {
+      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
+      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
+          "${evaluation.applicationCompositionReportUrl}"
+    }
+    catch (error) {
+      def evaluation = error.policyEvaluation
+      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
+          "${evaluation.applicationCompositionReportUrl}"
+      throw error
+    }
+}
+
+node('ubuntu-zion') {
+  String version, releaseNotes, branch
+  boolean addIQReleaseNotesLink
+
+  try {
+    stage('Preparation') {
+      deleteDir()
+
+      // Checkout and config
+      checkout scm
+      runSafely 'git config user.email sonatype-ci@sonatype.com'
+      runSafely 'git config user.name Sonatype CI'
+
+      // Setup common variables
+      version = params.pluginVersion
+      releaseNotes = params.releaseNotes
+      addIQReleaseNotesLink = params.addIQReleaseNotesLink
+      branch = 'main'
+
+      // Check mandatory parameters
+      if (!version) {
+        error 'The Plugin Version is a mandatory parameter!'
+      }
+
+      // Update display name
+      currentBuild.displayName = "#${currentBuild.number} - ${version}"
+    }
+    stage('Check plugin deployment') {
+      verifyDownloadLinks(
+          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
+                     version, '/nexus-jenkins-plugin-', version],
+          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+      )
+    }
+    stage('Verify Staging Links') {
+      when {
+        expression { 'Staging' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/repository/downloads-staging-group/ci/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+        )
+      }
+    }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/clm/ci/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+        )
+      }
+    }
+    stage('Evaluate policies') {
+      runEvaluation(iqPolicyEvaluation, 'release')
+    }
+    stage('Update and push code') {
+      // Check if want to update the change log
+      if(!releaseNotes && !addIQReleaseNotesLink) {
+        echo 'Skipping change log update'
+        return
+      }
+
+      // Update change logs
+      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
+
+      // Add and commit changes
+      runSafely 'git add README.md'
+      runSafely "git commit -m 'Updating change logs for release ${version}'"
+
+      // Push changes
+      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+        // Setup remote url with credentials
+        runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+            '.com/jenkinsci/nexus-platform-plugin.git'
+
+        // Get latest commits to not have issues on push
+        runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+        // Push code changes
+        runSafely "git push origin HEAD:${branch}"
+      }
+    }
+    stage('Update Download and Compatibility Page') {
+      when {
+        expression { 'Production' == params.environment }
+      }
+      steps {
+        updateDownloadPage([
+            [   pattern:     /<span class="jenkins-version">[^<]+<\/span>/,
+                replacement: /<span class="jenkins-version">${confluenceVersion}<\/span>/
+            ],
+            [   pattern:     /nexus-iq-bamboo-plugin-[-\d\.]+.obr/,
+                replacement: /nexus-iq-bamboo-plugin-${version}.obr/
+            ]
+        ])
+      }
+    }
+    stage('Release Jira fix version') {
+      jiraSetFixVersion(jira, version)
+    }
+  }
+  finally {
+    postHandler(gitHub, currentBuild, env, branch)
+  }
+}
+
+String getCommitId() {
+  return runSafely ('git rev-parse HEAD', true)
+}
+
+void postHandler(gitHub, currentBuild, env, branch) {
+  def commitId = getCommitId()
+  if (currentBuild.currentResult == 'SUCCESS') {
+    gitHub.statusUpdate commitId, 'success', 'CI', 'Post Release Tasks Passed'
+  }
+  else {
+    gitHub.statusUpdate commitId, 'failure', 'CI', 'Post Release Tasks Failed'
+  }
+
+  // only notify to #int-builds on the deploy branch
+  if(branch == 'main') {
+    notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
+  }
+}
+
+void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
+  def newDate = new Date().format( 'MMMM dd, yyyy' )
+  updateReleaseNotesMarkdown(
+      header: 'Changelog\n=========',
+      versionHeader: "${version} (${newDate})",
+      separator: '------------------------------------------------',
+      releaseNotes: releaseNotes,
+      filePath: 'README.md',
+      addIQReleaseNotesLink: addIQReleaseNotesLink
+  )
+}
