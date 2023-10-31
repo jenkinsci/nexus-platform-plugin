@@ -78,7 +78,7 @@ class PolicyEvaluationHealthAction
     this.criticalPolicyViolationCount = policyEvaluationResult.criticalPolicyViolationCount
     this.severePolicyViolationCount = policyEvaluationResult.severePolicyViolationCount
     this.moderatePolicyViolationCount = policyEvaluationResult.moderatePolicyViolationCount
-    this.legacyPolicyViolationCount = policyEvaluationResult.grandfatheredPolicyViolationCount
+    this.legacyPolicyViolationCount = policyEvaluationResult.legacyViolationCount
     this.totalComponentCount = policyEvaluationResult.totalComponentCount
   }
 
