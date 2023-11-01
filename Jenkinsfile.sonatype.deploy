@@ -80,35 +80,6 @@ pipeline {
         updateNginxConfig(params.environment)
       }
     }
-
-    stage('Update and push code') {
-      // Check if want to update the change log
-      if(!releaseNotes && !addIQReleaseNotesLink) {
-        echo 'Skipping change log update'
-        return
-      }
-
-      // Update change logs
-      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
-
-      // Add and commit changes
-      runSafely 'git add README.md'
-      runSafely "git commit -m 'Updating change logs for release ${version}'"
-
-      // Push changes
-      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-        // Setup remote url with credentials
-        runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
-            '.com/jenkinsci/nexus-platform-plugin.git'
-
-        // Get latest commits to not have issues on push
-        runSafely "git pull --no-rebase --no-edit origin ${branch}"
-
-        // Push code changes
-        runSafely "git push origin HEAD:${branch}"
-      }
-    }
     stage('Purge Fastly Download Cache') {
       steps {
         build job: 'ops/fastly-purge-downloads', propagate: true, wait: true
@@ -134,6 +105,34 @@ pipeline {
             urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
             urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
         )
+      }
+    }
+    stage('Update changelog') {
+      // Check if want to update the change log
+      if(!releaseNotes && !addIQReleaseNotesLink) {
+        echo 'Skipping change log update'
+        return
+      }
+
+      // Update change logs
+      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
+
+      // Add and commit changes
+      runSafely 'git add README.md'
+      runSafely "git commit -m 'Updating change logs for release ${version}'"
+
+      // Push changes
+      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+        // Setup remote url with credentials
+        runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+            '.com/jenkinsci/nexus-platform-plugin.git'
+
+        // Get latest commits to not have issues on push
+        runSafely "git pull --no-rebase --no-edit origin ${branch}"
+
+        // Push code changes
+        runSafely "git push origin HEAD:${branch}"
       }
     }
     stage('Release JIRA Version') {
