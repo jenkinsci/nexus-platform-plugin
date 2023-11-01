@@ -92,10 +92,12 @@
 
     <public.serverId>sonatype-public</public.serverId>
     <public.nexusUrl>https://repository.sonatype.org</public.nexusUrl>
+
     <public-release.serverId>${public.serverId}</public-release.serverId>
     <public-release.url>
       https://repository.sonatype.org/service/local/staging/deploy/maven2
     </public-release.url>
+
     <public-snapshot.serverId>${public.serverId}</public-snapshot.serverId>
     <public-snapshot.url>
       https://repository.sonatype.org/content/repositories/snapshots
@@ -104,6 +106,7 @@
     <staging.serverId>${public.serverId}</staging.serverId>
     <staging.nexusUrl>${public.nexusUrl}</staging.nexusUrl>
     <staging.progressTimeout>15</staging.progressTimeout>
+    <staging.autoReleaseAfterClose>false</staging.autoReleaseAfterClose>
 
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.effort>Max</findbugs.effort>
@@ -467,30 +470,19 @@
           <url>${public-snapshot.url}</url>
         </snapshotRepository>
       </distributionManagement>
-    </profile>
-    <profile>
-      <id>sonatype</id>
       <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.sonatype.plugins</groupId>
+              <artifactId>nexus-staging-maven-plugin</artifactId>
+              <configuration>
+                <updateReleaseInfo>true</updateReleaseInfo>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
         <plugins>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.8</version>
-            <extensions>true</extensions>
-            <configuration>
-              <nexusUrl>${staging.nexusUrl}</nexusUrl>
-              <serverId>${staging.serverId}</serverId>
-              <altStagingDirectory>${staging.directory}</altStagingDirectory>
-              <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-              <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
-              <updateReleaseInfo>true</updateReleaseInfo>
-              <tags>
-                <localUsername>${user.name}</localUsername>
-                <javaVersion>${java.version}</javaVersion>
-              </tags>
-            </configuration>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
@@ -506,6 +498,31 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>sonatype</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <extensions>true</extensions>
+            <configuration>
+              <nexusUrl>${staging.nexusUrl}</nexusUrl>
+              <serverId>${staging.serverId}</serverId>
+              <altStagingDirectory>${staging.directory}</altStagingDirectory>
+              <autoReleaseAfterClose>${staging.autoReleaseAfterClose}</autoReleaseAfterClose>
+              <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
+              <stagingProgressTimeoutMinutes>${staging.progressTimeout}</stagingProgressTimeoutMinutes>
+              <tags>
+                <localUsername>${user.name}</localUsername>
+                <javaVersion>${java.version}</javaVersion>
+              </tags>
+            </configuration>
           </plugin>
         </plugins>
       </build>
