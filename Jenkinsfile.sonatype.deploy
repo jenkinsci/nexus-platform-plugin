@@ -25,9 +25,6 @@ def releaseNotes = params.releaseNotes
 def addIQReleaseNotesLink = params.addIQReleaseNotesLink
 def branch = 'main'
 
-def segments = parseVersionString(getVersionFromBuildName(env.releaseBuild_NAME))
-def confluenceVersion = segments.join('.')
-
 pipeline {
   agent { label 'ubuntu-zion' }
   tools {
