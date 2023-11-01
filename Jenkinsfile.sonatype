@@ -5,6 +5,9 @@
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
 
+boolean releaseBuild = (currentBuild.fullProjectName =~ /.*\/release$/)
+echo "releaseBuild = $releaseBuild for ${currentBuild.fullProjectName}"
+
 def makeArgs = [
     deployBranch                     : 'main',
     agentLabel                       : 'ubuntu-zion',
@@ -14,7 +17,6 @@ def makeArgs = [
     usePMD                           : false,
     useCheckstyle                    : false,
     mavenOptions                     : '-DskipTests',
-    mavenProfiles                    : ['sonatype'],
     iqPolicyEvaluation               : { stage ->
       nexusPolicyEvaluation iqStage: stage, iqApplication: 'nexus-platform-plugin',
           iqScanPatterns: [[scanPattern: 'scan_nothing']], failBuildOnNetworkError: true
@@ -29,12 +31,17 @@ def makeArgs = [
     ],
     performSonarAnalysis             : true,
     sonarAnalysisPullRequestsOnly    : false,
-    downstreamJobName                : 'extra-tests',
-    prepare                          : { build, env ->
-      githubStatusUpdate('pending')
-    },
     releaseRetentionPolicy           : RetentionPolicy.TEN_BUILDS,
     skipSnapshotCheck                : true
 ]
+
+if (!releaseBuild) {
+  makeArgs = [
+      downstreamJobName: 'extra-tests',
+      prepare: { build, env ->
+        githubStatusUpdate('pending')
+      }
+  ] + makeArgs
+}
 
 make(makeArgs)
