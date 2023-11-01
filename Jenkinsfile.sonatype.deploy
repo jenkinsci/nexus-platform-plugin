@@ -63,7 +63,7 @@ pipeline {
     stage('Gather Build Artifacts') {
       steps {
         //check this path for jenkins plugin
-        gatherBuildArtifacts('integrations/nexus-jenkins-plugin/release', env.releaseBuild_NUMBER)
+        gatherBuildArtifacts('integrations/jenkins/release', env.releaseBuild_NUMBER)
       }
     }
     stage('Publish') {
