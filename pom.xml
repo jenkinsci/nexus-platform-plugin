@@ -460,16 +460,6 @@
 
     <profile>
       <id>release</id>
-      <distributionManagement>
-        <repository>
-          <id>${public-release.serverId}</id>
-          <url>${public-release.url}</url>
-        </repository>
-        <snapshotRepository>
-          <id>${public-snapshot.serverId}</id>
-          <url>${public-snapshot.url}</url>
-        </snapshotRepository>
-      </distributionManagement>
       <build>
         <pluginManagement>
           <plugins>
@@ -504,12 +494,22 @@
     </profile>
     <profile>
       <id>sonatype</id>
+      <distributionManagement>
+        <repository>
+          <id>${public-release.serverId}</id>
+          <url>${public-release.url}</url>
+        </repository>
+        <snapshotRepository>
+          <id>${public-snapshot.serverId}</id>
+          <url>${public-snapshot.url}</url>
+        </snapshotRepository>
+      </distributionManagement>
       <build>
         <plugins>
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.8</version>
+            <version>1.6.13</version>
             <extensions>true</extensions>
             <configuration>
               <nexusUrl>${staging.nexusUrl}</nexusUrl>

@@ -16,7 +16,6 @@ def makeArgs = [
     mavenVersion                     : 'Maven 3.6.x',
     usePMD                           : false,
     useCheckstyle                    : false,
-    mavenSettingsFile                : 'rsc-private-settings',
     mavenOptions                     : '-DskipTests',
     mavenProfiles                    : ['sonatype'],
     iqPolicyEvaluation               : { stage ->
