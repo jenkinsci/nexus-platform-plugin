@@ -4,63 +4,37 @@
  * "Sonatype" is a trademark of Sonatype, Inc.
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared']) _
-import com.sonatype.jenkins.pipeline.GitHub
 
-String apiToken = null
-withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                  usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-  apiToken = env.GITHUB_API_PASSWORD
-}
+def makeArgs = [
+    deployBranch                     : 'main',
+    agentLabel                       : 'ubuntu-zion',
+    useEventSpy                      : false,
+    javaVersion                      : 'Java 8',
+    mavenVersion                     : 'Maven 3.6.x',
+    usePMD                           : false,
+    useCheckstyle                    : false,
+    mavenOptions                     : '-DskipTests',
+    mavenProfiles                    : ['sonatype'],
+    iqPolicyEvaluation               : { stage ->
+      nexusPolicyEvaluation iqStage: stage, iqApplication: 'nexus-platform-plugin',
+          iqScanPatterns: [[scanPattern: 'scan_nothing']], failBuildOnNetworkError: true
+    },
+    runFeatureBranchPolicyEvaluations: true,
+    distFiles                        : [
+        includes: [
+            'target/nexus-jenkins-plugin.hpi',
+            'target/nexus-jenkins-plugin.jar',
+            'target/nexus-jenkins-plugin.pom'
+        ]
+    ],
+    performSonarAnalysis             : true,
+    sonarAnalysisPullRequestsOnly    : false,
+    downstreamJobName                : 'extra-tests',
+    prepare                          : { build, env ->
+      githubStatusUpdate('pending')
+    },
+    releaseRetentionPolicy           : RetentionPolicy.TEN_BUILDS,
+    skipSnapshotCheck                : true
+]
 
-GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
-
-String getCommitId() {
-  return runSafely ('git rev-parse HEAD', true)
-}
-
-Closure postHandler = {
-  currentBuild, env ->
-    def commitId = getCommitId()
-    if (currentBuild.currentResult == 'SUCCESS') {
-      gitHub.statusUpdate commitId, 'success', 'CI', 'CI Passed'
-    }
-    else {
-      gitHub.statusUpdate commitId, 'failure', 'CI', 'CI Failed'
-    }
-
-    // only notify to #int-builds on the deploy branch
-    if(isDeployBranch(env, 'main')) {
-      notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
-    }
-}
-
-Closure iqPolicyEvaluation = {
-  stage ->
-    def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
-
-    try {
-      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-          "${evaluation.applicationCompositionReportUrl}"
-    }
-    catch (error) {
-      def evaluation = error.policyEvaluation
-      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-          "${evaluation.applicationCompositionReportUrl}"
-      throw error
-    }
-}
-
-mavenSnapshotPipeline(
-  mavenOptions: '-D skipTests',
-  mavenVersion: 'Maven 3.6.x',
-  mavenProfiles: ['sonatype'],
-  downstreamJobName: 'extra-tests',
-  notificationSender: postHandler,
-  deployBranch: 'main',
-  iqPolicyEvaluation: iqPolicyEvaluation,
-  runFeatureBranchPolicyEvaluations: true,
-  skipSnapshotCheck: true
-)
+make(makeArgs)
