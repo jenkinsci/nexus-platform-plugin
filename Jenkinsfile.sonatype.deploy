@@ -66,9 +66,25 @@ pipeline {
     stage('Gather Build Artifacts') {
       steps {
         //check this path for jenkins plugin
-        gatherBuildArtifacts('integrations/nexus-iq-jenkins-plugin/release', env.releaseBuild_NUMBER)
+        gatherBuildArtifacts('integrations/nexus-jenkins-plugin/release', env.releaseBuild_NUMBER)
       }
     }
+    stage('Publish') {
+      steps {
+        publishProduct('NXJenkinsPlugin')
+      }
+    }
+    stage('Update latest version table') {
+      steps {
+        updateLatestVersionTable(params.environment, 'INT_JENKINS', getVersionFromBuildName(env.releaseBuild_NAME))
+      }
+    }
+    stage('Update nginx configuration') {
+      steps {
+        updateNginxConfig(params.environment)
+      }
+    }
+
     stage('Update and push code') {
       // Check if want to update the change log
       if(!releaseNotes && !addIQReleaseNotesLink) {
@@ -108,7 +124,7 @@ pipeline {
       }
       steps {
         verifyDownloadLinks(
-            urlParts: ['https://download-staging.sonatype.com/repository/downloads-staging-group/ci/nexus-jenkins-plugin-', version],
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
             urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
         )
       }
@@ -119,7 +135,7 @@ pipeline {
       }
       steps {
         verifyDownloadLinks(
-            urlParts: ['https://download.sonatype.com/clm/ci/nexus-jenkins-plugin-', version],
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
             urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
         )
       }
