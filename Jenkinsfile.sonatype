@@ -17,6 +17,7 @@ def makeArgs = [
     usePMD                           : false,
     useCheckstyle                    : false,
     mavenOptions                     : '-DskipTests',
+    mavenProfiles                    : ['sonatype'],
     iqPolicyEvaluation               : { stage ->
       nexusPolicyEvaluation iqStage: stage, iqApplication: 'nexus-platform-plugin',
           iqScanPatterns: [[scanPattern: 'scan_nothing']], failBuildOnNetworkError: true

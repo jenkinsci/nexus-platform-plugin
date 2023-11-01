@@ -467,6 +467,9 @@
           <url>${public-snapshot.url}</url>
         </snapshotRepository>
       </distributionManagement>
+    </profile>
+    <profile>
+      <id>sonatype</id>
       <build>
         <plugins>
           <plugin>
