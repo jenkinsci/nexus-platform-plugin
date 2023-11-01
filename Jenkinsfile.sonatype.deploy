@@ -62,7 +62,6 @@ pipeline {
     }
     stage('Gather Build Artifacts') {
       steps {
-        //check this path for jenkins plugin
         gatherBuildArtifacts('integrations/jenkins/release', env.releaseBuild_NUMBER)
       }
     }
