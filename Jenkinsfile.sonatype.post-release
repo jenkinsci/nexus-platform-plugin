@@ -14,30 +14,6 @@ withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integr
 
 GitHub gitHub = new GitHub(this, 'jenkinsci/nexus-platform-plugin', apiToken)
 
-def jira = [
-    versionPrefix: 'jenkins', project: 'CLM', projectId: '10002',
-    credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
-]
-
-Closure iqPolicyEvaluation = {
-  stage ->
-    def commitId = getCommitId()
-    gitHub.statusUpdate commitId, 'pending', 'analysis', 'Nexus Lifecycle Analysis is running'
-
-    try {
-      def evaluation = nexusPolicyEvaluation failBuildOnNetworkError: false, iqApplication: 'nexus-platform-plugin',
-          iqScanPatterns: [[scanPattern: 'scan_nothing']], iqStage: stage, jobCredentialsId: ''
-      gitHub.statusUpdate commitId, 'success', 'analysis', 'Nexus Lifecycle Analysis passed',
-          "${evaluation.applicationCompositionReportUrl}"
-    }
-    catch (error) {
-      def evaluation = error.policyEvaluation
-      gitHub.statusUpdate commitId, 'failure', 'analysis', 'Nexus Lifecycle Analysis failed',
-          "${evaluation.applicationCompositionReportUrl}"
-      throw error
-    }
-}
-
 node('ubuntu-zion') {
   String version, releaseNotes, branch
   boolean addIQReleaseNotesLink
@@ -65,17 +41,7 @@ node('ubuntu-zion') {
       // Update display name
       currentBuild.displayName = "#${currentBuild.number} - ${version}"
     }
-    stage('Check plugin deployment') {
-      verifyDownloadLinks(
-          urlParts: ['https://repo.jenkins-ci.org/artifactory/releases/org/sonatype/nexus/ci/nexus-jenkins-plugin/',
-                     version, '/nexus-jenkins-plugin-', version],
-          urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
-      )
-    }
-    stage('Evaluate policies') {
-      runEvaluation(iqPolicyEvaluation, 'release')
-    }
-    stage('Update and push code') {
+    stage('Update changelog') {
       // Check if want to update the change log
       if(!releaseNotes && !addIQReleaseNotesLink) {
         echo 'Skipping change log update'
@@ -102,9 +68,6 @@ node('ubuntu-zion') {
         // Push code changes
         runSafely "git push origin HEAD:${branch}"
       }
-    }
-    stage('Release Jira fix version') {
-      jiraSetFixVersion(jira, version)
     }
   }
   finally {

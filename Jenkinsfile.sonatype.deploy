@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) 2011-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared', 'bnr-pipeline-library']) _
+
+def jira = [
+    versionPrefix: 'jenkins', project: 'CLM', projectId: '10002',
+    credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
+]
+
+// Get jenkins plugin version
+def version = getVersionFromBuildName(env.releaseBuild_NAME)
+
+pipeline {
+  agent { label 'ubuntu-zion' }
+  tools {
+    jdk 'Java 8'
+  }
+  options {
+    buildDiscarder(
+        logRotator(numToKeepStr: '100', artifactNumToKeepStr: '20')
+    )
+    timestamps()
+  }
+  stages {
+    stage('Export Variables') {
+      steps {
+        exportBuildVariables(params.environment, env.releaseBuild_NAME)
+      }
+    }
+    stage('Checkout Publishing Scripts') {
+      steps {
+        checkoutPublishingScripts()
+      }
+    }
+    stage('Gather Build Artifacts') {
+      steps {
+        gatherBuildArtifacts('integrations/jenkins/release', env.releaseBuild_NUMBER)
+      }
+    }
+    stage('Publish') {
+      steps {
+        publishProduct('NXJenkinsPlugin')
+      }
+    }
+    stage('Update latest version table') {
+      steps {
+        updateLatestVersionTable(params.environment, 'INT_JENKINS', getVersionFromBuildName(env.releaseBuild_NAME))
+      }
+    }
+    stage('Update nginx configuration') {
+      steps {
+        updateNginxConfig(params.environment)
+      }
+    }
+    stage('Purge Fastly Download Cache') {
+      steps {
+        build job: 'ops/fastly-purge-downloads', propagate: true, wait: true
+      }
+    }
+    stage('Verify Staging Links') {
+      when {
+        expression { 'Staging' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi']
+        )
+      }
+    }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi']
+        )
+      }
+    }
+    stage('Release JIRA Version') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        // Release the Jira fix version for Integrations
+        jiraSetFixVersion(jira, version)
+      }
+    }
+  }
+  post {
+    always {
+      notifyChat(currentBuild: currentBuild, env: env, room: 'ops-builds')
+      notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
+      deleteDir()
+    }
+  }
+}
