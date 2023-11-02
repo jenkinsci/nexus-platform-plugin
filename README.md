@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+release-3.18.0-03 (November 02, 2023)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release169(October2023)) for Nexus Lifecycle 1.169.0-01.
+
 3.17.518.v9cb_3ff833922 (September 08, 2023)
 ------------------------------------------------
 - Rename the feature previously known as Policy Violation Grandfathering to [Legacy Violations](https://help.sonatype.com/iqserver/managing/policy-management/managing-legacy-violations).
