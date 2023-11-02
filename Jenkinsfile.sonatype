@@ -25,9 +25,9 @@ def makeArgs = [
     runFeatureBranchPolicyEvaluations: true,
     distFiles                        : [
         includes: [
-            'target/nexus-jenkins-plugin.hpi',
-            'target/nexus-jenkins-plugin.jar',
-            'target/nexus-jenkins-plugin.pom'
+            'target/nexus-jenkins-plugin-*.hpi*',
+            'target/nexus-jenkins-plugin-*.jar*',
+            'target/nexus-jenkins-plugin-*.pom*'
         ]
     ],
     performSonarAnalysis             : true,

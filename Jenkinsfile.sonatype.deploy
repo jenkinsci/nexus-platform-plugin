@@ -13,10 +13,6 @@ def jira = [
 // Get jenkins plugin version
 def version = getVersionFromBuildName(env.releaseBuild_NAME)
 
-def releaseNotes = params.releaseNotes
-def addIQReleaseNotesLink = params.addIQReleaseNotesLink
-def branch = 'main'
-
 pipeline {
   agent { label 'ubuntu-zion' }
   tools {
@@ -29,23 +25,6 @@ pipeline {
     timestamps()
   }
   stages {
-    stage('Preparation') {
-      steps {
-        script {
-          deleteDir()
-
-          // Checkout and config
-          checkout scm
-          runSafely 'git config user.email sonatype-ci@sonatype.com'
-          runSafely 'git config user.name Sonatype CI'
-
-          // Check mandatory parameters
-          if (!version) {
-            error 'The Plugin Version is a mandatory parameter!'
-          }
-        }
-      }
-    }
     stage('Export Variables') {
       steps {
         exportBuildVariables(params.environment, env.releaseBuild_NAME)
@@ -88,7 +67,7 @@ pipeline {
       steps {
         verifyDownloadLinks(
             urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
-            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+            urlSuffixes: ['.hpi']
         )
       }
     }
@@ -99,40 +78,8 @@ pipeline {
       steps {
         verifyDownloadLinks(
             urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
-            urlSuffixes: ['.hpi', '.pom', '.jar', '-sources.jar']
+            urlSuffixes: ['.hpi']
         )
-      }
-    }
-    stage('Update changelog') {
-      steps {
-        script {
-          // Check if want to update the change log
-          if(!releaseNotes && !addIQReleaseNotesLink) {
-            echo 'Skipping change log update'
-            return
-          }
-
-          // Update change logs
-          updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
-
-          // Add and commit changes
-          runSafely 'git add README.md'
-          runSafely "git commit -m 'Updating change logs for release ${version}'"
-
-          // Push changes
-          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                            usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-            // Setup remote url with credentials
-            runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
-                '.com/jenkinsci/nexus-platform-plugin.git'
-
-            // Get latest commits to not have issues on push
-            runSafely "git pull --no-rebase --no-edit origin ${branch}"
-
-            // Push code changes
-            runSafely "git push origin HEAD:${branch}"
-          }
-        }
       }
     }
     stage('Release JIRA Version') {
@@ -152,16 +99,4 @@ pipeline {
       deleteDir()
     }
   }
-}
-
-void updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink) {
-  def newDate = new Date().format( 'MMMM dd, yyyy' )
-  updateReleaseNotesMarkdown(
-      header: 'Changelog\n=========',
-      versionHeader: "${version} (${newDate})",
-      separator: '------------------------------------------------',
-      releaseNotes: releaseNotes,
-      filePath: 'README.md',
-      addIQReleaseNotesLink: addIQReleaseNotesLink
-  )
 }
