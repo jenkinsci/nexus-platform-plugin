@@ -31,17 +31,21 @@ pipeline {
   }
   stages {
     stage('Preparation') {
-        deleteDir()
+      steps {
+        script {
+          deleteDir()
 
-        // Checkout and config
-        checkout scm
-        runSafely 'git config user.email sonatype-ci@sonatype.com'
-        runSafely 'git config user.name Sonatype CI'
+          // Checkout and config
+          checkout scm
+          runSafely 'git config user.email sonatype-ci@sonatype.com'
+          runSafely 'git config user.name Sonatype CI'
 
-        // Check mandatory parameters
-        if (!version) {
-          error 'The Plugin Version is a mandatory parameter!'
+          // Check mandatory parameters
+          if (!version) {
+            error 'The Plugin Version is a mandatory parameter!'
+          }
         }
+      }
     }
     stage('Export Variables') {
       steps {
@@ -101,31 +105,35 @@ pipeline {
       }
     }
     stage('Update changelog') {
-      // Check if want to update the change log
-      if(!releaseNotes && !addIQReleaseNotesLink) {
-        echo 'Skipping change log update'
-        return
-      }
+      steps {
+        script {
+          // Check if want to update the change log
+          if(!releaseNotes && !addIQReleaseNotesLink) {
+            echo 'Skipping change log update'
+            return
+          }
 
-      // Update change logs
-      updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
+          // Update change logs
+          updateChangeLogs(releaseNotes, version, addIQReleaseNotesLink)
 
-      // Add and commit changes
-      runSafely 'git add README.md'
-      runSafely "git commit -m 'Updating change logs for release ${version}'"
+          // Add and commit changes
+          runSafely 'git add README.md'
+          runSafely "git commit -m 'Updating change logs for release ${version}'"
 
-      // Push changes
-      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
-                        usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
-        // Setup remote url with credentials
-        runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
-            '.com/jenkinsci/nexus-platform-plugin.git'
+          // Push changes
+          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'integrations-github-api',
+                            usernameVariable: 'GITHUB_API_USERNAME', passwordVariable: 'GITHUB_API_PASSWORD']]) {
+            // Setup remote url with credentials
+            runSafely "git remote set-url origin https://${env.GITHUB_API_USERNAME}:${env.GITHUB_API_PASSWORD}@github" +
+                '.com/jenkinsci/nexus-platform-plugin.git'
 
-        // Get latest commits to not have issues on push
-        runSafely "git pull --no-rebase --no-edit origin ${branch}"
+            // Get latest commits to not have issues on push
+            runSafely "git pull --no-rebase --no-edit origin ${branch}"
 
-        // Push code changes
-        runSafely "git push origin HEAD:${branch}"
+            // Push code changes
+            runSafely "git push origin HEAD:${branch}"
+          }
+        }
       }
     }
     stage('Release JIRA Version') {
