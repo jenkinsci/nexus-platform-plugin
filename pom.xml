@@ -340,6 +340,8 @@
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
           <configuration>
+            <!-- needed for Sonatype internal releases; remove it if we go back to Jenkins CI (external) builds -->
+            <hpiName>${project.artifactId}-${project.version}</hpiName>
             <maskClasses>
               com.fasterxml.jackson.
               org.cyclonedx.
