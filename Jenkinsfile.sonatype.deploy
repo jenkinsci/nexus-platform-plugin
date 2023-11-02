@@ -63,7 +63,6 @@ pipeline {
     }
     stage('Publish') {
       steps {
-        sh 'groovy -version'
         publishProduct('NXJenkinsPlugin')
       }
     }
