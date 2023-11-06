@@ -24,6 +24,7 @@ import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
+import org.kohsuke.stapler.verb.POST
 
 class NxiqConfiguration
     implements Describable<NxiqConfiguration>
@@ -83,6 +84,7 @@ class NxiqConfiguration
       Messages.NxiqConfiguration_DisplayName()
     }
 
+    @POST
     FormValidation doCheckDisplayName(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxiqConfiguration config : globalConfigurations.iqConfigs) {
@@ -93,6 +95,7 @@ class NxiqConfiguration
       return FormUtil.validateNotEmpty(value, 'Display Name is required')
     }
 
+    @POST
     FormValidation doCheckId(@QueryParameter String value, @QueryParameter String internalId) {
       def globalConfigurations = GlobalNexusConfiguration.globalNexusConfiguration
       for (NxiqConfiguration config : globalConfigurations.iqConfigs) {
@@ -108,6 +111,7 @@ class NxiqConfiguration
     }
 
     @SuppressWarnings('unused')
+    @POST
     FormValidation doCheckServerUrl(@QueryParameter String value) {
       def validation = FormUtil.validateUrl(value)
       if (validation.kind == Kind.OK) {
@@ -123,6 +127,7 @@ class NxiqConfiguration
     }
 
     @SuppressWarnings('unused')
+    @POST
     FormValidation doVerifyCredentials(
         @QueryParameter String serverUrl,
         @QueryParameter String credentialsId) throws IOException

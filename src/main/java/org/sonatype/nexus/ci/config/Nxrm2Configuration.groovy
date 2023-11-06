@@ -20,6 +20,7 @@ import hudson.Extension
 import hudson.util.FormValidation
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
+import org.kohsuke.stapler.verb.POST
 
 import static hudson.util.FormValidation.error
 import static hudson.util.FormValidation.ok
@@ -58,6 +59,7 @@ class Nxrm2Configuration
     }
 
     @Override
+    @POST
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
