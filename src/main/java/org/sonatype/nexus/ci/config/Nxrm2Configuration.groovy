@@ -18,6 +18,7 @@ import org.sonatype.nexus.ci.config.NxrmConfiguration.NxrmDescriptor
 
 import hudson.Extension
 import hudson.util.FormValidation
+import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
 import org.kohsuke.stapler.verb.POST
@@ -63,6 +64,8 @@ class Nxrm2Configuration
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER)
+
       try {
         def repositories = getApplicableRepositories(serverUrl, credentialsId)
 
