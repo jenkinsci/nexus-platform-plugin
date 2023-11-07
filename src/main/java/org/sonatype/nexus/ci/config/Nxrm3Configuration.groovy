@@ -17,8 +17,10 @@ import com.sonatype.nexus.api.exception.RepositoryManagerException
 import groovy.util.logging.Log
 import hudson.Extension
 import hudson.util.FormValidation
+import jenkins.model.Jenkins
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.QueryParameter
+import org.kohsuke.stapler.verb.POST
 
 import static hudson.util.FormValidation.error
 import static hudson.util.FormValidation.ok
@@ -80,9 +82,12 @@ class Nxrm3Configuration
     }
 
     @Override
+    @POST
     FormValidation doVerifyCredentials(@QueryParameter String serverUrl, @QueryParameter String credentialsId)
         throws IOException
     {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER)
+
       def repositories
       def badVersionMsg = ''
 
