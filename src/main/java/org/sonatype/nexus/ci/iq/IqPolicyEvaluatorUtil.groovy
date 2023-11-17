@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.nio.file.Path
+
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
 
@@ -103,7 +105,8 @@ class IqPolicyEvaluatorUtil
                 envVars)
         def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
         if (repositoryUrl != null) {
-          iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl)
+          def repositoryPath = Path.of(workspace.getRemote(),".git").toString()
+          iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl, repositoryPath)
         }
 
         File workDirectory = new File(workspace.getRemote())
