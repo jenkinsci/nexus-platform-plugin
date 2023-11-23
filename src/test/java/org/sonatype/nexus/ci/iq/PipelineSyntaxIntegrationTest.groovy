@@ -108,13 +108,13 @@ class PipelineSyntaxIntegrationTest
       clicked.getFirstByXPath("//label[contains(text(),'${IqPolicyEvaluation_SelectApplication()}')]")
 
     and: 'advanced properties are available in the page (if not always visible)'
-      String xml = clicked.asXml()
-      xml.contains(Messages.IqPolicyEvaluation_ScanPatterns())    
-      xml.contains(Messages.IqPolicyEvaluation_ModuleExcludes())    
-      xml.contains(Messages.IqPolicyEvaluation_FailOnNetwork())    
-      xml.contains(Messages.IqPolicyEvaluation_JobSpecificCredentials())    
-      xml.contains('name="_.enableDebugLogging" type="checkbox"')
-      xml.contains(Messages.IqPolicyEvaluation_AdvancedProperties())    
+      String textContent = clicked.getDocumentElement().textContent
+      textContent.contains(Messages.IqPolicyEvaluation_ScanPatterns())
+      textContent.contains(Messages.IqPolicyEvaluation_ModuleExcludes())
+      textContent.contains(Messages.IqPolicyEvaluation_FailOnNetwork())
+      textContent.contains(Messages.IqPolicyEvaluation_JobSpecificCredentials())
+      textContent.contains('Enable debug')
+      textContent.contains(Messages.IqPolicyEvaluation_AdvancedProperties())
   }
 
   private HtmlOption selectPolicyEvaluation(WebClient client, WorkflowJob project) {
