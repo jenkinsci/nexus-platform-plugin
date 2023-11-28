@@ -706,7 +706,7 @@ class IqPolicyEvaluatorTest
       1 * RemoteRepositoryUrlFinderFactory.getRepositoryUrlFinder(workspace, _, _, 'appId', _) >>
           remoteRepositoryUrlFinder
       1 * channel.call(remoteRepositoryUrlFinder) >> repositoryUrl
-      1 * iqClient.addOrUpdateSourceControl('appId', repositoryUrl)
+      1 * iqClient.addOrUpdateSourceControl('appId', repositoryUrl, _)
 
     then: 'evaluates the result'
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _) >> evaluationResult
