@@ -7,7 +7,7 @@
 
 String agentLabel = 'ubuntu-zion'
 
-def runTests(String javaVersion = 'Java 8', String mavenExtra = '') {
+def runTests(String javaVersion = 'OpenJDK 11', String mavenExtra = '') {
   def config = mavenCommon(
       javaVersion: javaVersion,
       mavenVersion: 'Maven 3.6.x',
@@ -33,10 +33,10 @@ pipeline {
   stages {
     stage('Parallel Test Groups') {
       parallel {
-        stage('Jenkins 2.346.3 - Java 8') {
+        stage('Jenkins 2.346.3 - Java 11') {
           agent { label agentLabel }
           steps {
-            runTests('Java 8')
+            runTests('OpenJDK 11')
           }
           post {
             always {

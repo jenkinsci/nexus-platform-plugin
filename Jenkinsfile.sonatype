@@ -12,7 +12,7 @@ def makeArgs = [
     deployBranch                     : 'main',
     agentLabel                       : 'ubuntu-zion',
     useEventSpy                      : false,
-    javaVersion                      : 'Java 8',
+    javaVersion                      : 'OpenJDK 11',
     mavenVersion                     : 'Maven 3.6.x',
     usePMD                           : false,
     useCheckstyle                    : false,
