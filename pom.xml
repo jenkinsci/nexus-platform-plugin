@@ -77,7 +77,7 @@
 
     <!-- See: https://github.com/jenkinsci/bom -->
     <jenkins.tools.bom.artifactId>bom-2.361.x</jenkins.tools.bom.artifactId>
-    <jenkins.tools.bom.version>2133.v2e6c00fe4d61</jenkins.tools.bom.version>
+    <jenkins.tools.bom.version>1580.v47b_429a_c853a</jenkins.tools.bom.version>
     <!-- The next two properties are needed to be able to run the unit tests in IDEA -->
     <jenkins.addOpens/>
     <jenkins.insaneHook/>
