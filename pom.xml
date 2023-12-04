@@ -66,6 +66,9 @@
   </developers>
 
   <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+
     <!-- Used only in Jenkins org. CI infrastructure:
     <revision>3.18</revision>
     <changelist>999999-SNAPSHOT</changelist>
