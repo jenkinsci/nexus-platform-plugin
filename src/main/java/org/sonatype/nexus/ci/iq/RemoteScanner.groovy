@@ -31,6 +31,8 @@ class RemoteScanner
 
   public static final String CONTAINER = 'container:'
 
+  public static final String EXCLUDE_MARKER = '!'
+
   private final String appId
 
   private final String stageId
@@ -102,8 +104,11 @@ class RemoteScanner
   List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
     def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
     def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
+    def includeScanPatterns = normalizedScanPatterns.findAll{!it.startsWith(EXCLUDE_MARKER)}
+    def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
     directoryScanner.setBasedir(workDir)
-    directoryScanner.setIncludes(normalizedScanPatterns.toArray(new String[normalizedScanPatterns.size()]))
+    directoryScanner.setIncludes(includeScanPatterns.toArray(new String[includeScanPatterns.size()]))
+    directoryScanner.setExcludes(excludeScanPatterns.toArray(new String[excludeScanPatterns.size()]))
     directoryScanner.addDefaultExcludes()
     directoryScanner.scan()
     return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
