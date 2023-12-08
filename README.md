@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+release-3.19.0-01 (December 08, 2023)
+------------------------------------------------
+- Java 11 is the minimum supported Java version
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release170(December2023)) for Nexus Lifecycle 1.170.0-01.
+
 release-3.18.0-03 (November 02, 2023)
 ------------------------------------------------
 - Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release169(October2023)) for Nexus Lifecycle 1.169.0-01.
