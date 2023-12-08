@@ -66,6 +66,9 @@
   </developers>
 
   <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+
     <!-- Used only in Jenkins org. CI infrastructure:
     <revision>3.18</revision>
     <changelist>999999-SNAPSHOT</changelist>
@@ -73,11 +76,11 @@
     <gitHubRepo>jenkinsci/nexus-platform-plugin</gitHubRepo>
 
     <!-- This is the minimum advertised compatible version -->
-    <jenkins.version>2.346.3</jenkins.version>
+    <jenkins.version>2.361.1</jenkins.version>
 
     <!-- See: https://github.com/jenkinsci/bom -->
-    <jenkins.tools.bom.artifactId>bom-2.346.x</jenkins.tools.bom.artifactId>
-    <jenkins.tools.bom.version>1580.v47b_429a_c853a</jenkins.tools.bom.version>
+    <jenkins.tools.bom.artifactId>bom-2.361.x</jenkins.tools.bom.artifactId>
+    <jenkins.tools.bom.version>1643.v1cffef51df73</jenkins.tools.bom.version>
     <!-- The next two properties are needed to be able to run the unit tests in IDEA -->
     <jenkins.addOpens/>
     <jenkins.insaneHook/>

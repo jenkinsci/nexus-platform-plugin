@@ -16,7 +16,7 @@ def version = getVersionFromBuildName(env.releaseBuild_NAME)
 pipeline {
   agent { label 'ubuntu-zion' }
   tools {
-    jdk 'Java 8'
+    jdk 'OpenJDK 11'
   }
   options {
     buildDiscarder(
