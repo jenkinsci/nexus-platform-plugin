@@ -25,7 +25,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.18.2-SNAPSHOT</version>
+  <version>3.19.0-01</version>
   <packaging>hpi</packaging>
 
   <repositories>
