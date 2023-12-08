@@ -830,6 +830,7 @@ class IqPolicyEvaluatorIntegrationTest
       def env = prop.getEnvVars()
       env.put('GIT_URL', url)
       jenkins.jenkins.globalNodeProperties.add(prop)
+      def expectedWorkPath = project.getParent().getRootDir().toPath()
 
     when: 'the build is scheduled'
       def build = project.scheduleBuild2(0).get()
@@ -841,7 +842,8 @@ class IqPolicyEvaluatorIntegrationTest
           'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
-      1 * iqClient.addOrUpdateSourceControl('app', url)
+      1 * iqClient.addOrUpdateSourceControl('app', url,
+          expectedWorkPath.resolve("workspace").resolve(project.name).resolve(".git").toString())
       jenkins.assertBuildStatusSuccess(build)
   }
 
@@ -906,6 +908,7 @@ class IqPolicyEvaluatorIntegrationTest
       WorkflowJob project = jenkins.createProject(WorkflowJob)
       configureJenkins()
       def url = 'http://a.com/b/c'
+      def expectedWorkPath = project.getParent().getRootDir().toPath()
 
     when: 'the nexus policy evaluator is executed'
       project.definition = new CpsFlowDefinition("node {\n" +
@@ -924,7 +927,8 @@ class IqPolicyEvaluatorIntegrationTest
           new ApplicationPolicyEvaluation(0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
 
     and: 'the source control onboarding is called with the repo url'
-      1 * iqClient.addOrUpdateSourceControl('app', url)
+      1 * iqClient.addOrUpdateSourceControl('app', url,
+          expectedWorkPath.resolve("workspace").resolve(project.name).resolve(".git").toString())
       jenkins.assertBuildStatusSuccess(build)
   }
 
