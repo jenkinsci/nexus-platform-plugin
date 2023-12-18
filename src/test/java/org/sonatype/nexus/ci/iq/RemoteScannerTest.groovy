@@ -201,4 +201,46 @@ class RemoteScannerTest
         assert arguments[0] == moduleExcludes
       }
   }
+
+
+  def 'Uses no excludes by default'() {
+    setup:
+    def workspaceFile = new File('/file/path')
+    final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar'], [], new FilePath(workspaceFile),
+            proprietaryConfig, log, 'instanceId', null, null)
+    directoryScanner.getIncludedDirectories() >> []
+    directoryScanner.getIncludedFiles() >> []
+
+    when:
+    remoteScanner.getScanTargets(workspaceFile, ['*.jar'])
+
+    then:
+    1 * directoryScanner.setIncludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.jar']
+    }
+    1 * directoryScanner.setExcludes(*_) >> { arguments ->
+      assert arguments[0] == []
+    }
+  }
+
+
+  def 'Pass excludes to directory scanner'() {
+    setup:
+    def workspaceFile = new File('/file/path')
+    final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar','!*.zip','*.war','!*.tar'], [], new FilePath(workspaceFile),
+            proprietaryConfig, log, 'instanceId', null, null)
+    directoryScanner.getIncludedDirectories() >> []
+    directoryScanner.getIncludedFiles() >> []
+
+    when:
+    remoteScanner.getScanTargets(workspaceFile, ['*.jar','!*.zip','*.war','!*.tar'])
+
+    then:
+    1 * directoryScanner.setIncludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.jar','*.war']
+    }
+    1 * directoryScanner.setExcludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.zip','*.tar']
+    }
+  }
 }
