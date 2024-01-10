@@ -33,7 +33,8 @@ def makeArgs = [
     performSonarAnalysis             : true,
     sonarAnalysisPullRequestsOnly    : false,
     releaseRetentionPolicy           : RetentionPolicy.TEN_BUILDS,
-    skipSnapshotCheck                : true
+    skipSnapshotCheck                : true,
+    skipGithubStatusUpdates          : true
 ]
 
 if (!releaseBuild) {
