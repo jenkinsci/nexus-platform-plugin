@@ -39,10 +39,7 @@ def makeArgs = [
 
 if (!releaseBuild) {
   makeArgs = [
-      downstreamJobName: 'extra-tests',
-      prepare: { build, env ->
-        githubStatusUpdate('pending')
-      }
+      downstreamJobName: 'extra-tests'
   ] + makeArgs
 }
 
