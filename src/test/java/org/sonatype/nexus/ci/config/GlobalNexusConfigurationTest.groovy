@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.config
 
+import com.sonatype.insight.client.utils.InstanceIdProvider
 import org.junit.Rule
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.WithoutJenkins
@@ -43,6 +44,17 @@ class GlobalNexusConfigurationTest
 
     then:
       uuid1 == uuid2
+  }
+
+  def 'InstanceIdProvider#instanceId is set to Configuration#instanceId'() {
+    setup:
+    GlobalNexusConfiguration globalNexusConfiguration = GlobalNexusConfiguration.globalNexusConfiguration
+
+    when:
+    globalNexusConfiguration.load()
+
+    then:
+    globalNexusConfiguration.instanceId == InstanceIdProvider.instanceId
   }
 
   @WithoutJenkins
