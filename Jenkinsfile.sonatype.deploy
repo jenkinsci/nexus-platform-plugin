@@ -13,6 +13,9 @@ def jira = [
 // Get jenkins plugin version
 def version = getVersionFromBuildName(env.releaseBuild_NAME)
 
+def segments = parseVersionString(version)
+def confluenceVersion = segments.join('.')
+
 pipeline {
   agent { label 'ubuntu-zion' }
   tools {
@@ -80,6 +83,27 @@ pipeline {
             urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
             urlSuffixes: ['.hpi']
         )
+      }
+    }
+    stage('Update Download and Compatibility Page') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        // paligo: update plugin's version in the download and compatibility page
+        // https://sonatype.atlassian.net/wiki/spaces/HELP/pages/270172330/Automation+with+Paligo#Jenkins-Plugin-Version
+        updatePaligoContent contentId: '170404', updates: [
+            [
+                pattern:     /<para[^>]*>[^<]+<\/para>/,
+                replacement: /<para>${confluenceVersion}<\/para>/
+            ]]
+        // paligo: update plugin's links in the download and compatibility page
+        // https://sonatype.atlassian.net/wiki/spaces/HELP/pages/270172330/Automation+with+Paligo#Jenkins-Plugin-Download
+        updatePaligoContent contentId: '170410', updates: [
+            [
+                pattern:     /nexus-jenkins-plugin-[-\d\.]+(.hpi)?/,
+                replacement: /nexus-jenkins-plugin-${version}.hpi/
+            ]]
       }
     }
     stage('Release JIRA Version') {
