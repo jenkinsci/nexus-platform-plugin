@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.config
 
+import com.sonatype.insight.client.utils.InstanceIdProvider
 import hudson.Extension
 import hudson.model.Descriptor
 import jenkins.model.GlobalConfiguration
@@ -35,6 +36,7 @@ class GlobalNexusConfiguration
       instanceId = generateRandomId()
       save()
     }
+    InstanceIdProvider.preferredInstanceId = instanceId
   }
 
   @DataBoundConstructor
