@@ -24,6 +24,11 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+release-3.19.1-01 (January 19, 2024)
+------------------------------------------------
+- Add support for exclude scan pattern
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release171(January2024)) for Nexus Lifecycle 1.171.0-01.
+
 release-3.19.0-01 (December 08, 2023)
 ------------------------------------------------
 - Java 11 is the minimum supported Java version
