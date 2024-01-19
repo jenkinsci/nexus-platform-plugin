@@ -6,7 +6,7 @@
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared', 'bnr-pipeline-library']) _
 
 def jira = [
-    versionPrefix: 'jenkins', project: 'CLM', projectId: '10002',
+    versionPrefix: 'jenkins', project: 'INT', projectId: '10007',
     credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
 ]
 
