@@ -101,7 +101,7 @@ pipeline {
         // https://sonatype.atlassian.net/wiki/spaces/HELP/pages/270172330/Automation+with+Paligo#Jenkins-Plugin-Download
         updatePaligoContent contentId: '170410', updates: [
             [
-                pattern:     /nexus-jenkins-plugin-[-\d\.]+(.hpi)?/,
+                pattern:     /nexus-jenkins-plugin-[-\d\.]+\.hpi/,
                 replacement: /nexus-jenkins-plugin-${version}.hpi/
             ]]
       }
