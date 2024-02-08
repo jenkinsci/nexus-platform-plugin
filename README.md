@@ -24,6 +24,10 @@ Please use the links below to find information about using the plugin with your 
 
 Changelog
 =========
+release-3.19.2-01 (February 08, 2024)
+------------------------------------------------
+- Provide [latest features](https://help.sonatype.com/iqserver/product-information/release-notes#ReleaseNotes-Release173(February2024)) for Nexus Lifecycle 1.173.0-01.
+
 release-3.19.1-01 (January 19, 2024)
 ------------------------------------------------
 - Add support for exclude scan pattern
