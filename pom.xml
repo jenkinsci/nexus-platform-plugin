@@ -140,6 +140,12 @@
         <artifactId>spring-web</artifactId>
         <version>5.3.28</version>
       </dependency>
+      <!-- Pin version to avoid security vulnerabilities brought in by parent pom -->
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>bouncycastle-api</artifactId>
+        <version>2.29</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
