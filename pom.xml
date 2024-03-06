@@ -140,6 +140,12 @@
         <artifactId>spring-web</artifactId>
         <version>5.3.28</version>
       </dependency>
+      <!-- Override transitive commons-compress and use latest available due to Violations -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.26.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
