@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.common.CallflowOptions
+
 interface IqPolicyEvaluator
 {
   String getIqInstanceId()
@@ -37,4 +39,8 @@ interface IqPolicyEvaluator
   Boolean getEnableDebugLogging()
 
   String getAdvancedProperties()
+
+  List<String> getCallflowScanPatterns()
+
+  CallflowOptions getCallFlowOptions()
 }

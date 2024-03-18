@@ -14,9 +14,9 @@ package org.sonatype.nexus.ci.iq
 
 import java.nio.file.Paths
 
+import com.sonatype.nexus.api.common.CallflowOptions
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
-
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.IqUtil
@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.exception.ExceptionUtils
 
 import static com.google.common.base.Preconditions.checkArgument
+
 
 class IqPolicyEvaluatorUtil
 {
@@ -59,10 +60,14 @@ class IqPolicyEvaluatorUtil
       if (iqPolicyEvaluator.getEnableDebugLogging()) {
         loggerBridge.setDebugEnabled(true)
       }
+      // !!! GET IT HERE
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
+      CallflowOptions callFlowOptions = iqPolicyEvaluator.getCallFlowOptions()
+      List<String> callflowScanPatterns = iqPolicyEvaluator.getCallflowScanPatterns();
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
 
+      System.out.println("!!! callflowScanPatterns: " + callflowScanPatterns);
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
@@ -82,6 +87,11 @@ class IqPolicyEvaluatorUtil
 
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
+
+
+      def callFlowTargets =
+          RemoteScanner.getScanTargets(new File(workspace.getRemote()), callflowScanPatterns)
+              .collect { it.getAbsolutePath() }
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
@@ -109,8 +119,16 @@ class IqPolicyEvaluatorUtil
           iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl, repositoryPath)
         }
 
+        listener.logger.println("!!! make it so " + expandedScanPatterns)
         File workDirectory = new File(workspace.getRemote())
-        evaluationResult = iqClient.evaluateApplication(applicationId, iqStage, scanResult, workDirectory)
+        evaluationResult = iqClient.evaluateApplication(
+            applicationId,
+            iqStage,
+            scanResult,
+            workDirectory,
+            null,
+            new CallflowOptions(callFlowTargets, null, null)
+        )
       } finally {
         // clean up scan files on master and agent
         scanResult?.scanFile?.delete()
@@ -197,6 +215,7 @@ class IqPolicyEvaluatorUtil
   {
     def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
     if (!hideReports) {
+      listener.logger.println("!!! can you see this?")
       listener.logger.println(policyFailureMessageFormatter.message)
     }
 

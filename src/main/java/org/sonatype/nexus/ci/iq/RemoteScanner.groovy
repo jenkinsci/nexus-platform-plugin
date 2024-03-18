@@ -101,7 +101,7 @@ class RemoteScanner
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
   }
 
-  List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
+  static List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
     def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
     def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
     def includeScanPatterns = normalizedScanPatterns.findAll{!it.startsWith(EXCLUDE_MARKER)}

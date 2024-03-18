@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.common.CallflowOptions
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -54,6 +55,10 @@ class IqPolicyEvaluatorWorkflowStep
 
   String advancedProperties
 
+  CallflowOptions callFlowOptions
+
+  List<String> callflowScanPatterns;
+
   @DataBoundSetter
   void setIqOrganization(final String iqOrganization) {
     this.iqOrganization = iqOrganization
@@ -87,6 +92,16 @@ class IqPolicyEvaluatorWorkflowStep
   @DataBoundSetter
   void setEnableDebugLogging(final boolean enableDebugLogging) {
     this.enableDebugLogging = enableDebugLogging
+  }
+
+  @DataBoundSetter
+  void setCallflowScanPatterns(final List<String> callflowScanPatterns) {
+    this.callflowScanPatterns = callflowScanPatterns;
+  }
+
+  @DataBoundSetter
+  void setCallFlowOptions(final CallflowOptions callFlowOptions) {
+    this.callFlowOptions = callFlowOptions;
   }
 
   @DataBoundSetter
@@ -124,6 +139,11 @@ class IqPolicyEvaluatorWorkflowStep
     this.iqInstanceId = iqInstanceId ?: IqUtil.getFirstIqConfiguration()?.id
   }
 
+  @Override
+  List<String> getCallflowScanPatterns() {
+    return this.callflowScanPatterns;
+  }
+
   @Extension
   static final class DescriptorImpl
       extends AbstractStepDescriptorImpl
@@ -141,6 +161,10 @@ class IqPolicyEvaluatorWorkflowStep
     @Override
     String getDisplayName() {
       Messages.IqPolicyEvaluation_DisplayName()
+    }
+
+    CallflowOptions getCallFlowOptions() {
+      return this.callFlowOptions
     }
 
     @Override

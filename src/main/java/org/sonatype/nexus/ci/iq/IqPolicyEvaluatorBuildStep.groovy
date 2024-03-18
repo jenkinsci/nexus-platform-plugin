@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.nexus.api.common.CallflowOptions
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -58,6 +59,10 @@ class IqPolicyEvaluatorBuildStep
 
   String advancedProperties
 
+  CallflowOptions callFlowOptions;
+
+  List<String> callflowScanPatterns;
+
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqInstanceId,
@@ -70,7 +75,10 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnScanningErrors,
                              final String jobCredentialsId,
                              final Boolean enableDebugLogging,
-                             final String advancedProperties)
+                             final String advancedProperties,
+                             final CallflowOptions callFlowOptions,
+                             final String callflowScanPatterns
+  )
   {
     this.iqInstanceId = iqInstanceId
     this.jobCredentialsId = jobCredentialsId
@@ -83,6 +91,8 @@ class IqPolicyEvaluatorBuildStep
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
+    this.callFlowOptions = callFlowOptions
+    this.callflowScanPatterns = callflowScanPatterns;
   }
 
   @DataBoundSetter
@@ -200,6 +210,14 @@ class IqPolicyEvaluatorBuildStep
       def serverUrl = nxiqConfiguration?.serverUrl
       def jobCredentials = jobCredentialsId ?: nxiqConfiguration?.credentialsId
       IqUtil.doFillIqOrganizationItems(serverUrl, jobCredentials, job)
+    }
+
+    CallflowOptions getCallFlowOptions() {
+      return this.callFlowOptions;
+    }
+
+    String getCallflowScanPatterns() {
+      return this.callflowScanPatterns;
     }
   }
 }
