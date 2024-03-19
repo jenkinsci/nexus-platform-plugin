@@ -57,7 +57,9 @@ class IqPolicyEvaluatorWorkflowStep
 
   CallflowOptions callFlowOptions
 
-  List<String> callflowScanPatterns;
+  List<String> callflowScanPatterns
+
+  CallflowRunConfiguration callflowRunConfiguration;
 
   @DataBoundSetter
   void setIqOrganization(final String iqOrganization) {
@@ -96,12 +98,17 @@ class IqPolicyEvaluatorWorkflowStep
 
   @DataBoundSetter
   void setCallflowScanPatterns(final List<String> callflowScanPatterns) {
-    this.callflowScanPatterns = callflowScanPatterns;
+    this.callflowScanPatterns = callflowScanPatterns
   }
 
   @DataBoundSetter
   void setCallFlowOptions(final CallflowOptions callFlowOptions) {
-    this.callFlowOptions = callFlowOptions;
+    this.callFlowOptions = callFlowOptions
+  }
+
+  @DataBoundSetter
+  void setCallflowRunConfiguration(final CallflowRunConfiguration callflowRunConfiguration) {
+    this.callflowRunConfiguration = callflowRunConfiguration
   }
 
   @DataBoundSetter
@@ -142,6 +149,11 @@ class IqPolicyEvaluatorWorkflowStep
   @Override
   List<String> getCallflowScanPatterns() {
     return this.callflowScanPatterns;
+  }
+
+  @Override
+  CallflowRunConfiguration getCallflowRunConfiguration() {
+    return this.callflowRunConfiguration
   }
 
   @Extension

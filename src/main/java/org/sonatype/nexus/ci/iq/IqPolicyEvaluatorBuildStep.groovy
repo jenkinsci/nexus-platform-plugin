@@ -63,6 +63,8 @@ class IqPolicyEvaluatorBuildStep
 
   List<String> callflowScanPatterns;
 
+  CallflowRunConfiguration callflowRunConfiguration
+
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqInstanceId,
@@ -77,7 +79,8 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean enableDebugLogging,
                              final String advancedProperties,
                              final CallflowOptions callFlowOptions,
-                             final String callflowScanPatterns
+                             final String callflowScanPatterns,
+                             final CallflowRunConfiguration callflowRunConfiguration
   )
   {
     this.iqInstanceId = iqInstanceId
@@ -92,7 +95,8 @@ class IqPolicyEvaluatorBuildStep
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
     this.callFlowOptions = callFlowOptions
-    this.callflowScanPatterns = callflowScanPatterns;
+    this.callflowScanPatterns = callflowScanPatterns
+    this.callflowRunConfiguration = callflowRunConfiguration;
   }
 
   @DataBoundSetter
@@ -144,7 +148,8 @@ class IqPolicyEvaluatorBuildStep
     @Override
     ListBoxModel doFillIqStageItems(@QueryParameter String iqInstanceId,
                                     @QueryParameter String jobCredentialsId,
-                                    @AncestorInPath Job job) {
+                                    @AncestorInPath Job job)
+    {
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       // JobCredentialsId is an empty String if not set
       IqUtil.doFillIqStageItems(nxiqConfiguration?.serverUrl, jobCredentialsId ?: nxiqConfiguration?.credentialsId, job)
@@ -181,8 +186,7 @@ class IqPolicyEvaluatorBuildStep
     }
 
     @Override
-    ListBoxModel doFillJobCredentialsIdItems(@QueryParameter String iqInstanceId, @AncestorInPath Job job)
-    {
+    ListBoxModel doFillJobCredentialsIdItems(@QueryParameter String iqInstanceId, @AncestorInPath Job job) {
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       FormUtil.newCredentialsItemsListBoxModel(nxiqConfiguration?.serverUrl, nxiqConfiguration?.credentialsId, job)
     }
@@ -205,7 +209,8 @@ class IqPolicyEvaluatorBuildStep
     @Override
     ListBoxModel doFillIqOrganizationItems(@QueryParameter String iqInstanceId,
                                            @QueryParameter String jobCredentialsId,
-                                           @AncestorInPath Job job) {
+                                           @AncestorInPath Job job)
+    {
       NxiqConfiguration nxiqConfiguration = IqUtil.getIqConfiguration(iqInstanceId)
       def serverUrl = nxiqConfiguration?.serverUrl
       def jobCredentials = jobCredentialsId ?: nxiqConfiguration?.credentialsId
@@ -218,6 +223,10 @@ class IqPolicyEvaluatorBuildStep
 
     String getCallflowScanPatterns() {
       return this.callflowScanPatterns;
+    }
+
+    CallflowRunConfiguration getCallflowRunConfiguration() {
+      return this.callflowRunConfiguration
     }
   }
 }

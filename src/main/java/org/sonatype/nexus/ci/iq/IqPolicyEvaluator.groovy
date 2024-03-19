@@ -43,4 +43,6 @@ interface IqPolicyEvaluator
   List<String> getCallflowScanPatterns()
 
   CallflowOptions getCallFlowOptions()
+
+  CallflowRunConfiguration getCallflowRunConfiguration();
 }

@@ -13,6 +13,7 @@
 package org.sonatype.nexus.ci.iq
 
 import java.nio.file.Paths
+import java.util.stream.Collectors
 
 import com.sonatype.nexus.api.common.CallflowOptions
 import com.sonatype.nexus.api.exception.IqClientException
@@ -62,8 +63,8 @@ class IqPolicyEvaluatorUtil
       }
       // !!! GET IT HERE
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
-      CallflowOptions callFlowOptions = iqPolicyEvaluator.getCallFlowOptions()
-      List<String> callflowScanPatterns = iqPolicyEvaluator.getCallflowScanPatterns();
+      List<String> callflowScanPatterns = iqPolicyEvaluator.getCallflowScanPatterns()
+      CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
 
@@ -89,9 +90,9 @@ class IqPolicyEvaluatorUtil
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 
 
-      def callFlowTargets =
-          RemoteScanner.getScanTargets(new File(workspace.getRemote()), callflowScanPatterns)
-              .collect { it.getAbsolutePath() }
+      //def callFlowTargets =
+      //    RemoteScanner.getScanTargets(new File(workspace.getRemote()), callflowScanPatterns)
+      //        .collect { it.getAbsolutePath() }
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
@@ -119,15 +120,20 @@ class IqPolicyEvaluatorUtil
           iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl, repositoryPath)
         }
 
-        listener.logger.println("!!! make it so " + expandedScanPatterns)
         File workDirectory = new File(workspace.getRemote())
+
+        listener.logger.println("!!! make it so " + expandedScanPatterns)
+        CallflowOptions callflowOptions = buildCallflowOptions(callflowRunConfiguration, workDirectory, envVars)
+
+        listener.logger.println("!!! options: " + callflowOptions.scanTargets + ", " + callflowOptions.namespaces)
+
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
             iqStage,
             scanResult,
             workDirectory,
             null,
-            new CallflowOptions(callFlowTargets, null, null)
+            callflowOptions
         )
       } finally {
         // clean up scan files on master and agent
@@ -200,6 +206,19 @@ class IqPolicyEvaluatorUtil
   private static List<String> getScanPatterns(final List<ScanPattern> iqScanPatterns, final EnvVars envVars)
   {
     iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ''
+  }
+
+  private static CallflowOptions buildCallflowOptions(
+      final CallflowRunConfiguration callflowRunConfiguration,
+      final File workdir,
+      final EnvVars envVars)
+  {
+    final List<String> expandedPatterns = getScanPatterns(callflowRunConfiguration.getCallflowScanPatterns(), envVars)
+
+    final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
+        .collect { it.getAbsolutePath() }
+
+    return new CallflowOptions(targets, callflowRunConfiguration.getCallflowNamespaces(), null)
   }
 
   private static List<String> getExpandedModuleExcludes(final List<ModuleExclude> moduleExcludes,
