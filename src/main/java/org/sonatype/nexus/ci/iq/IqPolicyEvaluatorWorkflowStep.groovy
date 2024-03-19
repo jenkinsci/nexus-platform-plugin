@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.nexus.api.common.CallflowOptions
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -55,9 +54,7 @@ class IqPolicyEvaluatorWorkflowStep
 
   String advancedProperties
 
-  CallflowOptions callFlowOptions
-
-  List<String> callflowScanPatterns
+  Boolean runCallflow
 
   CallflowRunConfiguration callflowRunConfiguration;
 
@@ -97,13 +94,8 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @DataBoundSetter
-  void setCallflowScanPatterns(final List<String> callflowScanPatterns) {
-    this.callflowScanPatterns = callflowScanPatterns
-  }
-
-  @DataBoundSetter
-  void setCallFlowOptions(final CallflowOptions callFlowOptions) {
-    this.callFlowOptions = callFlowOptions
+  void setRunCallflow(Boolean runCallflow) {
+    this.runCallflow = runCallflow
   }
 
   @DataBoundSetter
@@ -147,8 +139,8 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @Override
-  List<String> getCallflowScanPatterns() {
-    return this.callflowScanPatterns;
+  Boolean getRunCallflow() {
+    return this.runCallflow
   }
 
   @Override
@@ -173,10 +165,6 @@ class IqPolicyEvaluatorWorkflowStep
     @Override
     String getDisplayName() {
       Messages.IqPolicyEvaluation_DisplayName()
-    }
-
-    CallflowOptions getCallFlowOptions() {
-      return this.callFlowOptions
     }
 
     @Override

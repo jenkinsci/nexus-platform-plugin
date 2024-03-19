@@ -63,12 +63,9 @@ class IqPolicyEvaluatorUtil
       }
       // !!! GET IT HERE
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
-      List<String> callflowScanPatterns = iqPolicyEvaluator.getCallflowScanPatterns()
-      CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
 
-      System.out.println("!!! callflowScanPatterns: " + callflowScanPatterns);
       checkArgument(iqStage && applicationId, 'Arguments iqApplication and iqStage are mandatory')
 
       loggerBridge.debug(Messages.IqPolicyEvaluation_Evaluating())
@@ -89,10 +86,6 @@ class IqPolicyEvaluatorUtil
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
 
-
-      //def callFlowTargets =
-      //    RemoteScanner.getScanTargets(new File(workspace.getRemote()), callflowScanPatterns)
-      //        .collect { it.getAbsolutePath() }
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)
@@ -123,9 +116,23 @@ class IqPolicyEvaluatorUtil
         File workDirectory = new File(workspace.getRemote())
 
         listener.logger.println("!!! make it so " + expandedScanPatterns)
-        CallflowOptions callflowOptions = buildCallflowOptions(callflowRunConfiguration, workDirectory, envVars)
 
-        listener.logger.println("!!! options: " + callflowOptions.scanTargets + ", " + callflowOptions.namespaces)
+        Boolean runCallflow = iqPolicyEvaluator.getRunCallflow()
+
+        CallflowOptions callflowOptions
+        if (runCallflow) {
+          CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
+          callflowOptions = buildCallflowOptions(
+              callflowRunConfiguration,
+              workDirectory,
+              envVars,
+              iqPolicyEvaluator.iqScanPatterns
+          )
+
+          listener.logger.println("!!! options: " + callflowOptions.scanTargets + ", " + callflowOptions.namespaces)
+        } else {
+          callflowOptions = null
+        }
 
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
@@ -211,14 +218,31 @@ class IqPolicyEvaluatorUtil
   private static CallflowOptions buildCallflowOptions(
       final CallflowRunConfiguration callflowRunConfiguration,
       final File workdir,
-      final EnvVars envVars)
+      final EnvVars envVars,
+      final List<ScanPattern> iqScanPatterns)
   {
-    final List<String> expandedPatterns = getScanPatterns(callflowRunConfiguration.getCallflowScanPatterns(), envVars)
+    if (callflowRunConfiguration == null) {
+      final List<String> expandedPatterns = getScanPatterns(iqScanPatterns, envVars)
+      final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
+          .collect { it.getAbsolutePath() }
 
-    final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
-        .collect { it.getAbsolutePath() }
+      // defaults to using same targets as original iq scan, when enabled but no additional config passed
+      return new CallflowOptions(targets, null, null)
+    } else {
+      List<ScanPattern> patterns = callflowRunConfiguration.getCallflowScanPatterns()
+      if (patterns == null) {
+        // defaults to using same targets as original iq scan, when no patterns passed with addtional config
+        patterns = iqScanPatterns
+      }
 
-    return new CallflowOptions(targets, callflowRunConfiguration.getCallflowNamespaces(), null)
+      final List<String> expandedPatterns = getScanPatterns(patterns, envVars)
+
+      final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
+          .collect { it.getAbsolutePath() }
+
+      // TODO: Figure out how to pass the additional config
+      return new CallflowOptions(targets, callflowRunConfiguration.getCallflowNamespaces(), null)
+    }
   }
 
   private static List<String> getExpandedModuleExcludes(final List<ModuleExclude> moduleExcludes,

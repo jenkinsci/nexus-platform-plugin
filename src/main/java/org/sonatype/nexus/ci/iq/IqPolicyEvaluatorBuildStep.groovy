@@ -12,7 +12,6 @@
  */
 package org.sonatype.nexus.ci.iq
 
-import com.sonatype.nexus.api.common.CallflowOptions
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.FormUtil
 import org.sonatype.nexus.ci.util.IqUtil
@@ -59,9 +58,7 @@ class IqPolicyEvaluatorBuildStep
 
   String advancedProperties
 
-  CallflowOptions callFlowOptions;
-
-  List<String> callflowScanPatterns;
+  Boolean runCallflow
 
   CallflowRunConfiguration callflowRunConfiguration
 
@@ -78,8 +75,7 @@ class IqPolicyEvaluatorBuildStep
                              final String jobCredentialsId,
                              final Boolean enableDebugLogging,
                              final String advancedProperties,
-                             final CallflowOptions callFlowOptions,
-                             final String callflowScanPatterns,
+                             final Boolean runCallflow,
                              final CallflowRunConfiguration callflowRunConfiguration
   )
   {
@@ -94,8 +90,7 @@ class IqPolicyEvaluatorBuildStep
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
-    this.callFlowOptions = callFlowOptions
-    this.callflowScanPatterns = callflowScanPatterns
+    this.runCallflow = runCallflow
     this.callflowRunConfiguration = callflowRunConfiguration;
   }
 
@@ -217,8 +212,8 @@ class IqPolicyEvaluatorBuildStep
       IqUtil.doFillIqOrganizationItems(serverUrl, jobCredentials, job)
     }
 
-    CallflowOptions getCallFlowOptions() {
-      return this.callFlowOptions;
+    Boolean getRunCallflow() {
+      return this.runCallflow
     }
 
     String getCallflowScanPatterns() {
