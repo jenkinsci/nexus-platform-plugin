@@ -51,7 +51,6 @@ class PolicyEvaluatorExecution
     EnvVars envVars = context.get(EnvVars)
     FlowNode node = context.get(FlowNode)
 
-    System.out.println("!!! run method invoked, calling IqPolicyEvaluatorUtil.evaluatePolicy");
     ApplicationPolicyEvaluation evaluationResult = IqPolicyEvaluatorUtil.evaluatePolicy(
         iqPolicyEvaluator, run, workspace, launcher, taskListener, envVars
     )

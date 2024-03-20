@@ -13,7 +13,6 @@
 package org.sonatype.nexus.ci.iq
 
 import java.nio.file.Paths
-import java.util.stream.Collectors
 
 import com.sonatype.nexus.api.common.CallflowOptions
 import com.sonatype.nexus.api.exception.IqClientException
@@ -61,7 +60,7 @@ class IqPolicyEvaluatorUtil
       if (iqPolicyEvaluator.getEnableDebugLogging()) {
         loggerBridge.setDebugEnabled(true)
       }
-      // !!! GET IT HERE
+
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
@@ -115,15 +114,12 @@ class IqPolicyEvaluatorUtil
 
         File workDirectory = new File(workspace.getRemote())
 
-        listener.logger.println("!!! make it so " + expandedScanPatterns)
+        final  CallflowOptions callflowOptions
 
-        Boolean runCallflow = iqPolicyEvaluator.getRunCallflow()
+        if (iqPolicyEvaluator.getRunCallflow()) {
+          listener.logger.println("callflow analysis is enabled")
 
-        CallflowOptions callflowOptions
-        if (runCallflow) {
           CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
-          listener.logger.println("!!! callflowRunConfiguration.getAdditionalConfiguration(): " +
-              callflowRunConfiguration.getAdditionalConfiguration())
 
           callflowOptions = buildCallflowOptions(
               callflowRunConfiguration,
@@ -131,20 +127,15 @@ class IqPolicyEvaluatorUtil
               envVars,
               iqPolicyEvaluator.iqScanPatterns
           )
-
-          listener.logger.println("!!! options: " + callflowOptions.scanTargets + ", " + callflowOptions.namespaces)
         } else {
           callflowOptions = null
         }
-
-        listener.logger.println("!!! callflow options: " + callflowOptions)
 
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
             iqStage,
             scanResult,
             workDirectory,
-            null,
             callflowOptions
         )
       } finally {
@@ -162,13 +153,9 @@ class IqPolicyEvaluatorUtil
         run.addAction(reportAction)
       }
 
-      listener.logger.println("!!! evalResult critical: " + evaluationResult.getCriticalComponentCount())
-      listener.logger.println("!!! alerts: " + evaluationResult.getPolicyAlerts().size())
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId, iqConfig?.hideReports)
-      listener.logger.println("!!! result: " + result)
       run.setResult(result)
       if (result == Result.FAILURE) {
-        listener.logger.println("!!! end with fail action")
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
             evaluationResult)
       }
@@ -249,8 +236,10 @@ class IqPolicyEvaluatorUtil
       final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
           .collect { it.getAbsolutePath() }
 
-      // TODO: Figure out how to pass the additional config
-      return new CallflowOptions(targets, callflowRunConfiguration.getCallflowNamespaces(), null)
+      return new CallflowOptions(
+          targets,
+          callflowRunConfiguration.getCallflowNamespaces(),
+          callflowRunConfiguration.getAdditionalConfiguration())
     }
   }
 
@@ -267,7 +256,6 @@ class IqPolicyEvaluatorUtil
   {
     def policyFailureMessageFormatter = new PolicyFailureMessageFormatter(evaluationResult)
     if (!hideReports) {
-      listener.logger.println("!!! can you see this?")
       listener.logger.println(policyFailureMessageFormatter.message)
     }
 

@@ -13,11 +13,9 @@ class CallflowRunConfiguration
 
   List<String> callflowNamespaces
 
-  List<ScanPattern> getCallflowScanPatterns() {
-    return callflowScanPatterns
-  }
-
-  Map<String, Object> additionalConfiguration;
+  // This is used for experimental configuration. The options will not be widely publicised but can allow us to
+  // internally test different callflow options
+  Properties additionalConfiguration
 
   @DataBoundConstructor
   CallflowRunConfiguration(
@@ -26,6 +24,10 @@ class CallflowRunConfiguration
   ) {
     this.callflowScanPatterns = callflowScanPatterns
     this.callflowNamespaces = callflowNamespaces
+  }
+
+  List<ScanPattern> getCallflowScanPatterns() {
+    return callflowScanPatterns
   }
 
   @DataBoundSetter
@@ -42,7 +44,7 @@ class CallflowRunConfiguration
     this.callflowNamespaces = callflowNamespaces
   }
 
-  Map<String, Object> getAdditionalConfiguration() {
+  Properties getAdditionalConfiguration() {
     return this.additionalConfiguration
   }
 
