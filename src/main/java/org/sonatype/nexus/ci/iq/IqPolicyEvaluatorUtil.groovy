@@ -134,6 +134,8 @@ class IqPolicyEvaluatorUtil
           callflowOptions = null
         }
 
+        listener.logger.println("!!! callflow options: " + callflowOptions)
+
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
             iqStage,
@@ -156,10 +158,14 @@ class IqPolicyEvaluatorUtil
         def reportAction = new PolicyEvaluationReportAction(applicationId, iqStage, run, evaluationResult)
         run.addAction(reportAction)
       }
-      
+
+      listener.logger.println("!!! evalResult critical: " + evaluationResult.getCriticalComponentCount())
+      listener.logger.println("!!! alerts: " + evaluationResult.getPolicyAlerts().size())
       Result result = handleEvaluationResult(evaluationResult, listener, applicationId, iqConfig?.hideReports)
+      listener.logger.println("!!! result: " + result)
       run.setResult(result)
       if (result == Result.FAILURE) {
+        listener.logger.println("!!! end with fail action")
         throw new PolicyEvaluationException(Messages.IqPolicyEvaluation_EvaluationFailed(applicationId),
             evaluationResult)
       }

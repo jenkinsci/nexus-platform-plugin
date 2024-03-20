@@ -9,12 +9,12 @@ import org.kohsuke.stapler.DataBoundSetter
 class CallflowRunConfiguration
     extends AbstractDescribableImpl<CallflowRunConfiguration>
 {
-  List<ScanPattern> callflowScanPatterns;
+  List<ScanPattern> callflowScanPatterns
 
-  List<String> callflowNamespaces;
+  List<String> callflowNamespaces
 
   List<ScanPattern> getCallflowScanPatterns() {
-    return callflowScanPatterns;
+    return callflowScanPatterns
   }
 
   @DataBoundConstructor
@@ -46,7 +46,7 @@ class CallflowRunConfiguration
   {
     @Override
     String getDisplayName() {
-      return Messages.CallflowRunConfiguration_DisplayName()
+      return Messages.IqPolicyEvaluation_callFlowOptions()
     }
   }
 }
