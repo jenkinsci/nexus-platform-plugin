@@ -55,10 +55,6 @@ f.section(title: descriptor.displayName) {
     f.select()
   }
 
-  f.entry(title: _("iqScanPatterns"), field: 'iqScanPatterns') {
-    f.select()
-  }
-
   f.entry(title: _(Messages.IqPolicyEvaluation_Organization()), field: 'iqOrganization') {
     f.select()
   }

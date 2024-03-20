@@ -58,7 +58,7 @@ class CallflowRunConfiguration
   {
     @Override
     String getDisplayName() {
-      return Messages.IqPolicyEvaluation_callFlowOptions()
+      return Messages.IqPolicyEvaluation_callflowRunConfiguration()
     }
   }
 }

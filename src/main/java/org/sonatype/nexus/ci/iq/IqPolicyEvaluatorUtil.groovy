@@ -17,6 +17,7 @@ import java.nio.file.Paths
 import com.sonatype.nexus.api.common.CallflowOptions
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
+
 import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.IqUtil
@@ -33,7 +34,6 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.exception.ExceptionUtils
 
 import static com.google.common.base.Preconditions.checkArgument
-
 
 class IqPolicyEvaluatorUtil
 {
@@ -84,7 +84,6 @@ class IqPolicyEvaluatorUtil
 
       def expandedScanPatterns = getScanPatterns(iqPolicyEvaluator.iqScanPatterns, envVars)
       def expandedModuleExcludes = getExpandedModuleExcludes(iqPolicyEvaluator.iqModuleExcludes, envVars)
-
 
       def proprietaryConfig = iqClient.getProprietaryConfigForApplicationEvaluation(applicationId)
       def advancedProperties = getAdvancedProperties(iqPolicyEvaluator.advancedProperties, loggerBridge)

@@ -155,13 +155,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
-    <dependency>
-      <groupId>com.sonatype.insight.scan</groupId>
-      <artifactId>insight-scanner-call-flow-analyzer</artifactId>
-      <version>2.36.79-01</version>
-    </dependency>
-
     <!--
     asm-tree and asm versions must match the one pulled indirectly by insight-scanner
     This is needed to avoid classloader issues in Jenkins
