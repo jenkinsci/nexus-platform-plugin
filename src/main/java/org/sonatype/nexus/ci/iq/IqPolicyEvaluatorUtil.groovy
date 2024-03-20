@@ -122,6 +122,9 @@ class IqPolicyEvaluatorUtil
         CallflowOptions callflowOptions
         if (runCallflow) {
           CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
+          listener.logger.println("!!! callflowRunConfiguration.getAdditionalConfiguration(): " +
+              callflowRunConfiguration.getAdditionalConfiguration())
+
           callflowOptions = buildCallflowOptions(
               callflowRunConfiguration,
               workDirectory,

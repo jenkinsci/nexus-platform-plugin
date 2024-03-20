@@ -17,6 +17,8 @@ class CallflowRunConfiguration
     return callflowScanPatterns
   }
 
+  Map<String, Object> additionalConfiguration;
+
   @DataBoundConstructor
   CallflowRunConfiguration(
       final List<ScanPattern> callflowScanPatterns,
@@ -40,6 +42,14 @@ class CallflowRunConfiguration
     this.callflowNamespaces = callflowNamespaces
   }
 
+  Map<String, Object> getAdditionalConfiguration() {
+    return this.additionalConfiguration
+  }
+
+  @DataBoundSetter
+  void setAdditionalConfiguration(final Map<String, Object> additionalConfiguration) {
+    this.additionalConfiguration = additionalConfiguration
+  }
 
   @Extension
   public static class DescriptorImpl extends Descriptor<CallflowRunConfiguration>
