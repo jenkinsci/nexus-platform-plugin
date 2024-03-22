@@ -60,7 +60,6 @@ class IqPolicyEvaluatorUtil
       if (iqPolicyEvaluator.getEnableDebugLogging()) {
         loggerBridge.setDebugEnabled(true)
       }
-
       String applicationId = envVars.expand(iqPolicyEvaluator.getIqApplication()?.applicationId)
       String organizationId = iqPolicyEvaluator.iqOrganization
       String iqStage = iqPolicyEvaluator.iqStage
@@ -113,7 +112,7 @@ class IqPolicyEvaluatorUtil
 
         File workDirectory = new File(workspace.getRemote())
 
-        final  CallflowOptions callflowOptions
+        final CallflowOptions callflowOptions
 
         if (iqPolicyEvaluator.getRunCallflow()) {
           listener.logger.println("callflow analysis is enabled")
@@ -122,6 +121,7 @@ class IqPolicyEvaluatorUtil
 
           callflowOptions = buildCallflowOptions(
               callflowRunConfiguration,
+              remoteScanner,
               workDirectory,
               envVars,
               iqPolicyEvaluator.iqScanPatterns
@@ -135,7 +135,7 @@ class IqPolicyEvaluatorUtil
             iqStage,
             scanResult,
             workDirectory,
-            callflowOptions
+            callflowOptions as CallflowOptions
         )
       } finally {
         // clean up scan files on master and agent
@@ -212,14 +212,17 @@ class IqPolicyEvaluatorUtil
 
   private static CallflowOptions buildCallflowOptions(
       final CallflowRunConfiguration callflowRunConfiguration,
+      final RemoteScanner remoteScanner,
       final File workdir,
       final EnvVars envVars,
       final List<ScanPattern> iqScanPatterns)
   {
     if (callflowRunConfiguration == null) {
       final List<String> expandedPatterns = getScanPatterns(iqScanPatterns, envVars)
-      final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
-          .collect { it.getAbsolutePath() }
+      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
+          .collect {
+            return it.getAbsolutePath()
+          }
 
       // defaults to using same targets as original iq scan, when enabled but no additional config passed
       return new CallflowOptions(targets, null, null)
@@ -232,7 +235,7 @@ class IqPolicyEvaluatorUtil
 
       final List<String> expandedPatterns = getScanPatterns(patterns, envVars)
 
-      final List<String> targets = RemoteScanner.getScanTargets(workdir, expandedPatterns)
+      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
           .collect { it.getAbsolutePath() }
 
       return new CallflowOptions(

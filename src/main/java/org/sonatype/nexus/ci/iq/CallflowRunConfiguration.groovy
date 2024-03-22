@@ -20,10 +20,12 @@ class CallflowRunConfiguration
   @DataBoundConstructor
   CallflowRunConfiguration(
       final List<ScanPattern> callflowScanPatterns,
-      final List<String> callflowNamespaces
+      final List<String> callflowNamespaces = null,
+      final Properties additionalConfiguration = null
   ) {
     this.callflowScanPatterns = callflowScanPatterns
     this.callflowNamespaces = callflowNamespaces
+    this.additionalConfiguration = additionalConfiguration
   }
 
   List<ScanPattern> getCallflowScanPatterns() {
