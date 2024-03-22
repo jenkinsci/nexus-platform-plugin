@@ -174,7 +174,7 @@ class IqPolicyEvaluatorTest
       1 * channel.call(remoteScanner) >> remoteScanResult
 
     then: 'evaluates the result'
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> evaluationResult
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> evaluationResult
     then: 'delete the temp scan file'
       1 * localScanFile.delete() >> true
   }
@@ -326,7 +326,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >>
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >>
           { throw new IqClientException('SNAP', new IOException('CRASH')) }
       noExceptionThrown()
     and: 'delete the temp scan file'
@@ -363,7 +363,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation(alerts)
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation(alerts)
       1 * run.setResult(buildResult)
     and: 'delete the temp scan file'
       1 * localScanFile.delete() >> true
@@ -391,7 +391,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation(alerts)
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation(alerts)
       1 * run.setResult(buildResult)
     and: 'delete the temp scan file'
       1 * localScanFile.delete() >> true
@@ -418,7 +418,7 @@ class IqPolicyEvaluatorTest
 
     then:
     1 * iqClient.verifyOrCreateApplication(*_) >> true
-    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation()
+    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation()
     and:
     PolicyEvaluationException ex = thrown()
     ex.message == 'IQ Server evaluation of application appId failed'
@@ -443,7 +443,7 @@ class IqPolicyEvaluatorTest
 
     then:
     1 * iqClient.verifyOrCreateApplication(*_) >> true
-    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation()
+    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation()
     1 * run.setResult(Result.UNSTABLE)
 
     and: 'delete the temp scan file'
@@ -466,7 +466,7 @@ class IqPolicyEvaluatorTest
 
     then:
     1 * iqClient.verifyOrCreateApplication(*_) >> true
-    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation()
+    1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation()
     1 * run.setResult(Result.SUCCESS)
 
     and: 'delete the temp scan file'
@@ -486,7 +486,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> policyEvaluation
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> policyEvaluation
       1 * run.setResult(Result.FAILURE)
 
     and:
@@ -515,7 +515,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> policyEvaluation
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> policyEvaluation
       1 * run.setResult(Result.FAILURE)
       0 * run.setResult(Result.UNSTABLE)
 
@@ -548,7 +548,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >>
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >>
           getAnyApplicationPolicyEvaluation([new PolicyAlert(trigger, [new Action(Action.ID_FAIL)])], 11, 12, 13)
     and:
       thrown PolicyEvaluationException
@@ -585,7 +585,7 @@ class IqPolicyEvaluatorTest
 
     then:
       1 * iqClient.verifyOrCreateApplication(*_) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation([new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], 11, 12, 13)
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation([new PolicyAlert(trigger, [new Action(Action.ID_WARN)])], 11, 12, 13)
       1 * log.println('IQ Server evaluation of application appId detected warnings')
       (hideReports ? 0 : 1) * log.println(
           'Nexus IQ reports policy warning due to \nPolicy(policyName) [\n Component(displayName=value, ' +
@@ -613,7 +613,7 @@ class IqPolicyEvaluatorTest
 
     then: 'the summary is printed'
       1 * iqClient.verifyOrCreateApplication(appId, orgId) >> true
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> getAnyApplicationPolicyEvaluation()
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> getAnyApplicationPolicyEvaluation()
       0 * log.println('WARNING: IQ Server evaluation of application appId detected warnings.')
       1 * log.println('\nThe detailed report can be viewed online at http://server/report\n' +
           'Summary of policy violations: 0 critical, 0 severe, 0 moderate')
@@ -695,7 +695,7 @@ class IqPolicyEvaluatorTest
       1 * iqClient.addOrUpdateSourceControl('appId', repositoryUrl, _)
 
     then: 'evaluates the result'
-      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, _) >> evaluationResult
+      1 * iqClient.evaluateApplication('appId', 'stage', scanResult, *_) >> evaluationResult
     and: 'delete the temp scan file'
       1 * localScanFile.delete() >> true
       1 * remoteScanResult.delete() >> true

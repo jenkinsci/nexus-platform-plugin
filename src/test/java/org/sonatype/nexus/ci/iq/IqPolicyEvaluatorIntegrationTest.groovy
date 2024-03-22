@@ -16,7 +16,6 @@ import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.exception.IqClientException
 import com.sonatype.nexus.api.iq.Action
 import com.sonatype.nexus.api.iq.ApplicationPolicyEvaluation
-import com.sonatype.nexus.api.iq.PolicyAlert
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
 import com.sonatype.nexus.api.iq.scan.ScanResult
@@ -785,7 +784,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(
+      1 * iqClient.evaluateApplication('app', *_) >> new ApplicationPolicyEvaluation(
           0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
 
     then: 'the return code is successful'
@@ -811,7 +810,7 @@ class IqPolicyEvaluatorIntegrationTest
     then: 'the application is scanned and evaluated'
       1 * iqClient.verifyOrCreateApplication('app', null) >> true
       1 * iqClient.scan(*_) >> new ScanResult(new Scan(), File.createTempFile('dummy-scan', '.xml.gz'))
-      1 * iqClient.evaluateApplication('app', _, _, _) >> new ApplicationPolicyEvaluation(
+      1 * iqClient.evaluateApplication('app', *_) >> new ApplicationPolicyEvaluation(
           0, 1, 2, 3, 11, 12, 13, 0, 1, [], 'http://server/link/to/report')
 
     then: 'the return code is successful'

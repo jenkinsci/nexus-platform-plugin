@@ -115,11 +115,11 @@ class IqPolicyEvaluatorUtil
         final CallflowOptions callflowOptions
 
         if (iqPolicyEvaluator.getRunCallflow()) {
-          listener.logger.println("callflow analysis is enabled")
+          listener.logger.println('callflow analysis is enabled')
 
           CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
 
-          callflowOptions = buildCallflowOptions(
+          callflowOptions = makeCallflowOptions(
               callflowRunConfiguration,
               remoteScanner,
               workDirectory,
@@ -210,7 +210,7 @@ class IqPolicyEvaluatorUtil
     iqScanPatterns.collect { envVars.expand(it.scanPattern) } - null - ''
   }
 
-  private static CallflowOptions buildCallflowOptions(
+  private static CallflowOptions makeCallflowOptions(
       final CallflowRunConfiguration callflowRunConfiguration,
       final RemoteScanner remoteScanner,
       final File workdir,

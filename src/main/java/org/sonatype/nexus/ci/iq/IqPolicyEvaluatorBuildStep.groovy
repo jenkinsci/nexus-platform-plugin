@@ -91,7 +91,7 @@ class IqPolicyEvaluatorBuildStep
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
     this.runCallflow = runCallflow
-    this.callflowRunConfiguration = callflowRunConfiguration;
+    this.callflowRunConfiguration = callflowRunConfiguration
   }
 
   @DataBoundSetter

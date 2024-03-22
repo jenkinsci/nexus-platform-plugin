@@ -38,7 +38,7 @@ class CallflowRunConfiguration
   }
 
   List<String> getCallflowNamespaces() {
-    return callflowNamespaces;
+    return callflowNamespaces
   }
 
   @DataBoundSetter
@@ -56,7 +56,7 @@ class CallflowRunConfiguration
   }
 
   @Extension
-  public static class DescriptorImpl extends Descriptor<CallflowRunConfiguration>
+  static class DescriptorImpl extends Descriptor<CallflowRunConfiguration>
   {
     @Override
     String getDisplayName() {
