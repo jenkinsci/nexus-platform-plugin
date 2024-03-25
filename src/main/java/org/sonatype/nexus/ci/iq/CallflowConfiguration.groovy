@@ -6,8 +6,8 @@ import hudson.model.Descriptor
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.DataBoundSetter
 
-class CallflowRunConfiguration
-    extends AbstractDescribableImpl<CallflowRunConfiguration>
+class CallflowConfiguration
+    extends AbstractDescribableImpl<CallflowConfiguration>
 {
   List<ScanPattern> callflowScanPatterns
 
@@ -18,7 +18,7 @@ class CallflowRunConfiguration
   Map<String, Object> additionalConfiguration
 
   @DataBoundConstructor
-  CallflowRunConfiguration(
+  CallflowConfiguration(
       final List<ScanPattern> callflowScanPatterns = null,
       final List<String> callflowNamespaces = null,
       final Map<String, Object> additionalConfiguration = null
@@ -56,11 +56,11 @@ class CallflowRunConfiguration
   }
 
   @Extension
-  static class DescriptorImpl extends Descriptor<CallflowRunConfiguration>
+  static class DescriptorImpl extends Descriptor<CallflowConfiguration>
   {
     @Override
     String getDisplayName() {
-      return Messages.IqPolicyEvaluation_callflowRunConfiguration()
+      return Messages.IqPolicyEvaluation_callflowConfiguration()
     }
   }
 }

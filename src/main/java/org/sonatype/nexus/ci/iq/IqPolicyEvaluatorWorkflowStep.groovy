@@ -56,7 +56,7 @@ class IqPolicyEvaluatorWorkflowStep
 
   Boolean runCallflow
 
-  CallflowRunConfiguration callflowRunConfiguration;
+  CallflowConfiguration callflowConfiguration;
 
   @DataBoundSetter
   void setIqOrganization(final String iqOrganization) {
@@ -99,8 +99,8 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @DataBoundSetter
-  void setCallflowRunConfiguration(final CallflowRunConfiguration callflowRunConfiguration) {
-    this.callflowRunConfiguration = callflowRunConfiguration
+  void setCallflowConfiguration(final CallflowConfiguration callflowConfiguration) {
+    this.callflowConfiguration = callflowConfiguration
   }
 
   @DataBoundSetter
@@ -144,8 +144,8 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @Override
-  CallflowRunConfiguration getCallflowRunConfiguration() {
-    return this.callflowRunConfiguration
+  CallflowConfiguration getCallflowConfiguration() {
+    return this.callflowConfiguration
   }
 
   @Extension

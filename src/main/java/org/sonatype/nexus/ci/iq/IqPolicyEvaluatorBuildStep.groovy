@@ -60,7 +60,7 @@ class IqPolicyEvaluatorBuildStep
 
   Boolean runCallflow
 
-  CallflowRunConfiguration callflowRunConfiguration
+  CallflowConfiguration callflowConfiguration
 
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
@@ -76,7 +76,7 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean enableDebugLogging,
                              final String advancedProperties,
                              final Boolean runCallflow,
-                             final CallflowRunConfiguration callflowRunConfiguration
+                             final CallflowConfiguration callflowConfiguration
   )
   {
     this.iqInstanceId = iqInstanceId
@@ -91,7 +91,7 @@ class IqPolicyEvaluatorBuildStep
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
     this.runCallflow = runCallflow
-    this.callflowRunConfiguration = callflowRunConfiguration
+    this.callflowConfiguration = callflowConfiguration
   }
 
   @DataBoundSetter
@@ -215,8 +215,8 @@ class IqPolicyEvaluatorBuildStep
       return this.runCallflow
     }
 
-    CallflowRunConfiguration getCallflowRunConfiguration() {
-      return this.callflowRunConfiguration
+    CallflowConfiguration getCallflowConfiguration() {
+      return this.callflowConfiguration
     }
   }
 }

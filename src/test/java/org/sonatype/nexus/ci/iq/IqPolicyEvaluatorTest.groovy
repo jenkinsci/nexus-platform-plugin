@@ -755,7 +755,7 @@ class IqPolicyEvaluatorTest
     when:
       getBuildStepForCallflowTests(
           true,
-          new CallflowRunConfiguration(
+          new CallflowConfiguration(
               [new ScanPattern("/some-path/**/*.jar")],
               expectedNamespaces,
               givenAdditionalConfig)
@@ -811,7 +811,7 @@ class IqPolicyEvaluatorTest
 
   private IqPolicyEvaluatorBuildStep getBuildStepForCallflowTests(
       final Boolean runCallflow,
-      final CallflowRunConfiguration callflowRunConfiguration
+      final CallflowConfiguration callflowConfiguration
   ) {
     return new IqPolicyEvaluatorBuildStep(
         null,
@@ -826,7 +826,7 @@ class IqPolicyEvaluatorTest
         null,
         null,
         runCallflow,
-        callflowRunConfiguration
+        callflowConfiguration
     )
   }
 }

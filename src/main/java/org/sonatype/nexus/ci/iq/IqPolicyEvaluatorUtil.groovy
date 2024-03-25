@@ -35,11 +35,12 @@ import org.apache.commons.lang.exception.ExceptionUtils
 
 import static com.google.common.base.Preconditions.checkArgument
 
+@SuppressWarnings(['ClassSize', 'AbcMetric'])
 class IqPolicyEvaluatorUtil
 {
   static final String MINIMAL_SERVER_VERSION_REQUIRED = '1.69.0'
 
-  @SuppressWarnings(['AbcMetric', 'ParameterCount', 'CyclomaticComplexity'])
+  @SuppressWarnings(['ParameterCount', 'CyclomaticComplexity', 'MethodSize'])
   static ApplicationPolicyEvaluation evaluatePolicy(final IqPolicyEvaluator iqPolicyEvaluator,
                                                     final Run run,
                                                     final FilePath workspace,
@@ -117,10 +118,10 @@ class IqPolicyEvaluatorUtil
         if (iqPolicyEvaluator.getRunCallflow()) {
           listener.logger.println('callflow analysis is enabled')
 
-          CallflowRunConfiguration callflowRunConfiguration = iqPolicyEvaluator.getCallflowRunConfiguration()
+          CallflowConfiguration callflowConfiguration = iqPolicyEvaluator.getCallflowConfiguration()
 
           callflowOptions = makeCallflowOptions(
-              callflowRunConfiguration,
+              callflowConfiguration,
               remoteScanner,
               workDirectory,
               envVars,
@@ -129,10 +130,6 @@ class IqPolicyEvaluatorUtil
         } else {
           callflowOptions = null
         }
-
-        println("!!! Callflow Options (1): " +
-            "${callflowOptions?.scanTargets}, " +
-            "${callflowOptions?.namespaces}, ${callflowOptions?.additionalConfiguration}")
 
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
@@ -215,13 +212,13 @@ class IqPolicyEvaluatorUtil
   }
 
   private static CallflowOptions makeCallflowOptions(
-      final CallflowRunConfiguration callflowRunConfiguration,
+      final CallflowConfiguration callflowConfiguration,
       final RemoteScanner remoteScanner,
       final File workdir,
       final EnvVars envVars,
       final List<ScanPattern> iqScanPatterns)
   {
-    if (callflowRunConfiguration == null) {
+    if (callflowConfiguration == null) {
       final List<String> expandedPatterns = getScanPatterns(iqScanPatterns, envVars)
       final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
           .collect {
@@ -231,7 +228,7 @@ class IqPolicyEvaluatorUtil
       // defaults to using same targets as original iq scan, when enabled but no additional config passed
       return new CallflowOptions(targets, null, null)
     } else {
-      List<ScanPattern> patterns = callflowRunConfiguration.getCallflowScanPatterns()
+      List<ScanPattern> patterns = callflowConfiguration.getCallflowScanPatterns()
       if (patterns == null) {
         // defaults to using same targets as original iq scan, when no patterns passed with additional config
         patterns = iqScanPatterns
@@ -243,13 +240,13 @@ class IqPolicyEvaluatorUtil
           .collect { it.getAbsolutePath() }
 
       final Properties addtionalConfiguration = new Properties()
-      if (callflowRunConfiguration.getAdditionalConfiguration() != null) {
-        addtionalConfiguration.putAll(callflowRunConfiguration.getAdditionalConfiguration())
+      if (callflowConfiguration.getAdditionalConfiguration() != null) {
+        addtionalConfiguration.putAll(callflowConfiguration.getAdditionalConfiguration())
       }
 
       return new CallflowOptions(
           targets,
-          callflowRunConfiguration.getCallflowNamespaces(),
+          callflowConfiguration.getCallflowNamespaces(),
           addtionalConfiguration)
     }
   }

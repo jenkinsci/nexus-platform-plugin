@@ -40,5 +40,5 @@ interface IqPolicyEvaluator
 
   Boolean getRunCallflow()
 
-  CallflowRunConfiguration getCallflowRunConfiguration();
+  CallflowConfiguration getCallflowConfiguration();
 }
