@@ -734,14 +734,15 @@ class IqPolicyEvaluatorTest
   def 'evaluates the application with additional callflow options when callflow is enabled and additional options are sent'() {
     setup:
       def expectedNamespaces = ['any.namespace']
-      def expectedProps =  new Properties().with {
-        it.put("some", "property")
-        it
-      }
+      def givenAdditionalConfig =  [some: "property"]
       def expectedScanTargets = [
           new File("some-path-1").getAbsolutePath(),
           new File('some-path-2').getAbsolutePath()
       ]
+      def expectedProps =  new Properties().with {
+        it.put("some", "property")
+        it
+      }
 
       def evaluationResult = getAnyApplicationPolicyEvaluation()
 
@@ -757,7 +758,7 @@ class IqPolicyEvaluatorTest
           new CallflowRunConfiguration(
               [new ScanPattern("/some-path/**/*.jar")],
               expectedNamespaces,
-              expectedProps)
+              givenAdditionalConfig)
       ).perform((AbstractBuild) run, launcher, Mock(BuildListener))
 
     then: 'evaluates the results using default callflow options'

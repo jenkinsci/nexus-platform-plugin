@@ -130,6 +130,10 @@ class IqPolicyEvaluatorUtil
           callflowOptions = null
         }
 
+        println("!!! Callflow Options (1): " +
+            "${callflowOptions?.scanTargets}, " +
+            "${callflowOptions?.namespaces}, ${callflowOptions?.additionalConfiguration}")
+
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
             iqStage,
@@ -229,7 +233,7 @@ class IqPolicyEvaluatorUtil
     } else {
       List<ScanPattern> patterns = callflowRunConfiguration.getCallflowScanPatterns()
       if (patterns == null) {
-        // defaults to using same targets as original iq scan, when no patterns passed with addtional config
+        // defaults to using same targets as original iq scan, when no patterns passed with additional config
         patterns = iqScanPatterns
       }
 
@@ -238,10 +242,15 @@ class IqPolicyEvaluatorUtil
       final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
           .collect { it.getAbsolutePath() }
 
+      final Properties addtionalConfiguration = new Properties()
+      if (callflowRunConfiguration.getAdditionalConfiguration() != null) {
+        addtionalConfiguration.putAll(callflowRunConfiguration.getAdditionalConfiguration())
+      }
+
       return new CallflowOptions(
           targets,
           callflowRunConfiguration.getCallflowNamespaces(),
-          callflowRunConfiguration.getAdditionalConfiguration())
+          addtionalConfiguration)
     }
   }
 
