@@ -153,6 +153,11 @@
           <artifactId>xstream</artifactId>
           <groupId>com.thoughtworks.xstream</groupId>
         </exclusion>
+
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!--
