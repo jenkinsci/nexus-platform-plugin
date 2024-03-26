@@ -25,7 +25,7 @@
 
   <groupId>org.sonatype.nexus.ci</groupId>
   <artifactId>nexus-jenkins-plugin</artifactId>
-  <version>3.19.3-SNAPSHOT</version>
+  <version>3.19.4-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <repositories>
@@ -88,6 +88,7 @@
     <enforcer.skip>true</enforcer.skip> <!-- TODO numerous requireUpperBoundDeps, some probably indicative of real problems -->
     <jvnet-localizer-plugin.version>1.23</jvnet-localizer-plugin.version>
     <forkCount>1</forkCount>
+
     <nexus-platform-api.version>5.0.4-SNAPSHOT</nexus-platform-api.version>
 
     <buildsupport.version>36</buildsupport.version>
@@ -139,6 +140,12 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
         <version>5.3.28</version>
+      </dependency>
+      <!-- Override transitive commons-compress and use latest available due to Violations -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.26.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
