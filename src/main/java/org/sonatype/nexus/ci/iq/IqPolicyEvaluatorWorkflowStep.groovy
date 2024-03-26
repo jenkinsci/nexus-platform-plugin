@@ -54,6 +54,10 @@ class IqPolicyEvaluatorWorkflowStep
 
   String advancedProperties
 
+  Boolean runCallflow
+
+  CallflowConfiguration callflowConfiguration;
+
   @DataBoundSetter
   void setIqOrganization(final String iqOrganization) {
     this.iqOrganization = iqOrganization
@@ -90,6 +94,16 @@ class IqPolicyEvaluatorWorkflowStep
   }
 
   @DataBoundSetter
+  void setRunCallflow(Boolean runCallflow) {
+    this.runCallflow = runCallflow
+  }
+
+  @DataBoundSetter
+  void setCallflowConfiguration(final CallflowConfiguration callflowConfiguration) {
+    this.callflowConfiguration = callflowConfiguration
+  }
+
+  @DataBoundSetter
   void setAdvancedProperties(final String advancedProperties) {
     this.advancedProperties = advancedProperties
   }
@@ -122,6 +136,16 @@ class IqPolicyEvaluatorWorkflowStep
   @Override
   void setIqInstanceId(String iqInstanceId) {
     this.iqInstanceId = iqInstanceId ?: IqUtil.getFirstIqConfiguration()?.id
+  }
+
+  @Override
+  Boolean getRunCallflow() {
+    return this.runCallflow
+  }
+
+  @Override
+  CallflowConfiguration getCallflowConfiguration() {
+    return this.callflowConfiguration
   }
 
   @Extension

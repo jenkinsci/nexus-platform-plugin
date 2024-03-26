@@ -58,6 +58,10 @@ class IqPolicyEvaluatorBuildStep
 
   String advancedProperties
 
+  Boolean runCallflow
+
+  CallflowConfiguration callflowConfiguration
+
   @DataBoundConstructor
   @SuppressWarnings('ParameterCount')
   IqPolicyEvaluatorBuildStep(final String iqInstanceId,
@@ -70,7 +74,10 @@ class IqPolicyEvaluatorBuildStep
                              final Boolean failBuildOnScanningErrors,
                              final String jobCredentialsId,
                              final Boolean enableDebugLogging,
-                             final String advancedProperties)
+                             final String advancedProperties,
+                             final Boolean runCallflow,
+                             final CallflowConfiguration callflowConfiguration
+  )
   {
     this.iqInstanceId = iqInstanceId
     this.jobCredentialsId = jobCredentialsId
@@ -83,6 +90,8 @@ class IqPolicyEvaluatorBuildStep
     this.iqApplication = iqApplication
     this.advancedProperties = advancedProperties
     this.enableDebugLogging = enableDebugLogging
+    this.runCallflow = runCallflow
+    this.callflowConfiguration = callflowConfiguration
   }
 
   @DataBoundSetter
@@ -200,6 +209,14 @@ class IqPolicyEvaluatorBuildStep
       def serverUrl = nxiqConfiguration?.serverUrl
       def jobCredentials = jobCredentialsId ?: nxiqConfiguration?.credentialsId
       IqUtil.doFillIqOrganizationItems(serverUrl, jobCredentials, job)
+    }
+
+    Boolean getRunCallflow() {
+      return this.runCallflow
+    }
+
+    CallflowConfiguration getCallflowConfiguration() {
+      return this.callflowConfiguration
     }
   }
 }
