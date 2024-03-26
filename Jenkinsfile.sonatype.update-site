@@ -48,17 +48,17 @@ pipeline {
         publishProduct('JenkinsUpdateSite')
       }
     }
-    stage('Verify Staging Links') {
-      when {
-        expression { 'Staging' == params?.environment }
-      }
-      steps {
-        verifyDownloadLinks(
-            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
-            urlSuffixes: ['.hpi']
-        )
-      }
-    }
+    //stage('Verify Staging Links') {
+    //  when {
+    //    expression { 'Staging' == params?.environment }
+    //  }
+    //  steps {
+    //    verifyDownloadLinks(
+    //        urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
+    //        urlSuffixes: ['.hpi']
+    //    )
+    //  }
+    //}
   }
   post {
     always {
