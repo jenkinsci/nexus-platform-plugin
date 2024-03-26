@@ -45,7 +45,22 @@ pipeline {
     }
     stage('Publish') {
       steps {
-        publishProduct('JenkinsUpdateSite')
+        publishProduct('NXJenkinsPlugin')
+      }
+    }
+    stage('Update latest version table') {
+      steps {
+        updateLatestVersionTable(params.environment, 'INT_JENKINS', getVersionFromBuildName(env.releaseBuild_NAME))
+      }
+    }
+    stage('Update nginx configuration') {
+      steps {
+        updateNginxConfig(params.environment)
+      }
+    }
+    stage('Purge Fastly Download Cache') {
+      steps {
+        build job: 'ops/fastly-purge-downloads', propagate: true, wait: true
       }
     }
     stage('Verify Staging Links') {
@@ -59,9 +74,52 @@ pipeline {
         )
       }
     }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
+            urlSuffixes: ['.hpi']
+        )
+      }
+    }
+    stage('Update Download and Compatibility Page') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        // paligo: update plugin's version in the download and compatibility page
+        // https://sonatype.atlassian.net/wiki/spaces/HELP/pages/270172330/Automation+with+Paligo#Jenkins-Plugin-Version
+        updatePaligoContent contentId: '170404', updates: [
+            [
+                pattern:     /<para[^>]*>[^<]+<\/para>/,
+                replacement: /<para>${confluenceVersion}<\/para>/
+            ]]
+        // paligo: update plugin's links in the download and compatibility page
+        // https://sonatype.atlassian.net/wiki/spaces/HELP/pages/270172330/Automation+with+Paligo#Jenkins-Plugin-Download
+        updatePaligoContent contentId: '170410', updates: [
+            [
+                pattern:     /nexus-jenkins-plugin-[-\d\.]+\.hpi/,
+                replacement: /nexus-jenkins-plugin-${version}.hpi/
+            ]]
+      }
+    }
+    stage('Release JIRA Version') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        // Release the Jira fix version for Integrations
+        jiraSetFixVersion(jira, version)
+      }
+    }
   }
   post {
     always {
+      notifyChat(currentBuild: currentBuild, env: env, room: 'ops-builds')
+      notifyChat(currentBuild: currentBuild, env: env, room: 'int-builds')
       deleteDir()
     }
   }
