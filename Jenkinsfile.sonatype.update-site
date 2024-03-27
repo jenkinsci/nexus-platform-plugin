@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) 2011-present Sonatype, Inc. All rights reserved.
+ * Includes the third-party code listed at http://links.sonatype.com/products/clm/attributions.
+ * "Sonatype" is a trademark of Sonatype, Inc.
+ */
+@Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared', 'bnr-pipeline-library']) _
+
+pipeline {
+  agent { label 'ubuntu-zion' }
+  tools {
+    jdk 'OpenJDK 11'
+  }
+  options {
+    buildDiscarder(
+        logRotator(numToKeepStr: '100', artifactNumToKeepStr: '20')
+    )
+    timestamps()
+  }
+  stages {
+    stage('Export Variables') {
+      steps {
+        exportBuildVariables(params.environment, env.releaseBuild_NAME)
+      }
+    }
+    stage('Checkout Publishing Scripts') {
+      steps {
+        checkoutPublishingScripts()
+      }
+    }
+    stage('Gather Build Artifacts') {
+      steps {
+        gatherBuildArtifacts('integrations/jenkins/release', env.releaseBuild_NUMBER)
+      }
+    }
+    stage('Publish') {
+      steps {
+        publishProduct('JenkinsUpdateSite')
+      }
+    }
+    stage('Verify Staging Links') {
+      when {
+        expression { 'Staging' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center.actual'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/plugin-versions'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center.json'],
+            urlSuffixes: ['.html']
+        )
+      }
+    }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center.actual'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/plugin-versions'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center.json'],
+            urlSuffixes: ['.html']
+        )
+
+      }
+    }
+  }
+  post {
+    always {
+      deleteDir()
+    }
+  }
+}
