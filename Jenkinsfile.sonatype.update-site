@@ -37,17 +37,53 @@ pipeline {
         publishProduct('JenkinsUpdateSite')
       }
     }
-    //stage('Verify Staging Links') {
-    //  when {
-    //    expression { 'Staging' == params?.environment }
-    //  }
-    //  steps {
-    //    verifyDownloadLinks(
-    //        urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/nexus-jenkins-plugin-', version],
-    //        urlSuffixes: ['.hpi']
-    //    )
-    //  }
-    //}
+    stage('Verify Staging Links') {
+      when {
+        expression { 'Staging' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center.actual'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/plugin-versions'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download-staging.sonatype.com/integrations/jenkins/update-center.json'],
+            urlSuffixes: ['.html']
+        )
+      }
+    }
+    stage('Verify Production Links') {
+      when {
+        expression { 'Production' == params?.environment }
+      }
+      steps {
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center.actual'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/plugin-versions'],
+            urlSuffixes: ['.json']
+        )
+        verifyDownloadLinks(
+            urlParts: ['https://download.sonatype.com/integrations/jenkins/update-center.json'],
+            urlSuffixes: ['.html']
+        )
+
+      }
+    }
   }
   post {
     always {
