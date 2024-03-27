@@ -5,11 +5,6 @@
  */
 @Library(['private-pipeline-library', 'jenkins-shared', 'int-jenkins-shared', 'bnr-pipeline-library']) _
 
-def jira = [
-    versionPrefix: 'jenkins', project: 'INT', projectId: '10007',
-    credentialId : 'atlassian-jenkins', autoRelease: true, failOnError: true
-]
-
 // Get jenkins plugin version
 def version = getVersionFromBuildName(env.releaseBuild_NAME)
 
