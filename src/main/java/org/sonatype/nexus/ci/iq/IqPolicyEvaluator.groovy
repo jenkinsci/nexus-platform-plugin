@@ -37,4 +37,8 @@ interface IqPolicyEvaluator
   Boolean getEnableDebugLogging()
 
   String getAdvancedProperties()
+
+  Boolean getRunCallflow()
+
+  CallflowConfiguration getCallflowConfiguration();
 }

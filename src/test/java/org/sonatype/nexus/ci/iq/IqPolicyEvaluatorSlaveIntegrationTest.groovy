@@ -56,7 +56,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
@@ -79,7 +79,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
@@ -98,7 +98,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
@@ -182,7 +182,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
@@ -206,7 +206,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.setScm(new ExtractResourceSCM(path))
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port())
 
     and: 'a mock IQ server stub'
@@ -281,7 +281,7 @@ class IqPolicyEvaluatorSlaveIntegrationTest
       project.assignedNode = jenkins.createSlave()
       project.buildersList.
           add(new IqPolicyEvaluatorBuildStep('id', 'stage', null, new SelectedApplication('app'), [], [],
-              false, false, 'cred-id', null, null))
+              false, false, 'cred-id', null, null, false, null))
       configureJenkins(jenkins.jenkins, wireMockRule.port(), true)
 
     and: 'a mock IQ server stub'

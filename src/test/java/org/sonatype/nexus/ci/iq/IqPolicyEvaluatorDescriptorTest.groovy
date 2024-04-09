@@ -383,7 +383,7 @@ abstract class IqPolicyEvaluatorDescriptorTest
 
     when:
       def buildStep = new IqPolicyEvaluatorBuildStep(null, null, null, null, null, null, null, null,
-          'jobSpecificCredentialsId', null, null)
+          'jobSpecificCredentialsId', null, null, false, null)
 
     then:
       buildStep.jobCredentialsId == 'jobSpecificCredentialsId'
