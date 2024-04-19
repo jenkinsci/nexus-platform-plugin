@@ -33,6 +33,17 @@ pipeline {
   stages {
     stage('Parallel Test Groups') {
       parallel {
+        stage('Jenkins 2.361.1 - Java 11') {
+          agent { label agentLabel }
+          steps {
+            runTests('OpenJDK 11')
+          }
+          post {
+            always {
+              captureResultsAndCleanup()
+            }
+          }
+        }
         stage('Jenkins 2.401.1 - Java 11') {
           agent { label agentLabel }
           steps {

@@ -160,6 +160,10 @@
           <artifactId>xstream</artifactId>
           <groupId>com.thoughtworks.xstream</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>com.sonatype.cat.bomxray</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!--
