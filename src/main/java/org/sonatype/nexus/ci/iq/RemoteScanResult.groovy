@@ -12,6 +12,9 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.util.stream.Collector
+import java.util.stream.Collectors
+
 import com.sonatype.nexus.api.iq.scan.ScanResult
 
 import com.sonatype.insight.scan.model.Scan
@@ -24,9 +27,18 @@ class RemoteScanResult
 
   private final FilePath filePath
 
+  private final List<FilePath> filePaths
+
   RemoteScanResult(Scan scan, FilePath filePath) {
     this.filePath = filePath
     this.scan = scan
+    this.filePaths = [];
+  }
+
+  RemoteScanResult(Scan scan, FilePath filePath, List<FilePath> filePaths) {
+    this.filePath = filePath
+    this.scan = scan
+    this.filePaths = filePaths
   }
 
   /**
@@ -35,8 +47,16 @@ class RemoteScanResult
    */
   ScanResult copyToLocalScanResult() {
     def localFile = File.createTempFile('scan', '.xml.gz')
-    new FileOutputStream(localFile).withStream { filePath.copyTo(it) }
-    return new ScanResult(scan, localFile)
+    def additionalFiles = filePaths.stream().map {
+      File.createTempFile( it.baseName.split("\\.")[0],'.json.gz')
+    }.collect(Collectors.toList())
+    new FileOutputStream(localFile).withStream {
+      filePath.copyTo(it)
+    }
+    additionalFiles.stream().forEach {
+      new FileOutputStream(it).withStream { filePath.copyTo(it) }
+    }
+    return new ScanResult(scan, localFile, additionalFiles)
   }
 
   /**
@@ -45,5 +65,6 @@ class RemoteScanResult
    */
   boolean delete() {
     filePath.delete()
+    filePaths.stream().map {path -> path.delete()}.every()
   }
 }

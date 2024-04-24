@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import com.sonatype.insight.scan.model.Scan
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 import com.sonatype.nexus.api.iq.internal.InternalIqClientBuilder
@@ -242,5 +243,26 @@ class RemoteScannerTest
     1 * directoryScanner.setExcludes(*_) >> { arguments ->
       assert arguments[0] == ['*.zip','*.tar']
     }
+  }
+
+  def "create a sast file"() {
+    setup:
+      def remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar','!*.zip','*.war','!*.tar','!*.json'], [], workspace, proprietaryConfig, log,
+          "instance-id", null, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> ['scan.gz','sast.json']
+
+    when:
+      def result = remoteScanner.call()
+
+    then:
+      iqClient.scan(*_) >> {
+        new ScanResult(new Scan(), new File(path + '/sast.json'), List.of(new File(path)))
+      }
+      assert result.copyToLocalScanResult().additionalFiles.size() == 1
+
+    where:
+      path = 'src/test/resources/org/sonatype/nexus/ci/iq/'
+      workspace = new FilePath(new File(path))
   }
 }

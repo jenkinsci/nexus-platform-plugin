@@ -12,12 +12,18 @@
  */
 package org.sonatype.nexus.ci.iq
 
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.Files
+
 import com.sonatype.nexus.api.iq.ProprietaryConfig
 import com.sonatype.nexus.api.iq.internal.InternalIqClient
 
 import hudson.FilePath
 import jenkins.security.MasterToSlaveCallable
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.codehaus.plexus.util.DirectoryScanner
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger
 
 class RemoteScanner
@@ -98,7 +104,11 @@ class RemoteScanner
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
-    return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
+    return maybeGetSastJson(targets)
+        .map({ sastFile -> gzipFile(sastFile, workDirectory.toPath().toString()) })
+        .map ({sastFile -> new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile), List.of(new FilePath(sastFile)))})
+        .orElseGet ({new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))})
+
   }
 
   List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
@@ -142,5 +152,28 @@ class RemoteScanner
     ClassLoader classLoader = this.class.classLoader
     // set context ClassLoader for current thread
     Thread.currentThread().setContextClassLoader(classLoader)
+  }
+
+  private static Optional<File> maybeGetSastJson(List<File> targets) {
+    return targets.stream()
+        .filter({ scanTarget -> scanTarget.toPath().toString().endsWith("sast.json") })
+        .findFirst();
+  }
+
+  private File gzipFile(File sastFile, String path) {
+    Path sastGzipPath = Paths.get(path, "sast.json.gz");
+    sastGzipPath.toFile().deleteOnExit();
+
+    try {
+      FileInputStream fis = new FileInputStream(sastFile);
+      GzipCompressorOutputStream gzipOut = new GzipCompressorOutputStream(
+          new BufferedOutputStream(Files.newOutputStream(sastGzipPath)))
+      IOUtils.copy(fis, gzipOut);
+      return sastGzipPath.toFile();
+    }
+    catch (IOException e) {
+      log.error("Error while compressing sast.json file", e);
+      throw new RuntimeException(e);
+    }
   }
 }

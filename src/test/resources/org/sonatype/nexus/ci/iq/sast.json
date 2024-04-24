@@ -1,0 +1,65 @@
+{
+  "test/vulnerable-dependency-test.jar" : {
+    "findings" : [ ],
+    "innerJars" : {
+      "mylibrary.jar" : {
+        "findings" : [ {
+          "description" : "The product constructs all or part of an OS command using potentially dangerous input from an upstream component. If it does not neutralize or sanitize run-time values used in this command, it could modify the intended output command when it is sent to a downstream component.",
+          "identity" : "java-reverse-shell",
+          "cwe" : 78,
+          "severity" : "CRITICAL",
+          "confidence" : "MEDIUM",
+          "references" : [ ],
+          "sourceFilename" : "MyLibrary.java",
+          "line" : 28,
+          "className" : {
+            "name" : "com.mylibrary.MyLibrary",
+            "internalName" : "com/mylibrary/MyLibrary",
+            "descriptor" : "Lcom/mylibrary/MyLibrary;",
+            "namespace" : "com.mylibrary"
+          },
+          "methodName" : "maliciousReverseShell",
+          "coordinates" : null,
+          "jarHierarchy" : "test/vulnerable-dependency-test.jar:mylibrary.jar"
+        }, {
+          "description" : "The product constructs all or part of an OS command using potentially dangerous input from an upstream component. If it does not neutralize or sanitize run-time values used in this command, it could modify the intended output command when it is sent to a downstream component.",
+          "identity" : "java-reverse-shell",
+          "cwe" : 78,
+          "severity" : "CRITICAL",
+          "confidence" : "MEDIUM",
+          "references" : [ ],
+          "sourceFilename" : "MyLibrary.java",
+          "line" : 25,
+          "className" : {
+            "name" : "com.mylibrary.MyLibrary",
+            "internalName" : "com/mylibrary/MyLibrary",
+            "descriptor" : "Lcom/mylibrary/MyLibrary;",
+            "namespace" : "com.mylibrary"
+          },
+          "methodName" : "maliciousReverseShell",
+          "coordinates" : null,
+          "jarHierarchy" : "test/vulnerable-dependency-test.jar:mylibrary.jar"
+        }, {
+          "description" : "The product constructs all or part of an OS command using potentially dangerous input from an upstream component. If it does not neutralize or sanitize run-time values used in this command, it could modify the intended output command when it is sent to a downstream component.",
+          "identity" : "java-reverse-shell",
+          "cwe" : 78,
+          "severity" : "CRITICAL",
+          "confidence" : "MEDIUM",
+          "references" : [ ],
+          "sourceFilename" : "MyLibrary.java",
+          "line" : 27,
+          "className" : {
+            "name" : "com.mylibrary.MyLibrary",
+            "internalName" : "com/mylibrary/MyLibrary",
+            "descriptor" : "Lcom/mylibrary/MyLibrary;",
+            "namespace" : "com.mylibrary"
+          },
+          "methodName" : "maliciousReverseShell",
+          "coordinates" : null,
+          "jarHierarchy" : "test/vulnerable-dependency-test.jar:mylibrary.jar"
+        } ],
+        "innerJars" : { }
+      }
+    }
+  }
+}
