@@ -93,6 +93,22 @@ class RemoteScanner
         targets = targets.toList()
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
+      } else {
+        def exclusions = scanPatterns.findAll { it.startsWith('!') }
+        log.info("[RemoteScanner-Jenkins] exclusions: {}", exclusions)
+        def excludePatterns = exclusions.collect { it.substring(1) }
+        log.info("[RemoteScanner-Jenkins] excludePatterns: {}", excludePatterns)
+        targets = targets.toList()
+        targets = targets.findAll { file ->
+          def fileName = file.name
+          def excluded = excludePatterns.any { pat ->
+            fileName.endsWith(pat)
+          }
+          !excluded
+        }
+
+        targets = Collections.unmodifiableList(targets)
+        log.info("[RemoteScanner-Jenkins] targets: {}", targets.toString())
       }
     }
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
@@ -105,13 +121,19 @@ class RemoteScanner
     def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
     def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
     def includeScanPatterns = normalizedScanPatterns.findAll{!it.startsWith(EXCLUDE_MARKER)}
-    def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
+    def excludes = [] as List
+    for (pattern in normalizedScanPatterns) {
+      if (pattern.startsWith('!')) {
+        excludes.add(pattern.substring(1))
+      }
+    }
+    //def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
     directoryScanner.setBasedir(workDir)
     directoryScanner.setIncludes(includeScanPatterns.toArray(new String[includeScanPatterns.size()]))
-    directoryScanner.setExcludes(excludeScanPatterns.toArray(new String[excludeScanPatterns.size()]))
+    directoryScanner.setExcludes(excludes.toArray(new String[excludes.size()]))
     directoryScanner.addDefaultExcludes()
     directoryScanner.scan()
-    return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
+       return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
         .collect { f -> new File(workDir, f) }
         .sort()
         .asImmutable()
