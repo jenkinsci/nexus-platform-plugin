@@ -94,21 +94,12 @@ class RemoteScanner
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
       } else {
-        def exclusions = scanPatterns.findAll { it.startsWith('!') }
-        log.info("[RemoteScanner-Jenkins] exclusions: {}", exclusions)
-        def excludePatterns = exclusions.collect { it.substring(1) }
-        log.info("[RemoteScanner-Jenkins] excludePatterns: {}", excludePatterns)
-        targets = targets.toList()
-        targets = targets.findAll { file ->
-          def fileName = file.name
-          def excluded = excludePatterns.any { pat ->
-            fileName.endsWith(pat)
-          }
-          !excluded
+        if (scanPatterns != null || !scanPatterns.isEmpty()) {
+          def filesExcludes = scanPatterns.findAll { it.startsWith('!') }
+              .collect { it.substring(1) }.join(',')
+          advancedProperties.setProperty("fileExcludes", filesExcludes)
         }
-
-        targets = Collections.unmodifiableList(targets)
-        log.info("[RemoteScanner-Jenkins] targets: {}", targets.toString())
+        log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
       }
     }
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
