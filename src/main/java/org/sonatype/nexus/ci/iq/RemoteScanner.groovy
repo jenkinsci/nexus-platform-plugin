@@ -97,6 +97,10 @@ class RemoteScanner
         if (scanPatterns != null || !scanPatterns.isEmpty()) {
           def filesExcludes = scanPatterns.findAll { it.startsWith('!') }
               .collect { it.substring(1) }.join(',')
+          def userFileExcludes = advancedProperties.getProperty("fileExcludes")
+          if (userFileExcludes) {
+            fileExcludes = userFileExcludes + ',' + fileExcludes 
+          }
           advancedProperties.setProperty("fileExcludes", filesExcludes)
         }
         log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
