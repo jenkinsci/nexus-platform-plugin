@@ -24,10 +24,21 @@ class RemoteScanResult
 
   private final FilePath filePath
 
-  RemoteScanResult(Scan scan, FilePath filePath) {
+  private final List<String> originalRemoteTargetsAbsolutePaths
+
+  RemoteScanResult(Scan scan, FilePath filePath, List<String> originalRemoteTargetsAbsolutePaths) {
     this.filePath = filePath
     this.scan = scan
+    this.originalRemoteTargetsAbsolutePaths = originalRemoteTargetsAbsolutePaths
   }
+
+  /**
+   * The list of remote target file absolute paths, used by callflow options.
+   * @return a list of remote target file absolute paths
+   */
+   List<File> getOriginalRemoteTargetsAbsolutePaths() {
+    return originalRemoteTargetsAbsolutePaths
+   }
 
   /**
    * create a copy as a ScanResult with a local copy of the scan file

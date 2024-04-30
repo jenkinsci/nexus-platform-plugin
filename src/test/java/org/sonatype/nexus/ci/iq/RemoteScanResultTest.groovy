@@ -32,7 +32,7 @@ class RemoteScanResultTest extends Specification
     and: 'a scan'
       final Scan scan = Mock()
     and: 'a new remote scan result wrapped around the scan and agent file'
-      final remoteScanResult = new RemoteScanResult(scan, filePath)
+      final remoteScanResult = new RemoteScanResult(scan, filePath, new ArrayList<String>())
     expect: 'we can make a local copy of the result'
       final scanResult = remoteScanResult.copyToLocalScanResult()
       scanResult.scan == scan

@@ -122,14 +122,15 @@ class IqPolicyEvaluatorUtil
 
           callflowOptions = makeCallflowOptions(
               callflowConfiguration,
-              remoteScanner,
-              workDirectory,
-              envVars,
+              remoteScanResult.getOriginalRemoteTargetsAbsolutePaths(),
               iqPolicyEvaluator.iqScanPatterns
           )
         } else {
           callflowOptions = null
         }
+
+        loggerBridge.println("********************************")
+        loggerBridge.println(callflowOptions)
 
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
@@ -213,18 +214,10 @@ class IqPolicyEvaluatorUtil
 
   private static CallflowOptions makeCallflowOptions(
       final CallflowConfiguration callflowConfiguration,
-      final RemoteScanner remoteScanner,
-      final File workdir,
-      final EnvVars envVars,
+      final List<String> targets,
       final List<ScanPattern> iqScanPatterns)
   {
     if (callflowConfiguration == null) {
-      final List<String> expandedPatterns = getScanPatterns(iqScanPatterns, envVars)
-      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
-          .collect {
-            return it.getAbsolutePath()
-          }
-
       // defaults to using same targets as original iq scan, when enabled but no additional config passed
       return new CallflowOptions(targets, null, null)
     } else {
@@ -233,11 +226,6 @@ class IqPolicyEvaluatorUtil
         // defaults to using same targets as original iq scan, when no patterns passed with additional config
         patterns = iqScanPatterns
       }
-
-      final List<String> expandedPatterns = getScanPatterns(patterns, envVars)
-
-      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
-          .collect { it.getAbsolutePath() }
 
       final Properties addtionalConfiguration = new Properties()
       if (callflowConfiguration.getAdditionalConfiguration() != null) {

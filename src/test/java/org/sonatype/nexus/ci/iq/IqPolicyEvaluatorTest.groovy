@@ -717,13 +717,14 @@ class IqPolicyEvaluatorTest
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
       channel.call(_) >> remoteScanResult
+      remoteScanResult.getOriginalRemoteTargetsAbsolutePaths() >> defaultCallflowOptions.scanTargets
 
     when:
       getBuildStepForCallflowTests(true, null)
           .perform((AbstractBuild) run, launcher, Mock(BuildListener))
 
     then: 'evaluates the results using default callflow options'
-      1 * remoteScanner.getScanTargets(_, _) >> [pathReturnedByExpandingIqScanPatterns]
+      1 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths()
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == defaultCallflowOptions.scanTargets &&
             it.namespaces == null &&
@@ -751,6 +752,7 @@ class IqPolicyEvaluatorTest
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
       channel.call(_) >> remoteScanResult
+      remoteScanResult.getOriginalRemoteTargetsAbsolutePaths() >> expectedScanTargets
 
     when:
       getBuildStepForCallflowTests(
@@ -762,7 +764,7 @@ class IqPolicyEvaluatorTest
       ).perform((AbstractBuild) run, launcher, Mock(BuildListener))
 
     then: 'evaluates the results using default callflow options'
-      1 * remoteScanner.getScanTargets(*_) >> [new File("some-path-1"), new File('some-path-2')]
+      1 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths()
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == expectedScanTargets &&
             it.namespaces == expectedNamespaces &&
