@@ -98,8 +98,8 @@ class RemoteScanner
           def filesExcludes = scanPatterns.findAll { it.startsWith('!') }
               .collect { it.substring(1) }.join(',')
           def userFileExcludes = advancedProperties.getProperty("fileExcludes")
-          if (userFileExcludes) {
-            fileExcludes = userFileExcludes + ',' + fileExcludes 
+          if (userFileExcludes != null && !userFileExcludes.trim().isEmpty()) {
+            filesExcludes = userFileExcludes + ',' + filesExcludes
           }
           advancedProperties.setProperty("fileExcludes", filesExcludes)
         }
