@@ -22,6 +22,7 @@ import org.sonatype.nexus.ci.config.GlobalNexusConfiguration
 import org.sonatype.nexus.ci.config.NxiqConfiguration
 import org.sonatype.nexus.ci.util.IqUtil
 import org.sonatype.nexus.ci.util.LoggerBridge
+import org.sonatype.nexus.ci.iq.RemoteScanResult
 
 import hudson.AbortException
 import hudson.EnvVars
@@ -90,16 +91,19 @@ class IqPolicyEvaluatorUtil
 
       def licensedFeatures = iqClient.getLicensedFeatures()
 
-      def remoteScanner = RemoteScannerFactory.
-          getRemoteScanner(applicationId, iqStage, expandedScanPatterns, expandedModuleExcludes,
+      Closure<RemoteScanResult> remoteScanResultByScanPattern = { scanPattern ->
+        def remoteScanner = RemoteScannerFactory.
+          getRemoteScanner(applicationId, iqStage, scanPattern, expandedModuleExcludes,
               workspace, proprietaryConfig, loggerBridge, GlobalNexusConfiguration.instanceId,
               advancedProperties, envVars, licensedFeatures)
+        launcher.getChannel().call(remoteScanner)
+      }
 
       def scanResult
       def evaluationResult
       def remoteScanResult
       try {
-        remoteScanResult = launcher.getChannel().call(remoteScanner)
+        remoteScanResult = remoteScanResultByScanPattern(expandedScanPatterns)
         scanResult = remoteScanResult.copyToLocalScanResult()
 
         def repositoryUrlFinder = RemoteRepositoryUrlFinderFactory
@@ -122,8 +126,8 @@ class IqPolicyEvaluatorUtil
 
           callflowOptions = makeCallflowOptions(
               callflowConfiguration,
-              remoteScanResult.getOriginalRemoteTargetsAbsolutePaths(),
-              iqPolicyEvaluator.iqScanPatterns
+              remoteScanResultByScanPattern,
+              remoteScanResult.getOriginalRemoteTargetsAbsolutePaths()
           )
         } else {
           callflowOptions = null
@@ -214,24 +218,23 @@ class IqPolicyEvaluatorUtil
 
   private static CallflowOptions makeCallflowOptions(
       final CallflowConfiguration callflowConfiguration,
-      final List<String> targets,
-      final List<ScanPattern> iqScanPatterns)
+      final Closure<RemoteScanResult> remoteScanResultByScanPattern,
+      final List<String> iqScanTargets)
   {
+    def targets = iqScanTargets
     if (callflowConfiguration == null) {
       // defaults to using same targets as original iq scan, when enabled but no additional config passed
-      return new CallflowOptions(targets, null, null)
+      return new CallflowOptions(iqScanTargets, null, null)
     } else {
       List<ScanPattern> patterns = callflowConfiguration.getCallflowScanPatterns()
-      if (patterns == null) {
+      if (patterns != null) {
         // defaults to using same targets as original iq scan, when no patterns passed with additional config
-        patterns = iqScanPatterns
+        targets = remoteScanResultByScanPattern(patterns).getOriginalRemoteTargetsAbsolutePaths()
       }
-
       final Properties addtionalConfiguration = new Properties()
       if (callflowConfiguration.getAdditionalConfiguration() != null) {
         addtionalConfiguration.putAll(callflowConfiguration.getAdditionalConfiguration())
       }
-
       return new CallflowOptions(
           targets,
           callflowConfiguration.getCallflowNamespaces(),

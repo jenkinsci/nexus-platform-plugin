@@ -36,7 +36,7 @@ class RemoteScanResult
    * The list of remote target file absolute paths, used by callflow options.
    * @return a list of remote target file absolute paths
    */
-   List<File> getOriginalRemoteTargetsAbsolutePaths() {
+   List<String> getOriginalRemoteTargetsAbsolutePaths() {
     return originalRemoteTargetsAbsolutePaths
    }
 
