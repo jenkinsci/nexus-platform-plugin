@@ -112,19 +112,13 @@ class RemoteScanner
     def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
     def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
     def includeScanPatterns = normalizedScanPatterns.findAll{!it.startsWith(EXCLUDE_MARKER)}
-    def excludes = [] as List
-    for (pattern in normalizedScanPatterns) {
-      if (pattern.startsWith('!')) {
-        excludes.add(pattern.substring(1))
-      }
-    }
-    //def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
+    def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
     directoryScanner.setBasedir(workDir)
     directoryScanner.setIncludes(includeScanPatterns.toArray(new String[includeScanPatterns.size()]))
-    directoryScanner.setExcludes(excludes.toArray(new String[excludes.size()]))
+    directoryScanner.setExcludes(excludeScanPatterns.toArray(new String[excludeScanPatterns.size()]))
     directoryScanner.addDefaultExcludes()
     directoryScanner.scan()
-       return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
+    return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
         .collect { f -> new File(workDir, f) }
         .sort()
         .asImmutable()
