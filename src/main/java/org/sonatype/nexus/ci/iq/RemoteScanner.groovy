@@ -23,15 +23,10 @@ import org.slf4j.Logger
 class RemoteScanner
     extends MasterToSlaveCallable<RemoteScanResult, RuntimeException>
 {
-  static final List<String> DEFAULT_SCAN_PATTERN =
-      ['**/*.jar', '**/*.war', '**/*.ear', '**/*.zip', '**/*.tar.gz']
-
   static final List<String> DEFAULT_MODULE_INCLUDES =
       ['**/sonatype-clm/module.xml', '**/nexus-iq/module.xml']
 
   public static final String CONTAINER = 'container:'
-
-  public static final String EXCLUDE_MARKER = '!'
 
   private final String appId
 
@@ -87,7 +82,7 @@ class RemoteScanner
 
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
-    def targets = getScanTargets(workDirectory, scanPatterns)
+    def targets = ScanPatternUtil.getScanTargets(workDirectory, scanPatterns)
     for (String pattern : scanPatterns) {
       if (pattern.startsWith(CONTAINER)) {
         targets = targets.toList()
@@ -99,22 +94,6 @@ class RemoteScanner
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
     return new RemoteScanResult(scanResult.scan, new FilePath(scanResult.scanFile))
-  }
-
-  List<File> getScanTargets(final File workDir, final List<String> scanPatterns) {
-    def directoryScanner = RemoteScannerFactory.getDirectoryScanner()
-    def normalizedScanPatterns = scanPatterns ?: DEFAULT_SCAN_PATTERN
-    def includeScanPatterns = normalizedScanPatterns.findAll{!it.startsWith(EXCLUDE_MARKER)}
-    def excludeScanPatterns = normalizedScanPatterns.findAll{it.startsWith(EXCLUDE_MARKER)}.collect{it.substring(1)}
-    directoryScanner.setBasedir(workDir)
-    directoryScanner.setIncludes(includeScanPatterns.toArray(new String[includeScanPatterns.size()]))
-    directoryScanner.setExcludes(excludeScanPatterns.toArray(new String[excludeScanPatterns.size()]))
-    directoryScanner.addDefaultExcludes()
-    directoryScanner.scan()
-    return (directoryScanner.getIncludedDirectories() + directoryScanner.getIncludedFiles())
-        .collect { f -> new File(workDir, f) }
-        .sort()
-        .asImmutable()
   }
 
   List<File> getModuleIndices(final File workDirectory, final List<String> moduleExcludes) {
