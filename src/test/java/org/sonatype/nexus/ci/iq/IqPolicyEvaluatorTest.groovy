@@ -725,7 +725,7 @@ class IqPolicyEvaluatorTest
 
     then: 'evaluates the results using default callflow options'
       // Retrieve results only because callflow uses the same pattern as IQ scan.
-      1 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths()
+      1 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths() >> defaultCallflowOptions.scanTargets
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == defaultCallflowOptions.scanTargets &&
             it.namespaces == null &&
@@ -766,7 +766,7 @@ class IqPolicyEvaluatorTest
 
     then: 'evaluates the results using default callflow options'
       // Retrieve results twice, once for IQ scan, once for the callflow-specific pattern.
-      2 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths()
+      2 * remoteScanResult.getOriginalRemoteTargetsAbsolutePaths() >> expectedScanTargets
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == expectedScanTargets &&
             it.namespaces == expectedNamespaces &&

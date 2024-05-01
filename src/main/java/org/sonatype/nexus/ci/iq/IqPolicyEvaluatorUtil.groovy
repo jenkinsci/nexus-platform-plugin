@@ -133,9 +133,6 @@ class IqPolicyEvaluatorUtil
           callflowOptions = null
         }
 
-        loggerBridge.println("********************************")
-        loggerBridge.println(callflowOptions)
-
         evaluationResult = iqClient.evaluateApplication(
             applicationId,
             iqStage,
