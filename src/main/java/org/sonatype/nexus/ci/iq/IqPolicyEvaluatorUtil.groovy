@@ -124,7 +124,6 @@ class IqPolicyEvaluatorUtil
           callflowOptions = makeCallflowOptions(
               launcher,
               callflowConfiguration,
-              remoteScanner,
               workDirectory,
               envVars,
               iqPolicyEvaluator.iqScanPatterns
