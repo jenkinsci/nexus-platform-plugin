@@ -88,22 +88,21 @@ class RemoteScanner
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
+    def filesExcludesSet = [] as Set
     for (String pattern : scanPatterns) {
       if (pattern.startsWith(CONTAINER)) {
         targets = targets.toList()
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
       } else {
-        if (scanPatterns != null || !scanPatterns.isEmpty()) {
-          def filesExcludes = scanPatterns.findAll { it.startsWith('!') }
-              .collect { it.substring(1) }.join(',')
-          if (filesExcludes) {
-            advancedProperties.setProperty("fileExcludes", filesExcludes)
-            log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
+          if (isAnExclusionPattern(pattern)) {
+            filesExcludesSet.add(pattern.substring(1))
           }
-        }
       }
     }
+
+    addAllFileExcludesToAdvancedProperties(filesExcludesSet)
+
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
@@ -139,6 +138,23 @@ class RemoteScanner
         .collect { f -> new File(workDirectory, f) }
         .sort()
         .asImmutable()
+  }
+
+  private boolean isAnExclusionPattern(String pattern) {
+    pattern.startsWith('!')
+  }
+
+  private void addAllFileExcludesToAdvancedProperties(Set filesExcludesSet) {
+    def userFileExcludes = advancedProperties.getProperty("fileExcludes")
+    if (userFileExcludes) {
+      filesExcludesSet.addAll(userFileExcludes.split(','))
+    }
+
+    def filesExcludes = filesExcludesSet.join(',')
+    if (filesExcludes) {
+      advancedProperties.setProperty("fileExcludes", filesExcludes)
+      log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
+    }
   }
 
   /**
