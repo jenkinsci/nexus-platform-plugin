@@ -107,7 +107,8 @@ class IqPolicyEvaluatorUtil
                 envVars)
         def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
         if (repositoryUrl != null) {
-          def repositoryPath = Paths.get(workspace.getRemote(),".git").toString()
+          def repositoryPath = Paths.get(workspace.getRemote(), '.git').toString()
+
           iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl, repositoryPath)
         }
 
@@ -215,7 +216,6 @@ class IqPolicyEvaluatorUtil
   private static CallflowOptions makeCallflowOptions(
       final Launcher launcher,
       final CallflowConfiguration callflowConfiguration,
-      final RemoteScanner remoteScanner,
       final File workdir,
       final EnvVars envVars,
       final List<ScanPattern> iqScanPatterns)

@@ -1,5 +1,6 @@
 package org.sonatype.nexus.ci.iq
 
+@SuppressWarnings(['AbcMetric'])
 class ScanPatternUtil
 {
   static final List<String> DEFAULT_SCAN_PATTERN =

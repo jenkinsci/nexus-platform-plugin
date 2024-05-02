@@ -20,7 +20,7 @@ class RemoteFileResolver
   private final File workDir;
   private final List<String> scanPatterns;
 
-  RemoteFileResolver(final File workDir,final List<String> scanPatterns) {
+  RemoteFileResolver(final File workDir, final List<String> scanPatterns) {
     this.workDir = workDir
     this.scanPatterns = scanPatterns
   }
