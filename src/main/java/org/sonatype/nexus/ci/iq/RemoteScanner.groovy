@@ -99,9 +99,8 @@ class RemoteScanner
             filesExcludesSet.add(pattern.substring(1))
           }
       }
+      addAllFileExcludesToAdvancedProperties(filesExcludesSet)
     }
-
-    addAllFileExcludesToAdvancedProperties(filesExcludesSet)
 
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
@@ -145,12 +144,17 @@ class RemoteScanner
   }
 
   private void addAllFileExcludesToAdvancedProperties(Set filesExcludesSet) {
-    def userFileExcludes = advancedProperties.getProperty("fileExcludes")
+    def userFileExcludes = advancedProperties != null ? advancedProperties.getProperty("fileExcludes") : null
     if (userFileExcludes) {
-      filesExcludesSet.addAll(userFileExcludes.split(','))
+      if (userFileExcludes.length() > 0) {
+        filesExcludesSet.addAll(userFileExcludes.split(','))
+      } else {
+        filesExcludesSet.addAll(userFileExcludes)
+      }
     }
 
     def filesExcludes = filesExcludesSet.join(',')
+
     if (filesExcludes) {
       advancedProperties.setProperty("fileExcludes", filesExcludes)
       log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
