@@ -33,6 +33,10 @@ class RemoteScanner
 
   public static final String EXCLUDE_MARKER = '!'
 
+  public static final String COMMA_CHAR = ','
+
+  public static final String FILE_EXCLUDES = "fileExcludes"
+
   private final String appId
 
   private final String stageId
@@ -140,24 +144,24 @@ class RemoteScanner
   }
 
   private boolean isAnExclusionPattern(String pattern) {
-    pattern.startsWith('!')
+    pattern.startsWith(EXCLUDE_MARKER)
   }
 
   private void addAllFileExcludesToAdvancedProperties(Set filesExcludesSet) {
-    def userFileExcludes = advancedProperties != null ? advancedProperties.getProperty("fileExcludes") : null
+    def userFileExcludes = advancedProperties != null ? advancedProperties.getProperty(FILE_EXCLUDES) : null
     if (userFileExcludes) {
       if (userFileExcludes.length() > 0) {
-        filesExcludesSet.addAll(userFileExcludes.split(','))
+        filesExcludesSet.addAll(userFileExcludes.split(COMMA_CHAR))
       } else {
         filesExcludesSet.addAll(userFileExcludes)
       }
     }
 
-    def filesExcludes = filesExcludesSet.join(',')
+    def filesExcludes = filesExcludesSet.join(COMMA_CHAR)
 
     if (filesExcludes) {
-      advancedProperties.setProperty("fileExcludes", filesExcludes)
-      log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty("fileExcludes"))
+      advancedProperties.setProperty(FILE_EXCLUDES, filesExcludes)
+      log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty(FILE_EXCLUDES))
     }
   }
 
