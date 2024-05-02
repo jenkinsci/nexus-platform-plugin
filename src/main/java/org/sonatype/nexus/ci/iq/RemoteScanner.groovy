@@ -99,8 +99,8 @@ class RemoteScanner
             filesExcludesSet.add(pattern.substring(1))
           }
       }
-      addAllFileExcludesToAdvancedProperties(filesExcludesSet)
     }
+    addAllFileExcludesToAdvancedProperties(filesExcludesSet)
 
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
