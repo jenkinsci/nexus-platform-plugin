@@ -33,6 +33,10 @@ class RemoteScanner
 
   public static final String EXCLUDE_MARKER = '!'
 
+  public static final String COMMA_CHAR = ','
+
+  public static final String FILE_EXCLUDES = "fileExcludes"
+
   private final String appId
 
   private final String stageId
@@ -88,13 +92,20 @@ class RemoteScanner
     InternalIqClient iqClient = IqClientFactory.getIqLocalClient(log, instanceId)
     def workDirectory = new File(workspace.getRemote())
     def targets = getScanTargets(workDirectory, scanPatterns)
+    def filesExcludesSet = [] as Set
     for (String pattern : scanPatterns) {
       if (pattern.startsWith(CONTAINER)) {
         targets = targets.toList()
         targets.add(new File(pattern))
         targets = Collections.unmodifiableList(targets)
+      } else {
+          if (isAnExclusionPattern(pattern)) {
+            filesExcludesSet.add(pattern.substring(1))
+          }
       }
     }
+    addAllFileExcludesToAdvancedProperties(filesExcludesSet)
+
     def moduleIndices = getModuleIndices(workDirectory, moduleExcludes)
     def scanResult = iqClient.scan(appId, proprietaryConfig, advancedProperties, targets, moduleIndices, workDirectory,
         envVars, licensedFeatures)
@@ -130,6 +141,28 @@ class RemoteScanner
         .collect { f -> new File(workDirectory, f) }
         .sort()
         .asImmutable()
+  }
+
+  private boolean isAnExclusionPattern(String pattern) {
+    pattern.startsWith(EXCLUDE_MARKER)
+  }
+
+  private void addAllFileExcludesToAdvancedProperties(Set filesExcludesSet) {
+    def userFileExcludes = advancedProperties != null ? advancedProperties.getProperty(FILE_EXCLUDES) : null
+    if (userFileExcludes) {
+      if (userFileExcludes.length() > 0) {
+        filesExcludesSet.addAll(userFileExcludes.split(COMMA_CHAR))
+      } else {
+        filesExcludesSet.addAll(userFileExcludes)
+      }
+    }
+
+    def filesExcludes = filesExcludesSet.join(COMMA_CHAR)
+
+    if (filesExcludes) {
+      advancedProperties.setProperty(FILE_EXCLUDES, filesExcludes)
+      log.debug("[RemoteScanner-Jenkins] fileExcludes: {}", advancedProperties.getProperty(FILE_EXCLUDES))
+    }
   }
 
   /**
