@@ -33,6 +33,9 @@ class RemoteScannerTest
   @Shared
   ProprietaryConfig proprietaryConfig = new ProprietaryConfig([], [])
 
+  @Shared
+  Properties advancedProperties = new Properties()
+
   Logger log
   InternalIqClient iqClient
   DirectoryScanner directoryScanner
@@ -182,6 +185,70 @@ class RemoteScannerTest
     then:
       1 * directoryScanner.setExcludes(*_) >> { arguments ->
         assert arguments[0] == moduleExcludes
+      }
+  }
+
+  def 'Uses no excludes by default'() {
+    setup:
+    def workspaceFile = new File('/file/path')
+    final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar'], [], new FilePath(workspaceFile),
+            proprietaryConfig, log, 'instanceId', null, null)
+    directoryScanner.getIncludedDirectories() >> []
+    directoryScanner.getIncludedFiles() >> []
+
+    when:
+    ScanPatternUtil.getScanTargets(workspaceFile, ['*.jar'])
+
+    then:
+    1 * directoryScanner.setIncludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.jar']
+    }
+    1 * directoryScanner.setExcludes(*_) >> { arguments ->
+      assert arguments[0] == []
+    }
+  }
+
+
+  def 'Pass excludes to directory scanner'() {
+    setup:
+    def workspaceFile = new File('/file/path')
+    final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar','!*.zip','*.war','!*.tar'], [], new FilePath(workspaceFile),
+            proprietaryConfig, log, 'instanceId', null, null)
+    directoryScanner.getIncludedDirectories() >> []
+    directoryScanner.getIncludedFiles() >> []
+
+    when:
+    ScanPatternUtil.getScanTargets(workspaceFile, ['*.jar','!*.zip','*.war','!*.tar'])
+
+    then:
+    1 * directoryScanner.setIncludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.jar','*.war']
+    }
+    1 * directoryScanner.setExcludes(*_) >> { arguments ->
+      assert arguments[0] == ['*.zip','*.tar']
+    }
+  }
+
+  def 'RemoteScanner passes exclusion patterns to IqClient'() {
+    setup:
+      def workspaceFile = new File('/file/path')
+      advancedProperties.setProperty('fileExcludes', '*.ear')
+      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', ['*.jar','!*.zip','*.war','!*.tar'], [], new FilePath(workspaceFile),
+          proprietaryConfig, log, 'instanceId', advancedProperties, null)
+      directoryScanner.getIncludedDirectories() >> []
+      directoryScanner.getIncludedFiles() >> []
+
+    when:
+      remoteScanner.call()
+
+    then:
+      iqClient.scan(*_) >> { arguments ->
+        def fileExcludesList = arguments[2]['fileExcludes'].split(',').toList()
+        def expectedFilesExcludes = ['*.zip','*.tar', '*.ear']
+        assert fileExcludesList.containsAll(expectedFilesExcludes)
+        assert fileExcludesList.size() == expectedFilesExcludes.size()
+
+        new ScanResult(null, new File('file'))
       }
   }
 }
