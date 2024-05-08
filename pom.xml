@@ -141,6 +141,12 @@
         <artifactId>spring-web</artifactId>
         <version>5.3.28</version>
       </dependency>
+      <!-- transitive dependency of jenkins-core. Pinned down to avoid: CVE-2023-34034 and CVE-2023-20862 -->
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+        <version>5.8.4</version>
+      </dependency>
       <!-- Override transitive commons-compress and use latest available due to Violations -->
       <dependency>
         <groupId>org.apache.commons</groupId>
