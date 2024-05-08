@@ -107,7 +107,8 @@ class IqPolicyEvaluatorUtil
                 envVars)
         def repositoryUrl = launcher.getChannel().call(repositoryUrlFinder)
         if (repositoryUrl != null) {
-          def repositoryPath = Paths.get(workspace.getRemote(),".git").toString()
+          def repositoryPath = Paths.get(workspace.getRemote(), '.git').toString()
+
           iqClient.addOrUpdateSourceControl(applicationId, repositoryUrl, repositoryPath)
         }
 
@@ -121,8 +122,8 @@ class IqPolicyEvaluatorUtil
           CallflowConfiguration callflowConfiguration = iqPolicyEvaluator.getCallflowConfiguration()
 
           callflowOptions = makeCallflowOptions(
+              launcher,
               callflowConfiguration,
-              remoteScanner,
               workDirectory,
               envVars,
               iqPolicyEvaluator.iqScanPatterns
@@ -212,18 +213,16 @@ class IqPolicyEvaluatorUtil
   }
 
   private static CallflowOptions makeCallflowOptions(
+      final Launcher launcher,
       final CallflowConfiguration callflowConfiguration,
-      final RemoteScanner remoteScanner,
       final File workdir,
       final EnvVars envVars,
       final List<ScanPattern> iqScanPatterns)
   {
     if (callflowConfiguration == null) {
       final List<String> expandedPatterns = getScanPatterns(iqScanPatterns, envVars)
-      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
-          .collect {
-            return it.getAbsolutePath()
-          }
+      final RemoteFileResolver remoteFileResolver = new RemoteFileResolver(workdir, expandedPatterns)
+      final List<String> targets = launcher.getChannel().call(remoteFileResolver)
 
       // defaults to using same targets as original iq scan, when enabled but no additional config passed
       return new CallflowOptions(targets, null, null)
@@ -235,9 +234,8 @@ class IqPolicyEvaluatorUtil
       }
 
       final List<String> expandedPatterns = getScanPatterns(patterns, envVars)
-
-      final List<String> targets = remoteScanner.getScanTargets(workdir, expandedPatterns)
-          .collect { it.getAbsolutePath() }
+      final RemoteFileResolver remoteFileResolver = new RemoteFileResolver(workdir, expandedPatterns)
+      final List<String> targets = launcher.getChannel().call(remoteFileResolver)
 
       final Properties addtionalConfiguration = new Properties()
       if (callflowConfiguration.getAdditionalConfiguration() != null) {

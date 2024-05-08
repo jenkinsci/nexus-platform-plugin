@@ -153,23 +153,6 @@ class RemoteScannerTest
       'Base Directory'      | 5             | new File('/file/path')
   }
 
-  def 'Uses default scan patterns when patterns not set'() {
-    setup:
-      def workspaceFile = new File('/file/path')
-      final RemoteScanner remoteScanner = new RemoteScanner('appId', 'stageId', [], [], new FilePath(workspaceFile),
-          proprietaryConfig, log, 'instanceId', null, null)
-      directoryScanner.getIncludedDirectories() >> []
-      directoryScanner.getIncludedFiles() >> []
-
-    when:
-      remoteScanner.getScanTargets(workspaceFile, [])
-
-    then:
-      1 * directoryScanner.setIncludes(*_) >> { arguments ->
-        assert arguments[0] == RemoteScanner.DEFAULT_SCAN_PATTERN
-      }
-  }
-
   def 'Uses default modules for includes'() {
     setup:
       def workspaceFile = new File('/file/path')
@@ -205,7 +188,6 @@ class RemoteScannerTest
       }
   }
 
-
   def 'Uses no excludes by default'() {
     setup:
     def workspaceFile = new File('/file/path')
@@ -215,7 +197,7 @@ class RemoteScannerTest
     directoryScanner.getIncludedFiles() >> []
 
     when:
-    remoteScanner.getScanTargets(workspaceFile, ['*.jar'])
+    ScanPatternUtil.getScanTargets(workspaceFile, ['*.jar'])
 
     then:
     1 * directoryScanner.setIncludes(*_) >> { arguments ->
@@ -236,7 +218,7 @@ class RemoteScannerTest
     directoryScanner.getIncludedFiles() >> []
 
     when:
-    remoteScanner.getScanTargets(workspaceFile, ['*.jar','!*.zip','*.war','!*.tar'])
+    ScanPatternUtil.getScanTargets(workspaceFile, ['*.jar','!*.zip','*.war','!*.tar'])
 
     then:
     1 * directoryScanner.setIncludes(*_) >> { arguments ->

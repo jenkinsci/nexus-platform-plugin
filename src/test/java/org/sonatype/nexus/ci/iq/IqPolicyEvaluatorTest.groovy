@@ -716,14 +716,14 @@ class IqPolicyEvaluatorTest
       iqClient.verifyOrCreateApplication(*_) >> true
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
-      channel.call(_) >> remoteScanResult
+      channel.call(remoteScanner) >> remoteScanResult
 
     when:
       getBuildStepForCallflowTests(true, null)
           .perform((AbstractBuild) run, launcher, Mock(BuildListener))
 
     then: 'evaluates the results using default callflow options'
-      1 * remoteScanner.getScanTargets(_, _) >> [pathReturnedByExpandingIqScanPatterns]
+      1 * channel.call(_ as RemoteFileResolver) >> [pathReturnedByExpandingIqScanPatterns.getAbsolutePath()]
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == defaultCallflowOptions.scanTargets &&
             it.namespaces == null &&
@@ -735,10 +735,8 @@ class IqPolicyEvaluatorTest
     setup:
       def expectedNamespaces = ['any.namespace']
       def givenAdditionalConfig =  [some: "property"]
-      def expectedScanTargets = [
-          new File("some-path-1").getAbsolutePath(),
-          new File('some-path-2').getAbsolutePath()
-      ]
+      def expectedScanTargets = ["some-path-1", "some-path-2"]
+
       def expectedProps =  new Properties().with {
         it.put("some", "property")
         it
@@ -750,7 +748,7 @@ class IqPolicyEvaluatorTest
       iqClient.verifyOrCreateApplication(*_) >> true
       iqClient.getProprietaryConfigForApplicationEvaluation('appId') >> proprietaryConfig
       RemoteScannerFactory.getRemoteScanner(*_) >> remoteScanner
-      channel.call(_) >> remoteScanResult
+      channel.call(remoteScanner) >> remoteScanResult
 
     when:
       getBuildStepForCallflowTests(
@@ -762,7 +760,7 @@ class IqPolicyEvaluatorTest
       ).perform((AbstractBuild) run, launcher, Mock(BuildListener))
 
     then: 'evaluates the results using default callflow options'
-      1 * remoteScanner.getScanTargets(*_) >> [new File("some-path-1"), new File('some-path-2')]
+      1 * channel.call(_ as RemoteFileResolver) >> ["some-path-1", 'some-path-2']
       1 * iqClient.evaluateApplication('appId', 'stage', scanResult, _, {
         it.scanTargets == expectedScanTargets &&
             it.namespaces == expectedNamespaces &&
