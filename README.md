@@ -12,6 +12,11 @@
     See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 
 -->
+
+❗**This plugin has been moved to the Sonatype private organization where development will continue**
+
+❗Please refer to the following document to learn how to install the plugin: https://help.sonatype.com/en/sonatype-platform-plugin-for-jenkins.html
+
 # Nexus Platform Plugin
 
 A plugin for integrating Nexus Repository Manager and Nexus Lifecycle into a Jenkins job. Information about using the plugin can be found in [Nexus Platform Plugin for Jenkins](https://links.sonatype.com/products/nxiq/doc/nexus-platform-plugin-for-jenkins).
