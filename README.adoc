@@ -1,0 +1,8 @@
+= Nexus Platform Plugin
+
+This plugin is no longer distributed by the Jenkins project due to its license terms.
+More information:
+https://github.com/jenkins-infra/helpdesk/issues/3742 
+
+Please refer to the following document to learn how to install the plugin:
+https://help.sonatype.com/en/sonatype-platform-plugin-for-jenkins.html
